@@ -1,0 +1,73 @@
+<view class="page">
+  <!-- 头部信息 -->
+  <view class="head">
+    <view class="head-row">
+      <view class="head-icon">
+        <view class="ic ic-{{iconKey}}" wx:if="{{iconKey}}"></view>
+        <text wx:else>{{accountIcon}}</text>
+      </view>
+      <view class="head-actions">
+        <view class="icon-btn tap" bindtap="onEdit"><view class="ic ic-sm ic-edit"></view></view>
+        <view class="icon-btn tap" bindtap="onMore"><view class="ic ic-sm ic-more"></view></view>
+      </view>
+    </view>
+    <view class="head-name">{{accountName}}</view>
+    <view class="head-balance" style="color: {{accountColor}};">{{balanceText}}</view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="ops">
+    <view class="btn btn-dark tap ops-btn" bindtap="onOpenDelta">＋／－ 增减金额</view>
+    <view class="btn btn-ghost tap ops-btn" bindtap="onOpenSet">≡ 修改余额</view>
+  </view>
+
+  <!-- 变动记录 -->
+  <view class="tx-section">
+    <view class="tx-title">变动记录（左滑删除）</view>
+    <block wx:if="{{txList.length === 0}}">
+      <view class="empty">
+        <view class="empty-icon-wrap"><view class="ic ic-lg ic-clock"></view></view>
+        <view class="empty-desc">还没有变动记录</view>
+      </view>
+    </block>
+    <view class="tx-list" wx:else>
+      <view class="tx-row" wx:for="{{txList}}" wx:key="_id">
+        <!-- 红色删除按钮（在底层） -->
+        <view class="tx-delete-btn"
+              data-id="{{item._id}}"
+              catchtap="onTxDelete">
+          删除
+        </view>
+        <!-- 上层可滑动的内容行 -->
+        <view class="tx-item"
+              data-id="{{item._id}}"
+              style="transform: translateX({{swipeOpenId === item._id ? '-120rpx' : '0rpx'}});"
+              bindtouchstart="onTxTouchStart"
+              bindtouchmove="onTxTouchMove"
+              bindtouchend="onTxTouchEnd"
+              bindtap="onTxTap">
+          <view class="tx-main">
+            <text class="tx-note">{{item.note}}</text>
+            <text class="tx-time">{{item.time}}</text>
+          </view>
+          <view class="tx-amounts">
+            <text class="tx-delta {{item.deltaCls}}">{{item.deltaText}}</text>
+            <text class="tx-after">{{item.afterText}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+
+<amount-input
+  id="ai"
+  visible="{{showInput}}"
+  mode="{{inputMode}}"
+  account-name="{{accountName}}"
+  account-icon="{{accountIcon}}"
+  account-icon-key="{{iconKey}}"
+  current-balance-fen="{{account.balance}}"
+  bindcancel="onInputCancel"
+  bindconfirm="onInputConfirm"
+/>

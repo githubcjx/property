@@ -1,0 +1,55 @@
+<view class="page">
+  <!-- 文字摘要 -->
+  <view class="summary" wx:if="{{summary.rangeText}}">
+    <view class="sum-range">{{summary.rangeText}}</view>
+    <view class="sum-line" wx:for="{{summary.lines}}" wx:key="*this">{{item}}</view>
+  </view>
+
+  <!-- Tab 切换 -->
+  <view class="tabs">
+    <view
+      wx:for="{{tabs}}"
+      wx:key="key"
+      class="tab tap {{tabKey === item.key ? 'tab-active' : ''}}"
+      data-key="{{item.key}}"
+      bindtap="onTabTap">
+      {{item.label}}
+    </view>
+  </view>
+
+  <!-- 图表容器 -->
+  <view class="chart-wrap">
+    <view class="empty" wx:if="{{!loading && !hasData}}">
+      <text class="empty-emoji">📈</text>
+      <view class="empty-desc">暂无数据，先在首页添加账户并记录余额</view>
+    </view>
+    <ec-canvas
+      id="chart"
+      canvas-id="property-chart"
+      ec="{{ ec }}"
+      style="width: 100%; height: 100%; {{!hasData ? 'opacity: 0;' : ''}}">
+    </ec-canvas>
+  </view>
+
+  <!-- 时间范围 Segmented Control -->
+  <view class="ranges">
+    <view
+      wx:for="{{ranges}}"
+      wx:key="key"
+      class="range tap {{rangeKey === item.key ? 'range-active' : ''}}"
+      data-key="{{item.key}}"
+      bindtap="onRangeTap">
+      {{item.label}}
+    </view>
+  </view>
+
+  <!-- 自定义日期范围 -->
+  <view class="custom-row" wx:if="{{rangeKey === 'custom'}}">
+    <picker mode="date" value="{{customStart}}" end="{{customEnd}}" bindchange="onCustomStart">
+      <view class="date-pick tap">起：{{customStart}}</view>
+    </picker>
+    <picker mode="date" value="{{customEnd}}" start="{{customStart}}" bindchange="onCustomEnd">
+      <view class="date-pick tap">止：{{customEnd}}</view>
+    </picker>
+  </view>
+</view>

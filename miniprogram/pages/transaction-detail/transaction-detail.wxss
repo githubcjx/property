@@ -1,0 +1,91 @@
+.page {
+  min-height: 100vh;
+  background-color: #000000;
+  padding: 32rpx 32rpx 64rpx;
+  position: relative;
+}
+
+.close {
+  position: absolute;
+  top: 24rpx;
+  right: 32rpx;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  color: #FFFFFF;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 96rpx;
+}
+.head-icon {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48rpx;
+}
+.head-icon .ic { width: 52rpx; height: 52rpx; }
+.head-name {
+  font-size: 30rpx;
+  color: rgba(235, 235, 245, 0.7);
+}
+.head-type {
+  font-size: 24rpx;
+  color: rgba(235, 235, 245, 0.4);
+}
+
+.delta {
+  margin-top: 48rpx;
+  font-size: 88rpx;
+  font-weight: 600;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -1rpx;
+}
+.after {
+  text-align: center;
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  color: rgba(235, 235, 245, 0.5);
+}
+
+.info {
+  margin-top: 64rpx;
+  background-color: #1C1C1E;
+  border-radius: 32rpx;
+  padding: 8rpx 28rpx;
+}
+.info-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 28rpx 0;
+  border-bottom: 1rpx solid rgba(255, 255, 255, 0.06);
+  gap: 24rpx;
+}
+.info-row:last-child { border-bottom: none; }
+.info-label {
+  color: rgba(235, 235, 245, 0.5);
+  font-size: 26rpx;
+  flex-shrink: 0;
+}
+.info-value {
+  color: #FFFFFF;
+  font-size: 28rpx;
+  text-align: right;
+  flex: 1;
+  word-break: break-all;
+}

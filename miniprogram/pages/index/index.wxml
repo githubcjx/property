@@ -1,0 +1,73 @@
+<view class="page">
+  <!-- 自定义顶栏 -->
+  <view class="topbar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="topbar-row">
+      <view class="topbar-left">
+        <text>我的净资产</text>
+        <view class="topbar-eye tap" bindtap="onToggleHide">
+          <view class="ic ic-sm {{hideAmount ? 'ic-eye-off' : 'ic-eye'}}"></view>
+        </view>
+      </view>
+      <view class="topbar-right" style="transform: translateY(60px);">
+        <view class="topbar-add tap" bindtap="onAdd">
+          <view class="ic ic-plus"></view>
+        </view>
+      </view>
+    </view>
+    <view class="net-amount">{{netWorthText}}</view>
+  </view>
+
+  <!-- 内容 -->
+  <scroll-view scroll-y class="scroll" enable-flex>
+    <block wx:if="{{!loading && !hasData}}">
+      <view class="empty">
+        <view class="empty-icon"><view class="ic ic-lg ic-wallet"></view></view>
+        <view class="empty-title">还没有账户</view>
+        <view class="empty-desc">点击右上角「＋」添加你的第一个账户</view>
+        <view class="btn btn-primary tap empty-btn" bindtap="onAdd">添加账户</view>
+      </view>
+    </block>
+
+    <block wx:if="{{hasData}}">
+      <view class="groups">
+        <view class="group" wx:for="{{groups}}" wx:key="categoryId">
+          <category-header
+            category-id="{{item.categoryId}}"
+            icon-key="{{item.icon}}"
+            tint-class="{{item.tintClass}}"
+            total-fen="{{item.totalFen}}"
+            last-updated="{{item.lastUpdated}}"
+            hide-amount="{{hideAmount}}"
+            is-debt="{{item.isDebt}}"
+            expanded="{{expandedMap[item.categoryId]}}"
+            bindtoggle="onToggleGroup"
+          />
+          <view class="acc-list {{expandedMap[item.categoryId] ? 'expanded' : ''}}">
+            <account-card
+              wx:for="{{item.accounts}}"
+              wx:for-item="acc"
+              wx:key="_id"
+              account="{{acc}}"
+              hide-amount="{{hideAmount}}"
+              bindtap="onAccountTap"
+            />
+          </view>
+        </view>
+        <view class="footer-tip">{{version}}</view>
+      </view>
+    </block>
+
+    <!-- 关于入口（始终展示，含空态时也可见） -->
+    <!-- <view class="about-entry tap" bindtap="onAbout">关于小程序</view> -->
+  </scroll-view>
+
+  <!-- 右下角悬浮操作按钮（趋势 + 设置） -->
+  <view class="fab-cluster">
+    <view class="fab tap" bindtap="onTrend" hover-class="fab-hover">
+      <view class="ic ic-chart"></view>
+    </view>
+    <view class="fab tap" bindtap="onSettings" hover-class="fab-hover">
+      <view class="ic ic-settings"></view>
+    </view>
+  </view>
+</view>

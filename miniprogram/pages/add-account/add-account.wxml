@@ -1,0 +1,87 @@
+<view class="page">
+  <!-- Step 1+2: 选择大类与子类 -->
+  <block wx:if="{{step === 1}}">
+    <view class="hint">选择账户类型</view>
+    <view class="cat-list">
+      <view class="cat-item" wx:for="{{categories}}" wx:key="id">
+        <view class="cat-row tap" data-id="{{item.id}}" bindtap="onToggleCategory">
+          <view class="cat-icon {{'cat-tint-' + item.colorClass}}">
+            <view class="ic ic-{{item.icon}}"></view>
+          </view>
+          <view class="cat-info">
+            <text class="cat-name">{{item.name}}</text>
+            <text class="cat-desc">{{item.desc}}</text>
+          </view>
+          <text class="arrow {{expandedCategoryId === item.id ? 'arrow-down' : ''}}">›</text>
+        </view>
+        <view class="sub-list" wx:if="{{expandedCategoryId === item.id}}">
+          <view class="sub-item tap"
+                wx:for="{{item.subTypes}}"
+                wx:for-item="sub"
+                wx:key="id"
+                data-category-id="{{item.id}}"
+                data-sub-id="{{sub.id}}"
+                bindtap="onSelectSub">
+            <view class="sub-icon"><view class="ic ic-{{sub.icon}}"></view></view>
+            <text class="sub-name">{{sub.name}}{{sub.custom ? '（自定义）' : ''}}</text>
+            <text class="arrow">›</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <!-- Step 3: 填写表单 -->
+  <block wx:if="{{step === 3}}">
+    <view class="form">
+      <view class="picked-row">
+        <view class="picked-icon"><view class="ic ic-{{selectedSubType.icon}}"></view></view>
+        <text class="picked-name">{{customSubName || selectedSubType.name}}</text>
+        <text class="picked-change tap" bindtap="onBackToList">{{editId ? '' : '更换'}}</text>
+      </view>
+
+      <view class="field">
+        <text class="field-label">账户名称</text>
+        <input class="field-input"
+               type="text"
+               maxlength="20"
+               placeholder="留空则使用「{{customSubName || selectedSubType.name}}」"
+               placeholder-class="ph"
+               value="{{form.name}}"
+               bindinput="onNameInput" />
+        <text class="field-hint">建议用中性名（如「储蓄 1」「日常账户」），不要写真实银行/卡号</text>
+      </view>
+
+      <view class="field" wx:if="{{!editId}}">
+        <text class="field-label">初始余额（元）</text>
+        <input class="field-input"
+               type="digit"
+               placeholder="0"
+               placeholder-class="ph"
+               value="{{form.balanceYuan}}"
+               bindinput="onBalanceInput" />
+      </view>
+
+      <view class="field row-field">
+        <text class="field-label">计入图表</text>
+        <switch checked="{{form.includeInChart}}" bindchange="onChartSwitch" color="#34D399" />
+      </view>
+
+      <view class="field">
+        <text class="field-label">备注</text>
+        <textarea class="field-textarea"
+                  maxlength="100"
+                  placeholder="如「招商银行储蓄卡」"
+                  placeholder-class="ph"
+                  value="{{form.note}}"
+                  bindinput="onNoteInput" />
+      </view>
+
+      <view class="actions">
+        <view class="btn btn-primary btn-block tap" bindtap="onSubmit">
+          {{submitting ? '...' : (editId ? '保存修改' : '添加账户')}}
+        </view>
+      </view>
+    </view>
+  </block>
+</view>

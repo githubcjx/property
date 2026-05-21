@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "趋势",
+  "navigationBarBackgroundColor": "#000000",
+  "navigationBarTextStyle": "white",
+  "backgroundColor": "#000000",
+  "usingComponents": {
+    "ec-canvas": "../../ec-canvas/ec-canvas"
+  }
+}

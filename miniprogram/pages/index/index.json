@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "净资产",
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "category-header": "/components/category-header/category-header",
+    "account-card": "/components/account-card/account-card"
+  }
+}

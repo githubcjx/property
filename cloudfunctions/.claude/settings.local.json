@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"D:\\\\Project\\\\property\\\\cloudfunctions\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(ls -lah \"D:\\\\Project\\\\property\" 2>/dev/null | head -30)"
+    ]
+  }
+}

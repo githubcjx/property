@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>净值本 · 小程序 UI 设计文档</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #f5f5f7;
+    color: #1d1d1f;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    line-height: 1.6;
+  }
+  .container { max-width: 1080px; margin: 0 auto; padding: 32px 24px 64px; }
+  header {
+    text-align: center;
+    padding: 32px 0 24px;
+    border-bottom: 1px solid #e5e5ea;
+    margin-bottom: 32px;
+  }
+  header h1 { margin: 0 0 8px; font-size: 32px; letter-spacing: 0.5px; }
+  header .meta { color: #86868b; font-size: 14px; }
+  header .meta span { margin: 0 8px; }
+
+  h2 {
+    font-size: 22px;
+    margin: 48px 0 16px;
+    padding-left: 12px;
+    border-left: 4px solid #0a84ff;
+  }
+  h3 { font-size: 17px; margin: 24px 0 12px; color: #1d1d1f; }
+  h4 { font-size: 14px; margin: 16px 0 8px; color: #515154; }
+
+  p, li { font-size: 14px; color: #3a3a3c; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 880px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  .info-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    margin-bottom: 16px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 12px 0;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid #e5e5ea;
+    vertical-align: top;
+  }
+  th { background: #fafafa; font-weight: 600; color: #515154; }
+  td code { background: #f2f2f7; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+
+  /* ======== 手机模型 ======== */
+  .phone-row { display: grid; grid-template-columns: 320px 1fr; gap: 32px; align-items: start; }
+  @media (max-width: 880px) { .phone-row { grid-template-columns: 1fr; } }
+
+  .phone {
+    width: 320px;
+    height: 640px;
+    background: #000;
+    border-radius: 36px;
+    padding: 12px;
+    box-shadow: 0 10px 32px rgba(0,0,0,0.25);
+    position: relative;
+    overflow: hidden;
+  }
+  .phone-screen {
+    width: 100%;
+    height: 100%;
+    background: #000;
+    border-radius: 26px;
+    color: #fff;
+    overflow: hidden;
+    position: relative;
+    font-size: 12px;
+  }
+  .status-bar {
+    height: 20px;
+    line-height: 20px;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 16px;
+    font-size: 10px;
+    color: #fff;
+  }
+
+  /* ====== 通用屏内组件 ====== */
+  .nav-title {
+    text-align: center;
+    padding: 6px 0 10px;
+    font-size: 13px;
+    color: #fff;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .topbar-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px 4px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #8e8e93; }
+  .eye-btn { width: 18px; height: 18px; background: rgba(255,255,255,0.08); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; }
+  .plus-btn { width: 28px; height: 28px; background: rgba(255,255,255,0.08); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #fff; }
+  .net-amount { padding: 4px 16px 14px; font-size: 28px; font-weight: 600; letter-spacing: 0.5px; }
+
+  .cat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .cat-left { display: flex; align-items: center; gap: 10px; }
+  .cat-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .tint-liquid { background: rgba(52,211,153,0.15); color: #34D399; }
+  .tint-invest { background: rgba(167,139,250,0.15); color: #A78BFA; }
+  .tint-fixed  { background: rgba(251,191,36,0.15); color: #FBBF24; }
+  .tint-recv   { background: rgba(96,165,250,0.15); color: #60A5FA; }
+  .tint-debt   { background: rgba(248,113,113,0.15); color: #F87171; }
+
+  .cat-meta { display: flex; flex-direction: column; }
+  .cat-meta .n1 { font-size: 13px; color: #fff; }
+  .cat-meta .n2 { font-size: 10px; color: #8e8e93; }
+
+  .cat-right { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; }
+  .chev { font-size: 10px; color: #8e8e93; }
+
+  .acc-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px 10px 32px;
+    background: #1c1c1e;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .acc-card .ic-sm { width: 24px; height: 24px; border-radius: 6px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; font-size: 11px; }
+  .acc-card .main { flex: 1; display: flex; flex-direction: column; }
+  .acc-card .row1 { display: flex; justify-content: space-between; font-size: 12px; }
+  .acc-card .row2 { display: flex; justify-content: space-between; font-size: 10px; color: #8e8e93; }
+
+  .fab-cluster {
+    position: absolute;
+    right: 18px;
+    bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .fab {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: rgba(40,40,42,0.95);
+    border: 1px solid rgba(255,255,255,0.06);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; color: #fff;
+  }
+
+  /* ----- add-account ----- */
+  .hint { padding: 14px 16px 8px; color: #8e8e93; font-size: 12px; }
+  .row-line {
+    display: flex; align-items: center; padding: 12px 16px;
+    background: #1c1c1e; border-bottom: 1px solid rgba(255,255,255,0.05);
+    gap: 10px;
+  }
+  .row-line .grow { flex: 1; }
+  .row-line .desc { font-size: 10px; color: #8e8e93; }
+
+  .form-field { padding: 12px 16px; }
+  .form-field .lbl { font-size: 11px; color: #8e8e93; margin-bottom: 4px; }
+  .form-field .input { background: rgba(255,255,255,0.05); border-radius: 8px; padding: 10px 12px; font-size: 13px; color: #fff; }
+  .switch-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; }
+  .switch { width: 36px; height: 20px; background: #34D399; border-radius: 12px; position: relative; }
+  .switch::after { content:''; position:absolute; right:2px; top:2px; width:16px; height:16px; background:#fff; border-radius:50%; }
+  .btn-primary {
+    background: #fff; color: #000;
+    text-align: center; padding: 12px;
+    margin: 16px; border-radius: 10px; font-size: 14px; font-weight: 600;
+  }
+
+  /* ----- account-detail ----- */
+  .ad-head { padding: 20px 16px 8px; }
+  .ad-head .icon { width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-size: 18px; }
+  .ad-head-row { display: flex; justify-content: space-between; align-items: center; }
+  .ad-actions { display: flex; gap: 8px; }
+  .ad-act { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-size: 11px; }
+  .ad-name { font-size: 16px; margin-top: 10px; }
+  .ad-bal { font-size: 26px; font-weight: 600; color: #34D399; margin-top: 2px; }
+  .ops-row { display: flex; gap: 10px; padding: 14px 16px; }
+  .ops-btn { flex: 1; text-align: center; padding: 10px; border-radius: 10px; font-size: 12px; }
+  .ops-dark { background: #fff; color: #000; }
+  .ops-ghost { background: rgba(255,255,255,0.08); color: #fff; }
+  .tx-title { padding: 8px 16px; font-size: 11px; color: #8e8e93; }
+  .tx-item { display:flex; justify-content:space-between; padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .tx-l { display:flex; flex-direction:column; }
+  .tx-l .a { font-size: 12px; }
+  .tx-l .b { font-size: 10px; color:#8e8e93; }
+  .tx-r { text-align: right; }
+  .tx-r .pos { color: #34D399; font-size: 13px; }
+  .tx-r .neg { color: #F87171; font-size: 13px; }
+  .tx-r .after { color: #8e8e93; font-size: 10px; }
+
+  /* ----- transaction detail ----- */
+  .td-close { display: flex; justify-content: flex-end; padding: 12px 16px; font-size: 14px; color: #8e8e93; }
+  .td-head { text-align: center; padding: 12px 0; }
+  .td-icon { width: 50px; height: 50px; border-radius: 14px; background: rgba(255,255,255,0.06); display: inline-flex; align-items:center; justify-content:center; font-size: 22px; }
+  .td-name { font-size: 14px; margin-top: 8px; }
+  .td-type { font-size: 11px; color: #8e8e93; }
+  .td-delta { font-size: 32px; text-align: center; padding: 12px 0; color: #34D399; font-weight: 600; }
+  .td-after { text-align: center; color: #8e8e93; font-size: 11px; }
+  .td-info { margin: 20px 16px; background: rgba(255,255,255,0.04); border-radius: 12px; }
+  .td-info .row { display: flex; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 12px; }
+  .td-info .lbl { color: #8e8e93; }
+
+  /* ----- about / settings ----- */
+  .hero { text-align: center; padding: 24px 0 16px; }
+  .hero-icon { width: 60px; height: 60px; margin: 0 auto 8px; background: linear-gradient(135deg,#34D399,#0a84ff); border-radius: 16px; display:flex; align-items:center; justify-content:center; font-size: 24px; color:#fff; }
+  .hero-title { font-size: 18px; font-weight: 600; }
+  .hero-sub { font-size: 11px; color: #8e8e93; }
+  .sec-title { padding: 14px 16px 6px; font-size: 11px; color: #8e8e93; }
+  .sec-card { background: rgba(255,255,255,0.04); margin: 0 16px; border-radius: 12px; padding: 4px 0; }
+  .qa { padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .qa .q { font-size: 12px; font-weight: 600; }
+  .qa .a { font-size: 11px; color: #8e8e93; margin-top: 4px; }
+  .set-row { display: flex; align-items: center; padding: 14px; gap: 12px; }
+  .set-icon { width: 30px; height: 30px; border-radius: 8px; background: rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size: 13px; }
+  .set-main { flex: 1; }
+  .set-main .t { font-size: 13px; }
+  .set-main .s { font-size: 10px; color: #8e8e93; }
+  .set-arrow { color: #8e8e93; }
+
+  /* ----- chart ----- */
+  .chart-summary { padding: 12px 16px; }
+  .chart-summary .r { font-size: 11px; color: #8e8e93; }
+  .chart-summary .l { font-size: 12px; margin-top: 4px; }
+  .tabs-row { display: flex; gap: 8px; padding: 0 16px; }
+  .tab { flex: 1; text-align: center; padding: 8px; border-radius: 8px; background: rgba(255,255,255,0.04); font-size: 11px; color: #8e8e93; }
+  .tab.active { background: rgba(255,255,255,0.12); color: #fff; }
+  .chart-area {
+    margin: 12px 16px;
+    height: 200px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0)),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 30px);
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  .chart-line {
+    position: absolute; left: 0; right: 0; bottom: 30%;
+    height: 2px;
+    background: #fff;
+  }
+  .chart-line2 {
+    position: absolute; left: 0; right: 0; bottom: 15%;
+    height: 1.5px;
+    background: #F87171;
+  }
+  .ranges-row { display: flex; gap: 6px; padding: 0 16px; }
+  .range { flex: 1; text-align: center; padding: 6px 4px; border-radius: 8px; background: rgba(255,255,255,0.04); font-size: 10px; color: #8e8e93; }
+  .range.active { background: rgba(255,255,255,0.16); color: #fff; }
+
+  /* ----- amount input modal ----- */
+  .ai-sheet {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    background: #1c1c1e;
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
+    padding: 12px 16px 16px;
+  }
+  .ai-head { display: flex; justify-content: space-between; align-items: center; padding: 6px 0 10px; }
+  .ai-cancel, .ai-confirm { font-size: 12px; color: #8e8e93; }
+  .ai-confirm { color: #34D399; font-weight: 600; }
+  .ai-acc { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+  .ai-amount { font-size: 28px; font-weight: 600; padding: 8px 0; }
+  .ai-sign-tabs { display: flex; gap: 8px; padding: 6px 0; }
+  .ai-sign { flex: 1; text-align: center; padding: 6px; border-radius: 8px; background: rgba(255,255,255,0.06); }
+  .ai-sign.pos { background: rgba(52,211,153,0.2); color: #34D399; }
+  .ai-keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; }
+  .ai-key { background: rgba(255,255,255,0.08); text-align: center; padding: 10px; border-radius: 8px; font-size: 14px; }
+
+  /* ====== 描述区 ====== */
+  .desc-block ul { padding-left: 20px; margin: 6px 0; }
+  .desc-block li { margin: 4px 0; }
+  .pill {
+    display: inline-block; font-size: 12px; padding: 2px 8px;
+    border-radius: 999px; background: #e8f0ff; color: #0a84ff;
+    margin-right: 6px;
+  }
+  .pill.warn { background: #fff3e0; color: #ff9500; }
+  .pill.danger { background: #ffe8e8; color: #ff3b30; }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e5ea;
+    text-align: center;
+    color: #86868b;
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>净值本（Property Mini-Program）</h1>
+  <div class="meta">
+    <span>类型：微信小程序</span>·
+    <span>定位：个人净资产快照工具</span>·
+    <span>版本：V1.1</span>·
+    <span>主题：深色（黑底）</span>
+  </div>
+</header>
+
+<!-- =================== 概览 =================== -->
+<section>
+  <h2>一、产品概览</h2>
+  <div class="info-card">
+    <p>「净值本」是一款<strong>面向个人的净资产快照工具</strong>，定位与传统记账软件不同——它聚焦于「账户余额」维度（建议每月录入一次），自动汇总净资产并展示趋势，不记录每一笔流水。</p>
+    <p><strong>核心数据模型：</strong></p>
+    <ul>
+      <li><strong>账户（Account）</strong>：所属大类 / 子类 / 名称 / 余额（以「分」为单位）/ 是否计入图表 / 备注。</li>
+      <li><strong>变动记录（Transaction）</strong>：每次「修改余额（set）」或「增减金额（delta）」生成一条记录，含金额、变动后余额、备注、时间。</li>
+      <li><strong>大类（Category）</strong>：5 个内置大类——流动资金、投资、固定资产、应收款、负债（负债在净资产计算时取负值）。</li>
+    </ul>
+    <p><strong>技术栈：</strong>原生小程序框架（glass-easel）+ 微信云开发（CloudBase）+ ECharts（图表分包，懒加载）。</p>
+  </div>
+
+  <h3>页面清单</h3>
+  <table>
+    <thead>
+      <tr><th>页面</th><th>路径</th><th>功能定位</th><th>分包</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>首页（净资产总览）</td><td><code>pages/index/index</code></td><td>展示净资产总额、按大类分组的账户列表，分类手风琴展开</td><td>主包</td></tr>
+      <tr><td>添加 / 编辑账户</td><td><code>pages/add-account/add-account</code></td><td>三步流程：选大类 → 选子类 → 填表单</td><td>主包</td></tr>
+      <tr><td>账户详情</td><td><code>pages/account-detail/account-detail</code></td><td>查看单账户余额，进行增减/修改，查看变动历史</td><td>主包</td></tr>
+      <tr><td>变动详情</td><td><code>pages/transaction-detail/transaction-detail</code></td><td>查看单条变动记录详情</td><td>主包</td></tr>
+      <tr><td>设置</td><td><code>pages/settings/settings</code></td><td>入口：反馈、关于</td><td>主包</td></tr>
+      <tr><td>关于</td><td><code>pages/about/about</code></td><td>产品说明、隐私 Q&amp;A、使用提示</td><td>主包</td></tr>
+      <tr><td>趋势图表</td><td><code>subpackages/chart-pkg/pages/chart/chart</code></td><td>净资产/负债、流动/投资 趋势曲线</td><td>chart-pkg（懒加载）</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- =================== 设计语言 =================== -->
+<section>
+  <h2>二、设计语言（Design System）</h2>
+  <div class="grid-2">
+    <div class="info-card">
+      <h3>色彩规范</h3>
+      <table>
+        <tr><th>分类</th><th>主色</th><th>用途</th></tr>
+        <tr><td>流动资金</td><td><code style="color:#34D399;">#34D399</code></td><td>绿色，正向资产</td></tr>
+        <tr><td>投资</td><td><code style="color:#A78BFA;">#A78BFA</code></td><td>紫色</td></tr>
+        <tr><td>固定资产</td><td><code style="color:#FBBF24;">#FBBF24</code></td><td>琥珀色</td></tr>
+        <tr><td>应收款</td><td><code style="color:#60A5FA;">#60A5FA</code></td><td>蓝色</td></tr>
+        <tr><td>负债</td><td><code style="color:#F87171;">#F87171</code></td><td>红色，警示</td></tr>
+        <tr><td>背景</td><td><code>#000000</code></td><td>主背景</td></tr>
+        <tr><td>卡片</td><td><code>#1C1C1E</code></td><td>列表/卡片底</td></tr>
+      </table>
+    </div>
+    <div class="info-card">
+      <h3>组件 & 交互</h3>
+      <ul>
+        <li><span class="pill">手风琴</span>大类 header 点击切换展开，状态持久化到 Storage（<code>idx_expanded_categories</code>）。</li>
+        <li><span class="pill">左滑删除</span>账户详情页的变动记录支持左滑显示「删除」按钮（阈值 30px，一次只允许一条打开）。</li>
+        <li><span class="pill">FAB</span>首页右下角悬浮按钮簇（趋势 + 设置）。</li>
+        <li><span class="pill">底部抽屉</span>金额输入面板（amount-input 组件），含自定义数字键盘。</li>
+        <li><span class="pill warn">隐藏金额</span>全局眼睛开关，所有金额变为「¥****」，状态由 app 全局保存。</li>
+        <li><span class="pill danger">软删除</span>账户删除是软删除（标记隐藏），历史变动记录保留。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- =================== 页面 1：首页 =================== -->
+<section>
+  <h2>三、页面 1 · 首页（净资产总览）</h2>
+  <div class="phone-row">
+    <div class="phone"><div class="phone-screen">
+      <div class="status-bar"><span>9:41</span><span>● ●</span></div>
+      <div class="topbar-row">
+        <div class="topbar-left">我的净资产 <span class="eye-btn">👁</span></div>
+        <div class="plus-btn">＋</div>
+      </div>
+      <div class="net-amount">¥ 128,460.32</div>
+
+      <div class="cat-header">
+        <div class="cat-left">
+          <div class="cat-icon tint-liquid">💰</div>
+          <div class="cat-meta"><span class="n1">流动资金</span><span class="n2">3 天前 · 更新</span></div>
+        </div>
+        <div class="cat-right" style="color:#34D399;">¥ 38,200 <span class="chev">▾</span></div>
+      </div>
+      <div class="acc-card">
+        <div class="ic-sm">🏦</div>
+        <div class="main">
+          <div class="row1"><span>储蓄 1</span><span style="color:#34D399;">¥ 22,000</span></div>
+          <div class="row2"><span>招商</span><span>3 天前</span></div>
+        </div>
+      </div>
+      <div class="acc-card">
+        <div class="ic-sm">支</div>
+        <div class="main">
+          <div class="row1"><span>支付宝</span><span style="color:#34D399;">¥ 12,200</span></div>
+          <div class="row2"><span>不计入图表</span><span>3 天前</span></div>
+        </div>
+      </div>
+
+      <div class="cat-header">
+        <div class="cat-left">
+          <div class="cat-icon tint-invest">📈</div>
+          <div class="cat-meta"><span class="n1">投资</span><span class="n2">7 天前 · 更新</span></div>
+        </div>
+        <div class="cat-right" style="color:#A78BFA;">¥ 92,000 <span class="chev">▸</span></div>
+      </div>
+
+      <div class="cat-header">
+        <div class="cat-left">
+          <div class="cat-icon tint-debt">💳</div>
+          <div class="cat-meta"><span class="n1">负债</span><span class="n2">本月更新</span></div>
+        </div>
+        <div class="cat-right" style="color:#F87171;">-¥ 1,740 <span class="chev">▸</span></div>
+      </div>
+
+      <div class="fab-cluster">
+        <div class="fab">📊</div>
+        <div class="fab">⚙</div>
+      </div>
+    </div></div>
+
+    <div class="desc-block">
+      <h3>3.1 布局结构（自上而下）</h3>
+      <ol>
+        <li><strong>顶栏 TopBar</strong>（自定义、贴顶、状态栏占位）：左侧「我的净资产 + 眼睛切换」，右上角「＋」添加账户。</li>
+        <li><strong>净资产数额</strong>（大字号，金额已计算 = 资产合计 − 负债，仅 <code>includeInChart=true</code> 的账户参与）。</li>
+        <li><strong>大类分组列表</strong>（scroll-view 内）：
+          <ul>
+            <li>仅展示有账户的大类；按 5 大类固定顺序：流动资金 / 投资 / 固定资产 / 应收款 / 负债。</li>
+            <li>每个大类 = <code>category-header</code> 组件 + 可展开的账户列表（手风琴交互）。</li>
+            <li>大类 header 显示：图标（按色调着色）、大类名、最近更新时间、总金额（按大类色显示）、展开箭头。</li>
+            <li>账户卡片（<code>account-card</code>）显示：图标、账户名、金额、备注/「不计入图表」、最近更新。</li>
+          </ul>
+        </li>
+        <li><strong>底部 FAB 簇</strong>（右下绝对定位）：
+          <ul>
+            <li>📊 趋势 → 跳转 <code>chart</code> 分包</li>
+            <li>⚙ 设置 → 跳转 <code>settings</code></li>
+          </ul>
+        </li>
+        <li><strong>空态</strong>：无账户时，居中显示钱包图标 + 「还没有账户」+ 引导按钮「添加账户」。</li>
+      </ol>
+      <h3>3.2 交互细节</h3>
+      <ul>
+        <li>眼睛点击：切换金额隐藏（全局态），所有金额变为 <code>¥****</code>。</li>
+        <li>大类点击：仅切换展开/收起，<strong>不进入</strong>大类详情（无大类详情页）。</li>
+        <li>账户卡片点击：进入账户详情页。</li>
+        <li>展开状态写入 Storage，下次进入恢复。</li>
+        <li>分包预加载：进入首页后预加载 chart 分包，让趋势页秒开。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- =================== 页面 2：添加 / 编辑账户 =================== -->
+<section>
+  <h2>四、页面 2 · 添加 / 编辑账户</h2>
+  <div class="phone-row">
+    <div class="phone"><div class="phone-screen">
+      <div class="status-bar"><span>9:41</span><span></span></div>
+      <div class="nav-title">添加账户</div>
+      <div class="hint">选择账户类型</div>
+
+      <div class="row-line">
+        <div class="cat-icon tint-liquid">💰</div>
+        <div class="grow">
+          <div style="font-size:13px;">流动资金</div>
+          <div class="desc">现金 / 储蓄 / 货币基金等</div>
+        </div>
+        <div class="chev">▾</div>
+      </div>
+      <!-- 子类展开 -->
+      <div class="row-line" style="padding-left:32px; background:#111;">
+        <div class="ic-sm" style="width:22px;height:22px;background:rgba(255,255,255,0.06);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;">💵</div>
+        <div class="grow" style="font-size:12px;">现金</div>
+        <span class="chev">›</span>
+      </div>
+      <div class="row-line" style="padding-left:32px; background:#111;">
+        <div class="ic-sm" style="width:22px;height:22px;background:rgba(255,255,255,0.06);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;">支</div>
+        <div class="grow" style="font-size:12px;">支付宝</div>
+        <span class="chev">›</span>
+      </div>
+      <div class="row-line" style="padding-left:32px; background:#111;">
+        <div class="ic-sm" style="width:22px;height:22px;background:rgba(255,255,255,0.06);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;">🏦</div>
+        <div class="grow" style="font-size:12px;">银行卡</div>
+        <span class="chev">›</span>
+      </div>
+      <div class="row-line" style="padding-left:32px; background:#111;">
+        <div class="ic-sm" style="width:22px;height:22px;background:rgba(255,255,255,0.06);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;">📁</div>
+        <div class="grow" style="font-size:12px;">其他（自定义）</div>
+        <span class="chev">›</span>
+      </div>
+
+      <div class="row-line">
+        <div class="cat-icon tint-invest">📈</div>
+        <div class="grow">
+          <div style="font-size:13px;">投资</div>
+          <div class="desc">基金 / 股票 / 其他投资</div>
+        </div>
+        <div class="chev">›</div>
+      </div>
+      <div class="row-line">
+        <div class="cat-icon tint-fixed">🏠</div>
+        <div class="grow">
+          <div style="font-size:13px;">固定资产</div>
+          <div class="desc">房产 / 车辆等长期资产</div>
+        </div>
+        <div class="chev">›</div>
+      </div>
+      <div class="row-line">
+        <div class="cat-icon tint-debt">💳</div>
+        <div class="grow">
+          <div style="font-size:13px;">负债</div>
+          <div class="desc">贷款 / 信用卡 / 借款</div>
+        </div>
+        <div class="chev">›</div>
+      </div>
+    </div></div>
+
+    <div class="phone"><div class="phone-screen">
+      <div class="status-bar"><span>9:41</span><span></span></div>
+      <div class="nav-title">添加账户</div>
+
+      <div class="row-line" style="border-bottom:1px solid rgba(255,255,255,0.1);">
+        <div class="cat-icon tint-liquid">🏦</div>
+        <div class="grow" style="font-size:13px;">银行卡</div>
+        <span style="color:#0a84ff;font-size:12px;">更换</span>
+      </div>
+
+      <div class="form-field">
+        <div class="lbl">账户名称</div>
+        <div class="input">储蓄 1</div>
+        <div class="desc" style="margin-top:4px; color:#8e8e93; font-size:10px;">建议用中性名，不要写真实银行/卡号</div>
+      </div>
+      <div class="form-field">
+        <div class="lbl">初始余额（元）</div>
+        <div class="input">22000</div>
+      </div>
+      <div class="switch-row">
+        <span style="font-size:13px;">计入图表</span>
+        <div class="switch"></div>
+      </div>
+      <div class="form-field">
+        <div class="lbl">备注</div>
+        <div class="input" style="min-height:56px;">招商银行储蓄卡</div>
+      </div>
+
+      <div class="btn-primary">添加账户</div>
+    </div></div>
+
+    <div class="desc-block">
+      <h3>4.1 三步流程</h3>
+      <ol>
+        <li><strong>Step 1：选大类</strong>——5 个大类竖向列表，点击行展开/收起当前大类的子类（同页内展开，类似手风琴）。</li>
+        <li><strong>Step 2：选子类</strong>——子类显示在大类下方缩进，选择 custom 类型（如「其他」）会弹出 <code>wx.showModal</code> 输入自定义名称。</li>
+        <li><strong>Step 3：填表单</strong>（<code>step=3</code>）——切到表单视图，包含：
+          <ul>
+            <li>账户名称（默认占位：子类名；建议输入中性名）</li>
+            <li>初始余额（仅新增显示，编辑模式隐藏）</li>
+            <li>计入图表开关（默认开）</li>
+            <li>备注（多行 textarea，maxlength=100）</li>
+            <li>提交按钮（白底黑字大按钮）</li>
+          </ul>
+        </li>
+      </ol>
+      <h3>4.2 编辑模式</h3>
+      <p>URL 带 <code>editId</code> 时直接进入 Step 3，并通过 <code>loadEdit</code> 拉取账户预填表单，标题改为「编辑账户」，按钮变为「保存修改」。</p>
+      <h3>4.3 子类配置（来自 categories.js）</h3>
+      <ul>
+        <li>流动资金：现金 / 支付宝 / 微信 / 银行卡 / 其他</li>
+        <li>投资：基金 / 股票 / 其他</li>
+        <li>固定资产：房产 / 汽车 / 其他</li>
+        <li>应收款：应收款（自定义）</li>
+        <li>负债：负债（自定义）</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- =================== 页面 3：账户详情 =================== -->
+<section>
+  <h2>五、页面 3 · 账户详情</h2>
+  <div class="phone-row">
+    <div class="phone"><div class="phone-screen">
+      <div class="status-bar"><span>9:41</span><span></span></div>
+      <div class="nav-title">储蓄 1</div>
+      <div class="ad-head">
+        <div class="ad-head-row">
+          <div class="icon">🏦</div>
+          <div class="ad-actions">
+            <div class="ad-act">✎</div>
+            <div class="ad-act">⋯</div>
+          </div>
+        </div>
+        <div class="ad-name">储蓄 1</div>
+        <div class="ad-bal">¥ 22,000.00</div>
+      </div>
+
+      <div class="ops-row">
+        <div class="ops-btn ops-dark">＋／－ 增减金额</div>
+        <div class="ops-btn ops-ghost">≡ 修改余额</div>
+      </div>
+
+      <div class="tx-title">变动记录（左滑删除）</div>
+      <div class="tx-item">
+        <div class="tx-l"><span class="a">工资入账</span><span class="b">2026-05-15 14:20</span></div>
+        <div class="tx-r"><div class="pos">+¥ 8,000</div><div class="after">余额 ¥ 22,000</div></div>
+      </div>
+      <div class="tx-item">
+        <div class="tx-l"><span class="a">修改余额</span><span class="b">2026-04-30 10:05</span></div>
+        <div class="tx-r"><div class="pos">¥ 14,000</div><div class="after">余额 ¥ 14,000</div></div>
+      </div>
+      <div class="tx-item" style="position:relative; overflow:hidden;">
+        <div style="position:absolute; right:0; top:0; bottom:0; width:80px; background:#F87171; display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px;">删除</div>
+        <div style="background:#000; padding-right:0; transform:translateX(-80px); flex:1; display:flex; justify-content:space-between;">
+          <div class="tx-l"><span class="a">买基金</span><span class="b">2026-04-12</span></div>
+          <div class="tx-r"><div class="neg">-¥ 3,000</div><div class="after">余额 ¥ 6,000</div></div>
+        </div>
+      </div>
+    </div></div>
+
+    <div class="desc-block">
+      <h3>5.1 头部信息</h3>
+      <ul>
+        <li>大图标（按子类图标渲染）+ 右上角操作（编辑 ✎ / 更多 ⋯）。</li>
+        <li>账户名（中等字号）。</li>
+        <li>当前余额（大字号，按大类色显示：负债显示红色，其他显示对应大类色）。</li>
+      </ul>
+      <h3>5.2 操作按钮</h3>
+      <ul>
+        <li><strong>＋／－ 增减金额</strong>（白底黑字主按钮）→ 打开 amount-input 抽屉（mode=delta）。</li>
+        <li><strong>≡ 修改余额</strong>（半透明按钮）→ 打开 amount-input 抽屉（mode=set）。</li>
+      </ul>
+      <h3>5.3 变动记录列表</h3>
+      <ul>
+        <li>每行：备注（默认按变动类型）/ 时间 / 金额（绿/红：+ 为绿，− 为红） / 变动后余额。</li>
+        <li><strong>左滑显示删除按钮</strong>（120rpx 宽红色按钮）。同一时刻只允许一条展开，已展开时 tap 用于关闭，不会进入详情。</li>
+        <li>未展开时 tap 行 → 跳转「变动详情」页。</li>
+        <li>删除变动时使用 <code>wx.showModal</code> 二次确认，账户余额按本次变动金额反向回退。</li>
+      </ul>
+      <h3>5.4 更多操作（⋯ 按钮）</h3>
+      <p>调用 <code>wx.showActionSheet</code> 弹出「删除账户」红色项，二次确认后软删除——账户从首页隐藏，历史记录保留。</p>
+      <h3>5.5 编辑按钮（✎）</h3>
+      <p>跳转 <code>add-account?editId=XXX</code> 进入编辑模式。</p>
+    </div>
+  </div>
+</section>
+
+<!-- =================== 金额输入组件 =================== -->
+<section>
+  <h2>六、共享组件 · 金额输入抽屉（amount-input）</h2>
+  <div class="phone-row">
+    <div class="phone"><div class="phone-screen" style="background:#000;">
+      <div style="background:rgba(0,0,0,0.5); height:230px;"></div>
+      <div class="ai-sheet">
+        <div class="ai-head">
+          <span class="ai-cancel">取消</span>
+          <span style="font-size:13px;">增减金额</span>
+          <span class="ai-confirm">完成</span>
+        </div>
+        <div class="ai-acc">
+          <div class="ic-sm" style="width:24px;height:24px;background:rgba(255,255,255,0.08);border-radius:6px;display:flex;align-items:center;justify-content:center;">🏦</div>
+          <span style="font-size:12px;">储蓄 1</span>
+        </div>
+        <div class="ai-amount">¥ +800.00</div>
+        <div class="ai-sign-tabs">
+          <div class="ai-sign pos">＋</div>
+          <div class="ai-sign">−</div>
+        </div>
+        <div style="font-size:10px; color:#8e8e93;">当前余额：¥22,000.00</div>
+        <input style="display:block; width:100%; margin-top:8px; background:rgba(255,255,255,0.05); border:none; padding:8px; border-radius:8px; color:#fff; font-size:12px;" placeholder="备注..." />
+        <div class="ai-keys">
+          <div class="ai-key">1</div><div class="ai-key">2</div><div class="ai-key">3</div>
+          <div class="ai-key">4</div><div class="ai-key">5</div><div class="ai-key">6</div>
+          <div class="ai-key">7</div><div class="ai-key">8</div><div class="ai-key">9</div>
+          <div class="ai-key">.</div><div class="ai-key">0</div><div class="ai-key">⌫</div>
+        </div>
+      </div>
+    </div></div>
+
+    <div class="desc-block">
+      <h3>组件特性</h3>
+      <ul>
+        <li><strong>底部抽屉</strong>：覆盖蒙层 + 上方圆角面板，背景点击关闭。</li>
+        <li><strong>两种模式</strong>：
+          <ul>
+            <li><code>mode=delta</code>：增减金额，显示 +/− 切换 Tab，金额带正负号显示。</li>
+            <li><code>mode=set</code>：修改余额（绝对值），无 +/− Tab。</li>
+          </ul>
+        </li>
+        <li><strong>顶部</strong>：「取消」 / 标题 / 「完成」三段式。</li>
+        <li><strong>账户行</strong>：再次确认正在操作的账户。</li>
+        <li><strong>金额展示</strong>：大字号 <code>¥</code> + 数字（实时反映键盘输入）。</li>
+        <li><strong>当前余额提示</strong>：显示当前账户余额，便于参考。</li>
+        <li><strong>备注输入</strong>：单行 input（maxlength=40）。</li>
+        <li><strong>自定义数字键盘</strong>：3×4 网格，含小数点和退格。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- =================== 页面 4：变动详情 =================== -->
+<section>
+  <h2>七、页面 4 · 变动详情</h2>
+  <div class="phone-row">
+    <div class="phone"><div class="phone-screen">
+      <div class="status-bar"><span>9:41</span><span></span></div>
+      <div class="td-close">✕</div>
+      <div class="td-head">
+        <div class="td-icon">🏦</div>
+        <div class="td-name">储蓄 1</div>
+        <div class="td-type">增减金额</div>
+      </div>
+      <div class="td-delta">+¥ 8,000.00</div>
+      <div class="td-after">变动后余额 ¥ 22,000.00</div>
+      <div class="td-info">
+        <div class="row"><span class="lbl">备注</span><span>工资入账</span></div>
+        <div class="row" style="border-bottom:none;"><span class="lbl">时间</span><span>2026-05-15 14:20:33</span></div>
+      </div>
+    </div></div>
+
+    <div class="desc-block">
+      <h3>用途</h3>
+      <p>查看单条变动记录的完整信息（只读视图）。</p>
+      <h3>布局</h3>
+      <ol>
+        <li>右上角关闭按钮 ✕（<code>wx.navigateBack</code>）。</li>
+        <li>账户图标 + 账户名 + 变动类型（「增减金额」/「修改余额」）。</li>
+        <li>变动金额大字号居中（按正负显示绿/红）。</li>
+        <li>变动后余额（次级文本）。</li>
+        <li>信息卡：备注、时间两行。</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- =================== 页面 5：图表 =================== -->
+<section>
+  <h2>八、页面 5 · 趋势图表（chart-pkg 分包）</h2>
+  <div class="phone-row">
+    <div class="phone"><div class="phone-screen">
+      <div class="status-bar"><span>9:41</span><span></span></div>
+      <div class="nav-title">趋势</div>
+      <div class="chart-summary">
+        <div class="r">2025-05-21 ~ 2026-05-21</div>
+        <div class="l">净资产：¥128,460 → ¥168,200，上涨 ¥39,740（+30.9%）</div>
+        <div class="l">负债：¥4,200 → ¥1,740，下降 ¥2,460（-58.6%）</div>
+      </div>
+      <div class="tabs-row">
+        <div class="tab active">净资产 / 负债</div>
+        <div class="tab">流动 / 投资</div>
+      </div>
+      <div class="chart-area">
+        <div class="chart-line"></div>
+        <div class="chart-line2"></div>
+      </div>
+      <div class="ranges-row">
+        <div class="range">30天</div>
+        <div class="range">6月</div>
+        <div class="range active">1年</div>
+        <div class="range">年初至今</div>
+        <div class="range">自定义</div>
+      </div>
+    </div></div>
+
+    <div class="desc-block">
+      <h3>8.1 布局结构</h3>
+      <ol>
+        <li><strong>文字摘要</strong>：时间范围 + 当前 Tab 对应的两个指标变化（起 / 止 / 涨跌额 / 涨跌幅）。</li>
+        <li><strong>Tab 切换</strong>：
+          <ul>
+            <li>净资产 / 负债（双线：白色净资产 + 红色负债，净资产带渐变填充）</li>
+            <li>流动 / 投资（双线：绿色流动资金 + 紫色投资）</li>
+          </ul>
+        </li>
+        <li><strong>图表区</strong>：基于 ECharts 的 <code>ec-canvas</code>，懒加载初始化。
+          <ul>
+            <li>X 轴：时间标签，Y 轴：金额（≥1w 时显示「¥X.Xw」）</li>
+            <li>Tooltip：黑底白字，显示对应日期各条曲线金额。</li>
+            <li>隐藏金额时 Y 轴和 Tooltip 显示 *** / ****。</li>
+          </ul>
+        </li>
+        <li><strong>时间范围分段控件</strong>（Segmented）：30天 / 6月 / 1年 / 年初至今 / 自定义。</li>
+        <li><strong>自定义日期选择器</strong>（仅当选「自定义」时显示）：两个 date picker——「起」「止」。</li>
+      </ol>
+      <h3>8.2 空态</h3>
+      <p>当无任何账户数据时显示 📈 + 「暂无数据，先在首页添加账户并记录余额」，画布透明化。</p>
+      <h3>8.3 性能优化</h3>
+      <ul>
+        <li>分包：避免主包体积；首页 <code>preloadRule</code> 预加载。</li>
+        <li><code>lazyLoad: true</code>：等 onReady 后再 init，避免阻塞初次渲染。</li>
+        <li>切 Tab 仅重渲图表，不重拉数据（数据按时间范围拉取后缓存在 <code>_seriesData</code>）。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- =================== 页面 6：设置 =================== -->
+<section>
+  <h2>九、页面 6 · 设置</h2>
+  <div class="phone-row">
+    <div class="phone"><div class="phone-screen">
+      <div class="status-bar"><span>9:41</span><span></span></div>
+      <div class="nav-title">设置</div>
+      <div class="hero">
+        <div class="hero-icon">💼</div>
+        <div class="hero-title">净值本</div>
+        <div class="hero-sub">个人净资产快照工具 · V1.1</div>
+      </div>
+      <div class="sec-card" style="margin-top:12px;">
+        <div class="set-row">
+          <div class="set-icon">✎</div>
+          <div class="set-main"><div class="t">反馈</div><div class="s">欢迎提建议！开发者会尽力满足你的需求！</div></div>
+          <div class="set-arrow">›</div>
+        </div>
+        <div class="set-row" style="border-top:1px solid rgba(255,255,255,0.05);">
+          <div class="set-icon">ⓘ</div>
+          <div class="set-main"><div class="t">关于小程序</div><div class="s">数据存储 / 隐私 / 使用提示</div></div>
+          <div class="set-arrow">›</div>
+        </div>
+      </div>
+      <div style="text-align:center; padding:30px 0; color:#8e8e93; font-size:11px;">V1.1</div>
+    </div></div>
+
+    <div class="desc-block">
+      <h3>结构</h3>
+      <ol>
+        <li><strong>Hero 区</strong>：Logo + 应用名 + 版本号。</li>
+        <li><strong>功能卡</strong>（两行）：
+          <ul>
+            <li><strong>反馈</strong>：<code>&lt;button open-type="feedback"&gt;</code>，调起微信官方反馈通道。</li>
+            <li><strong>关于小程序</strong>：跳转到「关于」页。</li>
+          </ul>
+        </li>
+        <li><strong>底部版本</strong>：再次显示版本号，给出归属感。</li>
+      </ol>
+      <p style="margin-top:8px;">注：当前版本设置页非常精简，没有账号、主题、数据导出等开关——符合「轻量工具」的产品定位。</p>
+    </div>
+  </div>
+</section>
+
+<!-- =================== 页面 7：关于 =================== -->
+<section>
+  <h2>十、页面 7 · 关于小程序</h2>
+  <div class="phone-row">
+    <div class="phone"><div class="phone-screen">
+      <div class="status-bar"><span>9:41</span><span></span></div>
+      <div class="nav-title">关于</div>
+      <div class="hero">
+        <div class="hero-icon">💼</div>
+        <div class="hero-title">净值本</div>
+        <div class="hero-sub">个人净资产快照工具 · V1.1</div>
+      </div>
+      <div class="sec-title">关于这个小程序</div>
+      <div class="sec-card">
+        <div class="qa">
+          <div class="q">这是什么应用？</div>
+          <div class="a">面向个人的「净资产快照」工具，以低成本记录账户余额，自动汇总并展示趋势。</div>
+        </div>
+      </div>
+      <div class="sec-title">数据与隐私</div>
+      <div class="sec-card">
+        <div class="qa">
+          <div class="q">数据存储在哪里？</div>
+          <div class="a">微信云开发 CloudBase，按 openid 隔离，仅本人可读写。</div>
+        </div>
+        <div class="qa">
+          <div class="q">为什么不需要登录？</div>
+          <div class="a">使用 openid 机制免登录，符合平台合规要求。</div>
+        </div>
+        <div class="qa">
+          <div class="q">会读取银行/支付宝余额吗？</div>
+          <div class="a">不会，所有金额都是手动录入。</div>
+        </div>
+      </div>
+      <div class="sec-title">使用提示</div>
+      <div class="sec-card">
+        <div class="qa">
+          <div class="q">隐藏金额怎么用？</div>
+          <div class="a">点首页眼睛图标，所有金额变为 ****。</div>
+        </div>
+      </div>
+      <div style="text-align:center; padding:18px 0; color:#8e8e93; font-size:11px;">数据归你所有</div>
+    </div></div>
+
+    <div class="desc-block">
+      <h3>结构</h3>
+      <ol>
+        <li><strong>Hero 区</strong>：Logo + 应用名 + 版本号。</li>
+        <li><strong>分组 Q&amp;A</strong>（数据驱动，由 <code>sections</code> 渲染）：
+          <ul>
+            <li>关于这个小程序（1 条）</li>
+            <li>数据与隐私（5 条：存储位置、免登录、不读金融账户、开发者后台权限、为何不加密）</li>
+            <li>使用提示（2 条：隐藏金额、左滑删除）</li>
+          </ul>
+        </li>
+        <li><strong>底部</strong>：「数据归你所有」slogan。</li>
+      </ol>
+      <h3>设计动机</h3>
+      <p>关于页定位是「隐私自证」与「使用引导」混合体。直接以问答形式回答用户最关心的隐私疑问，并坦白说明数据库后台权限边界——这是产品对透明度的承诺。</p>
+    </div>
+  </div>
+</section>
+
+<!-- =================== 路由 =================== -->
+<section>
+  <h2>十一、页面跳转关系图</h2>
+  <div class="info-card">
+    <pre style="background:#f7f7f7; padding:14px; border-radius:8px; font-size:13px; line-height:1.8; white-space:pre-wrap;">
+[首页 index]
+  ├─ 顶部 ＋ ───────→ [add-account] (新增)
+  ├─ 账户卡片 ─────→ [account-detail]
+  ├─ FAB 📊 ──────→ [chart] (分包)
+  └─ FAB ⚙ ──────→ [settings]
+                       ├─ 反馈 (open-type=feedback)
+                       └─ 关于 ──→ [about]
+
+[account-detail]
+  ├─ ✎ 编辑 ──────→ [add-account?editId=XX] (编辑模式)
+  ├─ 增减/修改 ────→ amount-input 抽屉 (组件，非页面)
+  ├─ 变动行点击 ──→ [transaction-detail]
+  └─ ⋯ → 删除账户 → 软删除后 navigateBack
+    </pre>
+  </div>
+</section>
+
+<!-- =================== 全局态 =================== -->
+<section>
+  <h2>十二、全局状态 &amp; 共享逻辑</h2>
+  <table>
+    <tr><th>状态</th><th>位置</th><th>说明</th></tr>
+    <tr><td><code>hideAmount</code></td><td>app.globalData</td><td>金额隐藏全局开关，首页眼睛切换；图表 / 详情各页 onShow 时读取</td></tr>
+    <tr><td>展开的大类</td><td>Storage <code>idx_expanded_categories</code></td><td>持久化首页手风琴状态</td></tr>
+    <tr><td>账户列表</td><td>云数据库</td><td>通过 <code>services/account.js</code> 读写，含软删除</td></tr>
+    <tr><td>变动记录</td><td>云数据库</td><td>通过 <code>services/transaction.js</code>，每次余额变更生成 1 条</td></tr>
+    <tr><td>图表数据</td><td>云函数</td><td>通过 <code>services/chart.js</code> 按时间范围聚合返回 series + summary</td></tr>
+  </table>
+</section>
+
+<footer>
+  净值本 UI 设计文档 · 根据当前代码（V1.1）整理 · 生成于 2026-05-21
+</footer>
+
+</div>
+</body>
+</html>

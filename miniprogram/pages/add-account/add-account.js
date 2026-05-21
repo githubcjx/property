@@ -1,0 +1,165 @@
+const accountSvc = require('../../services/account.js')
+const { CATEGORIES, getSubType } = require('../../utils/categories.js')
+const { yuanToFen, fenToYuan } = require('../../utils/format.js')
+
+// 三步流程：
+//   step=1 选大类 → step=2 选子类（同页内展开） → step=3 填写表单
+// 编辑模式：URL 带 editId 时进入第 3 步，预填表单
+Page({
+  data: {
+    step: 1,
+    categories: CATEGORIES,
+    expandedCategoryId: '',
+    selectedCategoryId: '',
+    selectedSubType: null,
+    customSubName: '',
+
+    form: {
+      name: '',
+      balanceYuan: '',
+      includeInChart: true,
+      note: '',
+    },
+
+    editId: '',
+    submitting: false,
+  },
+
+  onLoad(query) {
+    if (query.editId) {
+      this.loadEdit(query.editId)
+    }
+  },
+
+  async loadEdit(id) {
+    try {
+      const acc = await accountSvc.getAccount(id)
+      const sub = getSubType(acc.categoryId, acc.subType)
+      this.setData({
+        editId: id,
+        step: 3,
+        selectedCategoryId: acc.categoryId,
+        selectedSubType: sub || { id: acc.subType, name: acc.name, icon: acc.icon, custom: true },
+        customSubName: sub ? '' : acc.name,
+        form: {
+          name: acc.name,
+          balanceYuan: String(fenToYuan(acc.balance || 0)),
+          includeInChart: acc.includeInChart !== false,
+          note: acc.note || '',
+        },
+      })
+      wx.setNavigationBarTitle({ title: '编辑账户' })
+    } catch (err) {
+      wx.showToast({ icon: 'none', title: '加载失败' })
+    }
+  },
+
+  onToggleCategory(e) {
+    const id = e.currentTarget.dataset.id
+    this.setData({
+      expandedCategoryId: this.data.expandedCategoryId === id ? '' : id,
+    })
+  },
+
+  onSelectSub(e) {
+    const { categoryId, subId } = e.currentTarget.dataset
+    const sub = getSubType(categoryId, subId)
+    if (!sub) return
+
+    if (sub.custom) {
+      // 弹出输入框
+      wx.showModal({
+        title: '自定义名称',
+        editable: true,
+        placeholderText: '如「招商储蓄卡」',
+        success: (res) => {
+          if (res.confirm) {
+            const name = (res.content || '').trim()
+            this.setData({
+              selectedCategoryId: categoryId,
+              selectedSubType: sub,
+              customSubName: name,
+              step: 3,
+              form: Object.assign({}, this.data.form, { name }),
+            })
+          }
+        },
+      })
+      return
+    }
+
+    this.setData({
+      selectedCategoryId: categoryId,
+      selectedSubType: sub,
+      customSubName: '',
+      step: 3,
+      form: Object.assign({}, this.data.form, { name: '' }),
+    })
+  },
+
+  onBackToList() {
+    if (this.data.editId) {
+      wx.navigateBack()
+      return
+    }
+    this.setData({ step: 1, selectedSubType: null, selectedCategoryId: '' })
+  },
+
+  onNameInput(e) {
+    this.setData({ 'form.name': e.detail.value })
+  },
+  onBalanceInput(e) {
+    this.setData({ 'form.balanceYuan': e.detail.value })
+  },
+  onChartSwitch(e) {
+    this.setData({ 'form.includeInChart': e.detail.value })
+  },
+  onNoteInput(e) {
+    this.setData({ 'form.note': e.detail.value })
+  },
+
+  async onSubmit() {
+    if (this.data.submitting) return
+    const { selectedCategoryId, selectedSubType, customSubName, form, editId } = this.data
+    const finalName = (form.name && form.name.trim()) || customSubName || (selectedSubType && selectedSubType.name) || ''
+    if (!finalName) {
+      wx.showToast({ icon: 'none', title: '请填写账户名称' })
+      return
+    }
+
+    const balanceFen = yuanToFen(form.balanceYuan || 0)
+
+    this.setData({ submitting: true })
+    wx.showLoading({ title: editId ? '保存中' : '创建中', mask: true })
+    try {
+      if (editId) {
+        await accountSvc.updateAccount(editId, {
+          name: finalName,
+          includeInChart: form.includeInChart,
+          note: form.note || '',
+          icon: selectedSubType ? selectedSubType.icon : 'folder',
+        })
+      } else {
+        await accountSvc.addAccount({
+          categoryId: selectedCategoryId,
+          subType: selectedSubType ? selectedSubType.id : 'other',
+          customName: customSubName,
+          name: finalName,
+          balance: balanceFen,
+          includeInChart: form.includeInChart,
+          note: form.note || '',
+          icon: selectedSubType ? selectedSubType.icon : 'folder',
+        })
+      }
+      wx.hideLoading()
+      wx.showToast({ icon: 'success', title: editId ? '已保存' : '已添加' })
+      setTimeout(() => wx.navigateBack(), 400)
+    } catch (err) {
+      wx.hideLoading()
+      console.error(err)
+      wx.showToast({ icon: 'none', title: '操作失败：' + (err.errMsg || err.message || '') })
+    } finally {
+      this.setData({ submitting: false })
+    }
+  },
+})

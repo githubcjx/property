@@ -1,0 +1,177 @@
+.page {
+  min-height: 100vh;
+  background-color: #000000;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  padding: 0 32rpx 32rpx;
+  background-color: #000000;
+}
+.topbar-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  height: 88rpx;
+}
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  font-size: 28rpx;
+  color: rgba(235, 235, 245, 0.7);
+}
+.topbar-right {
+  display: flex;
+  flex-direction: row;
+  gap: 16rpx;
+}
+.icon-btn {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  color: #FFFFFF;
+}
+.net-amount {
+  margin-top: 16rpx;
+  font-size: 80rpx;
+  font-weight: 600;
+  color: #FFFFFF;
+  letter-spacing: -1rpx;
+  font-variant-numeric: tabular-nums;
+}
+
+.scroll {
+  flex: 1;
+  padding: 0 32rpx 64rpx;
+  box-sizing: border-box;
+}
+
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: 32rpx;
+  padding-top: 16rpx;
+}
+
+.group {
+  background-color: #1C1C1E;
+  border-radius: 32rpx;
+  padding: 16rpx 20rpx 20rpx;
+}
+.acc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.22s ease,
+              margin-top 0.22s ease;
+  margin-top: 0;
+}
+.acc-list.expanded {
+  max-height: 6000rpx;
+  opacity: 1;
+  margin-top: 8rpx;
+}
+
+.empty {
+  margin-top: 96rpx;
+  text-align: center;
+  padding: 48rpx 32rpx;
+}
+.empty-icon {
+  display: flex;
+  justify-content: center;
+}
+.empty-emoji {
+  font-size: 96rpx;
+  display: block;
+}
+.empty-title {
+  margin-top: 24rpx;
+  font-size: 32rpx;
+  color: #FFFFFF;
+  font-weight: 500;
+}
+.empty-desc {
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  color: rgba(235, 235, 245, 0.5);
+}
+.empty-btn {
+  margin: 48rpx auto 0;
+  width: 320rpx;
+}
+
+.footer-tip {
+  text-align: center;
+  font-size: 24rpx;
+  color: rgba(235, 235, 245, 0.3);
+  margin-top: 32rpx;
+}
+
+.about-entry {
+  text-align: center;
+  font-size: 26rpx;
+  color: rgba(235, 235, 245, 0.5);
+  padding: 40rpx 0 24rpx;
+  margin-top: 16rpx;
+}
+
+/* topbar 内的小按钮（眼睛 / 加号） */
+.topbar-eye {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.topbar-add {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 右下角悬浮按钮组 */
+.fab-cluster {
+  position: fixed;
+  right: 32rpx;
+  bottom: calc(48rpx + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: row;
+  gap: 16rpx;
+  z-index: 100;
+}
+.fab {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background-color: rgba(28, 28, 30, 0.92);
+  backdrop-filter: blur(20px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.4);
+  border: 1rpx solid rgba(255, 255, 255, 0.06);
+}
+.fab-hover {
+  background-color: rgba(60, 60, 62, 0.95);
+  transform: scale(0.95);
+}
+.fab .ic { width: 44rpx; height: 44rpx; }

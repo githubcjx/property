@@ -1,0 +1,26 @@
+<view class="page" wx:if="{{tx}}">
+  <view class="close tap" bindtap="onClose"><view class="ic ic-sm ic-close"></view></view>
+
+  <view class="head">
+    <view class="head-icon">
+      <view class="ic ic-{{iconKey}}" wx:if="{{iconKey}}"></view>
+      <text wx:else>{{accountIcon}}</text>
+    </view>
+    <view class="head-name">{{accountName}}</view>
+    <view class="head-type">{{typeText}}</view>
+  </view>
+
+  <view class="delta {{deltaCls}}">{{deltaText}}</view>
+  <view class="after">变动后余额 {{afterText}}</view>
+
+  <view class="info">
+    <view class="info-row">
+      <text class="info-label">备注</text>
+      <text class="info-value">{{tx.note || typeText}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">时间</text>
+      <text class="info-value">{{timeText}}</text>
+    </view>
+  </view>
+</view>
