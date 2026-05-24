@@ -32,7 +32,6 @@
   display: flex; align-items: center; justify-content: center;
 }
 .nav-btn-hover { background: var(--glass-3); transform: scale(0.95); }
-.nav-spacer { width: 56rpx; }
 .nav-title { font-size: 26rpx; color: var(--ink-80); font-weight: 500; }
 
 .hero {
@@ -89,7 +88,7 @@
 }
 
 .info {
-  margin: 56rpx 4rpx 0;
+  margin: 48rpx 4rpx 0;
   border-radius: 28rpx;
   overflow: hidden;
   position: relative;
@@ -105,15 +104,170 @@
   gap: 24rpx;
 }
 .info-row.last { border-bottom: none; }
-.info-label {
-  color: var(--ink-40);
-  font-size: 24rpx;
-  flex-shrink: 0;
-}
+.info-label { color: var(--ink-40); font-size: 24rpx; flex-shrink: 0; }
 .info-value {
   color: var(--ink-100);
   font-size: 26rpx;
   text-align: right;
   flex: 1;
   word-break: break-all;
+}
+
+/* ============ 编辑 CTA ============ */
+.edit-cta {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  margin: 32rpx 4rpx 0;
+  padding: 24rpx 0;
+  border-radius: 28rpx;
+  color: #0a0d12;
+  font-size: 26rpx;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+}
+.edit-cta-hover { transform: scale(0.97); filter: brightness(1.05); }
+
+/* ============ 编辑抽屉 ============ */
+.edit-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: rgba(5, 6, 10, 0.6);
+  -webkit-backdrop-filter: blur(14rpx) saturate(120%);
+  backdrop-filter: blur(14rpx) saturate(120%);
+}
+.fade-in  { animation: fade-in  0.3s var(--ease-soft) forwards; }
+.fade-out { animation: fade-out 0.24s var(--ease-soft) forwards; }
+
+.edit-sheet {
+  background: linear-gradient(180deg, rgba(15, 17, 23, 0.88), rgba(8, 9, 12, 0.96));
+  border-top-left-radius: 40rpx;
+  border-top-right-radius: 40rpx;
+  border-top: 1rpx solid var(--hairline-hi);
+  padding: 16rpx 28rpx 36rpx;
+  padding-bottom: calc(36rpx + env(safe-area-inset-bottom));
+  box-shadow: 0 -40rpx 80rpx rgba(0,0,0,0.5), inset 0 2rpx 0 rgba(255,255,255,0.1);
+}
+.slide-in  { animation: drawer-up   0.55s var(--ease-spring) forwards; }
+.slide-out { animation: drawer-down 0.26s var(--ease-organic) forwards; }
+
+.edit-handle {
+  width: 56rpx; height: 6rpx;
+  background: rgba(255,255,255,0.22);
+  border-radius: 4rpx;
+  margin: 0 auto 18rpx;
+}
+.edit-head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4rpx 18rpx;
+}
+.edit-title { font-size: 28rpx; color: var(--ink-100); font-weight: 500; }
+.edit-cancel { font-size: 26rpx; color: var(--ink-60); padding: 8rpx 4rpx; }
+.edit-confirm { font-size: 26rpx; font-weight: 600; padding: 8rpx 4rpx; }
+
+.edit-label {
+  display: block;
+  font-size: 18rpx;
+  color: var(--ink-40);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 0 4rpx 10rpx;
+  font-weight: 500;
+  margin-top: 6rpx;
+}
+
+.edit-amount-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 22rpx 26rpx;
+  border-radius: 22rpx;
+  margin-bottom: 14rpx;
+}
+.edit-amount-cny {
+  font-size: 32rpx;
+  color: var(--ink-40);
+  font-variant-numeric: tabular-nums;
+}
+.edit-amount-input {
+  flex: 1;
+  font-size: 36rpx;
+  font-weight: 300;
+  color: var(--ink-100);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -1rpx;
+}
+.edit-ph { color: var(--ink-40); }
+
+.edit-sign-tabs {
+  display: flex;
+  flex-direction: row;
+  gap: 12rpx;
+  margin-bottom: 20rpx;
+}
+.edit-sign-tab {
+  flex: 1;
+  height: 76rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  font-size: 26rpx;
+  font-weight: 500;
+  color: var(--ink-60);
+  background: var(--glass-1);
+  border: 1rpx solid var(--hairline);
+  border-radius: 20rpx;
+  transition: all 0.3s var(--ease-spring);
+}
+.edit-sign-tab.active.pos {
+  background: rgba(167, 211, 255, 0.18);
+  border-color: rgba(167, 211, 255, 0.55);
+  color: var(--ice-blue);
+  box-shadow: 0 0 28rpx rgba(167, 211, 255, 0.25), inset 0 2rpx 0 rgba(167, 211, 255, 0.3);
+}
+.edit-sign-tab.active.neg {
+  background: rgba(255, 179, 179, 0.16);
+  border-color: rgba(255, 179, 179, 0.5);
+  color: var(--debt);
+  box-shadow: 0 0 28rpx rgba(255, 179, 179, 0.22), inset 0 2rpx 0 rgba(255, 179, 179, 0.3);
+}
+
+.edit-time-row {
+  display: flex;
+  flex-direction: row;
+  gap: 12rpx;
+  margin-bottom: 20rpx;
+}
+.edit-pick {
+  flex: 1;
+  height: 88rpx;
+  padding: 0 20rpx;
+  border-radius: 22rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26rpx;
+  color: var(--ink-100);
+  font-variant-numeric: tabular-nums;
+}
+
+.edit-note-wrap {
+  padding: 20rpx 26rpx;
+  border-radius: 22rpx;
+}
+.edit-note-input {
+  width: 100%;
+  font-size: 26rpx;
+  color: var(--ink-100);
 }

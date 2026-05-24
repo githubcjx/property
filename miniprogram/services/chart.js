@@ -112,16 +112,29 @@ function formatLabel(d, granularity) {
 
 // ============== 主聚合逻辑 ==============
 
+// 兼容云开发的多种日期形态：Date / 时间戳 / 字符串 / { $date }
+function toMs(d) {
+  if (!d) return NaN
+  if (d instanceof Date) return d.getTime()
+  if (typeof d === 'number') return d
+  if (typeof d === 'string') return new Date(d).getTime()
+  if (d.$date) return new Date(d.$date).getTime()
+  // 服务端时间对象 fallback
+  const t = new Date(d).getTime()
+  return isNaN(t) ? NaN : t
+}
+
 // 取每个账户在每个节点的余额快照：找 createdAt <= node 的最近一条 transaction.balanceAfter
 function snapshotForAccount(txList, nodeTime) {
   // txList 已按 createdAt 升序
-  let last = 0
+  let last = null
   for (const t of txList) {
-    const ct = new Date(t.createdAt).getTime()
+    const ct = toMs(t.createdAt)
+    if (isNaN(ct)) continue            // 日期解析失败的 tx 直接跳过，不再误判
     if (ct <= nodeTime) last = t.balanceAfter || 0
     else break
   }
-  return last
+  return last   // null 表示该节点之前没有任何快照
 }
 
 async function getChartSeries(rangeKey, opts) {
@@ -158,20 +171,48 @@ async function getChartSeries(rangeKey, opts) {
   const liquid = []
   const investment = []
 
+  const nowMs = Date.now()
   for (const node of nodes) {
     const t = node.getTime()
+    const isCurrent = t >= nowMs - 1000   // "当前/最新节点"判定
     const bucket = { liquid: 0, investment: 0, fixed: 0, receivable: 0, debt: 0 }
+
     for (const a of accounts) {
       if (a.includeInChart === false) continue
+      if (bucket[a.categoryId] === undefined) continue
+
       const txs = txByAcc[a._id] || []
-      const bal = snapshotForAccount(txs, t)
-      if (bucket[a.categoryId] !== undefined) bucket[a.categoryId] += bal
+      let bal = snapshotForAccount(txs, t)
+
+      // 关键防御 1：当前节点直接取账户余额，保证图表最右点和首页一致
+      // 这能修复"已添加但 tx 缺失/解析失败"的账户在最近月份显示为 0 的问题
+      if (isCurrent) {
+        bal = a.balance || 0
+      } else if (bal === null) {
+        bal = 0
+      }
+
+      bucket[a.categoryId] += bal
     }
     const net = bucket.liquid + bucket.investment + bucket.fixed + bucket.receivable - bucket.debt
     netWorth.push(net)
     debt.push(bucket.debt)
     liquid.push(bucket.liquid)
     investment.push(bucket.investment)
+  }
+
+  // 诊断日志：如果用户报告"明明加了负债但图上是 0"，看这里就能定位
+  if (debt.every(v => v === 0)) {
+    const debtAccs = accounts.filter(a => a.categoryId === 'debt')
+    console.warn('[chart] 负债序列全为 0', {
+      负债账户数: debtAccs.length,
+      负债账户详情: debtAccs.map(a => ({
+        name: a.name,
+        balance: a.balance,
+        includeInChart: a.includeInChart,
+        hasTxs: !!(txByAcc[a._id] && txByAcc[a._id].length),
+      })),
+    })
   }
 
   const series = { netWorth, debt, liquid, investment }

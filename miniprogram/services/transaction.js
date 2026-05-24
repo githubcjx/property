@@ -31,8 +31,43 @@ async function deleteTransaction(txId) {
   await cloud.transactions().doc(txId).remove()
 }
 
+// 编辑一条变动记录：可改 amount / note / createdAt
+// 当 amount 变化时：
+//   - 计算 diff = newAmount - oldAmount
+//   - 当前 tx.balanceAfter += diff（仅当前快照）
+//   - 关联账户 account.balance += diff
+// 注意：其它历史 tx 的 balanceAfter 保留为当时快照（与 deleteTransaction 行为一致）
+async function updateTransaction(txId, { amount, note, createdAt } = {}) {
+  const txRes = await cloud.transactions().doc(txId).get()
+  const tx = txRes.data
+  if (!tx) throw new Error('记录不存在')
+
+  const update = {}
+  if (note !== undefined) update.note = note
+  if (createdAt !== undefined) update.createdAt = createdAt
+
+  if (amount !== undefined && Math.round(amount) !== Math.round(tx.amount || 0)) {
+    const newAmount = Math.round(amount)
+    const diff = newAmount - (tx.amount || 0)
+    update.amount = newAmount
+    update.balanceAfter = (tx.balanceAfter || 0) + diff
+
+    const accRes = await cloud.accounts().doc(tx.accountId).get().catch(() => null)
+    if (accRes && accRes.data) {
+      const newAccBal = (accRes.data.balance || 0) + diff
+      await cloud.accounts().doc(tx.accountId).update({
+        data: { balance: newAccBal, updatedAt: cloud.serverDate() },
+      })
+    }
+  }
+
+  if (Object.keys(update).length === 0) return
+  await cloud.transactions().doc(txId).update({ data: update })
+}
+
 module.exports = {
   listByAccount,
   getById,
   deleteTransaction,
+  updateTransaction,
 }

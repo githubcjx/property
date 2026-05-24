@@ -51,9 +51,45 @@ function formatShort(d) {
   return formatYMD(date)
 }
 
+// 相对时间（"瞄一眼就懂"档位）：
+//   < 1 min   → 刚刚更新
+//   < 1 hour  → X 分钟前 更新
+//   同一天     → 今天更新
+//   昨天       → 昨天更新
+//   2–6 天    → X 天前 更新
+//   7–29 天   → X 周前 更新
+//   30–364 天 → X 个月前 更新
+//   ≥ 365 天  → X 年前 更新
+function formatRelative(d) {
+  const date = toDate(d)
+  if (!date || isNaN(date.getTime())) return ''
+  const now = new Date()
+  const diffSec = Math.floor((now.getTime() - date.getTime()) / 1000)
+
+  if (diffSec < 60)   return '刚刚更新'
+  if (diffSec < 3600) return Math.max(1, Math.floor(diffSec / 60)) + ' 分钟前 更新'
+
+  const sameDay = date.toDateString() === now.toDateString()
+  if (sameDay) return '今天更新'
+
+  const yesterday = new Date(now.getTime() - 86400000)
+  if (date.toDateString() === yesterday.toDateString()) return '昨天更新'
+
+  // 按日历日差
+  const a = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+  const b = new Date(now.getFullYear(),  now.getMonth(),  now.getDate())
+  const days = Math.floor((b.getTime() - a.getTime()) / 86400000)
+
+  if (days < 7)   return days + ' 天前 更新'
+  if (days < 30)  return Math.floor(days / 7)  + ' 周前 更新'
+  if (days < 365) return Math.floor(days / 30) + ' 个月前 更新'
+  return Math.floor(days / 365) + ' 年前 更新'
+}
+
 module.exports = {
   toDate,
   formatDateTime,
   formatYMD,
   formatShort,
+  formatRelative,
 }

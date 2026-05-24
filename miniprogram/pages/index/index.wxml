@@ -88,7 +88,11 @@
                 <text class="cat-name">{{item.name}}</text>
                 <text class="cat-tag">{{item.colorClass}}</text>
               </view>
-              <text class="cat-sub">{{item.accounts.length}} 项</text>
+              <view class="cat-sub">
+                <text>{{item.accounts.length}} 项</text>
+                <text wx:if="{{item.lastUpdatedText}}" class="cat-sub-dot">·</text>
+                <text wx:if="{{item.lastUpdatedText}}">{{item.lastUpdatedText}}</text>
+              </view>
             </view>
             <view class="cat-amount cat-{{item.colorClass}}">
               <text class="num">{{hideAmount ? '¥ ••••' : item.totalText}}</text>
@@ -108,7 +112,7 @@
               hover-class="acc-row-hover"
               bindtap="onAccountTap"
             >
-              <view class="acc-icon">
+              <view class="acc-icon cat-{{item.colorClass}}">
                 <view class="ic ic-sm ic-{{acc.icon || 'folder'}}"></view>
               </view>
               <view class="acc-main">

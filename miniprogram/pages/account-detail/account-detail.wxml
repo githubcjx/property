@@ -96,7 +96,8 @@
                 style="transform: translateX({{swipeOpenId === item._id ? '-160rpx' : '0rpx'}});"
                 bindtouchstart="onTxTouchStart"
                 bindtouchmove="onTxTouchMove"
-                bindtouchend="onTxTouchEnd">
+                bindtouchend="onTxTouchEnd"
+                bindtap="onTxTap">
             <view class="tx-icon {{item.positive ? 'pos' : 'neg'}}">
               <text wx:if="{{item.type === 'set'}}">=</text>
               <text wx:elif="{{item.positive}}">↑</text>

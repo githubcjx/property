@@ -9,7 +9,9 @@
       <view class="ic ic-xs ic-back"></view>
     </view>
     <text class="nav-title">变动详情</text>
-    <view class="nav-spacer"></view>
+    <view class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onOpenEdit">
+      <view class="ic ic-xs ic-edit"></view>
+    </view>
   </view>
 
   <view class="hero entry-up">
@@ -21,12 +23,12 @@
   </view>
 
   <view class="hero-amount entry-up d1" style="color: {{positive ? 'var(--ice-blue)' : 'var(--debt)'}}; text-shadow: 0 0 56rpx {{positive ? 'rgba(167, 211, 255, 0.55)' : 'rgba(255, 179, 179, 0.5)'}};">
-    <text class="amt-sign" wx:if="{{deltaSign}}">{{deltaSign}}</text>
+    <text class="amt-sign">{{deltaSign}}</text>
     <text class="amt-prefix">¥</text>
     <text class="amt-int">{{amtInt}}</text>
     <text class="amt-frac">.{{amtFrac}}</text>
   </view>
-  <text class="hero-after entry-up d2">变动后余额 {{afterText}}</text>
+  <text class="hero-after entry-up d2">本次变动后余额 {{afterText}}</text>
 
   <view class="info glass entry-up d3">
     <view class="info-row">
@@ -40,6 +42,78 @@
     <view class="info-row last">
       <text class="info-label">账户</text>
       <text class="info-value">{{categoryName}} · {{accountName}}</text>
+    </view>
+  </view>
+
+  <view class="edit-cta tap entry-up d4"
+        hover-class="edit-cta-hover"
+        bindtap="onOpenEdit"
+        style="background:linear-gradient(135deg,{{categoryColor}},rgba({{categoryRgb}},0.5));box-shadow:0 16rpx 40rpx rgba({{categoryRgb}},0.35),inset 0 2rpx 0 rgba(255,255,255,0.5);">
+    <view class="ic ic-xs ic-edit" style="filter:invert(0.95);"></view>
+    <text>编辑此条记录</text>
+  </view>
+
+  <!-- ============ 编辑抽屉 ============ -->
+  <view wx:if="{{showEdit}}"
+        class="edit-mask {{editClosing ? 'fade-out' : 'fade-in'}}"
+        bindtap="onCloseEdit"
+        catchtouchmove="noop">
+    <view class="edit-sheet glass-2 {{editClosing ? 'slide-out' : 'slide-in'}}" catchtap="noop">
+      <view class="edit-handle"></view>
+
+      <view class="edit-head">
+        <view class="edit-cancel tap" bindtap="onCloseEdit">取消</view>
+        <view class="edit-title">编辑变动记录</view>
+        <view class="edit-confirm tap" bindtap="onEditSubmit"
+              style="color: {{categoryColor}}; text-shadow: 0 0 16rpx rgba({{categoryRgb}}, 0.45);">
+          {{submitting ? '...' : '完成'}}
+        </view>
+      </view>
+
+      <!-- 金额行 -->
+      <view class="edit-label">AMOUNT · 变动金额（元）</view>
+      <view class="edit-amount-wrap glass">
+        <text class="edit-amount-cny">¥</text>
+        <input
+          class="edit-amount-input"
+          type="digit"
+          placeholder="0.00"
+          placeholder-class="edit-ph"
+          value="{{editAmountStr}}"
+          bindinput="onEditAmountInput" />
+      </view>
+
+      <view class="edit-sign-tabs">
+        <view class="edit-sign-tab tap {{editSign === 1 ? 'active pos' : ''}}" bindtap="onEditSignPos">
+          <view class="ic ic-xs ic-plus"></view><text>增加</text>
+        </view>
+        <view class="edit-sign-tab tap {{editSign === -1 ? 'active neg' : ''}}" bindtap="onEditSignNeg">
+          <view class="ic ic-xs ic-minus"></view><text>减少</text>
+        </view>
+      </view>
+
+      <!-- 时间行 -->
+      <view class="edit-label">TIME · 发生时间</view>
+      <view class="edit-time-row">
+        <picker mode="date" value="{{editDate}}" bindchange="onEditDateChange">
+          <view class="edit-pick glass tap">{{editDate}}</view>
+        </picker>
+        <picker mode="time" value="{{editTime}}" bindchange="onEditTimeChange">
+          <view class="edit-pick glass tap">{{editTime}}</view>
+        </picker>
+      </view>
+
+      <!-- 备注 -->
+      <view class="edit-label">NOTE · 备注</view>
+      <view class="edit-note-wrap glass">
+        <input
+          class="edit-note-input"
+          type="text" maxlength="40"
+          placeholder="加一句备注..."
+          placeholder-class="edit-ph"
+          value="{{editNote}}"
+          bindinput="onEditNoteInput" />
+      </view>
     </view>
   </view>
 </view>

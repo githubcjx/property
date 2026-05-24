@@ -299,9 +299,16 @@
   text-transform: uppercase;
 }
 .cat-sub {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8rpx;
   font-size: 20rpx;
   color: var(--ink-40);
+  white-space: nowrap;
+  overflow: hidden;
 }
+.cat-sub-dot { opacity: 0.5; }
 
 .cat-amount {
   flex-shrink: 0;
@@ -363,6 +370,20 @@
   border: 1rpx solid var(--hairline);
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
+}
+/* 子分类图标：用 mask 渲染，颜色继承类目主色（来自 .acc-icon 的 inline color） */
+.acc-icon .ic {
+  background-image: none !important;
+  background-color: currentColor;
+  -webkit-mask-image: var(--ic-src);
+          mask-image: var(--ic-src);
+  -webkit-mask-size: contain;
+          mask-size: contain;
+  -webkit-mask-position: center;
+          mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  filter: drop-shadow(0 0 6rpx currentColor);
 }
 .acc-main {
   flex: 1;

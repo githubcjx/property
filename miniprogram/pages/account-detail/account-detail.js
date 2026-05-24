@@ -344,7 +344,7 @@ Page({
     wx.showModal({
       title: '删除变动记录',
       content: '账户余额会按本次变动金额回退。确认删除？',
-      confirmColor: '#ffb3b3',
+      confirmColor: '#FF0000',
       success: async (res) => {
         if (!res.confirm) return
         wx.showLoading({ title: '删除中', mask: true })
@@ -407,7 +407,7 @@ Page({
     if (!acc) return
     wx.showActionSheet({
       itemList: ['删除账户'],
-      itemColor: '#ffb3b3',
+      itemColor: '#FF0000',
       success: (res) => {
         if (res.tapIndex === 0) this.confirmDelete()
       },
@@ -418,7 +418,7 @@ Page({
     wx.showModal({
       title: '删除账户',
       content: '账户将从首页隐藏，历史记录保留。确认删除？',
-      confirmColor: '#ffb3b3',
+      confirmColor: '#FF0000',
       success: async (res) => {
         if (!res.confirm) return
         try {

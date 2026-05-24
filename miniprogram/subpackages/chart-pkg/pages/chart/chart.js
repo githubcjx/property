@@ -196,6 +196,16 @@ Page({
           data: data.series.debt,
           lineStyle: { color: '#ffb3b3', width: 1.4 },
           itemStyle: { color: '#ffb3b3' },
+          areaStyle: {
+            color: {
+              type: 'linear',
+              x: 0, y: 0, x2: 0, y2: 1,
+              colorStops: [
+                { offset: 0, color: 'rgba(255,179,179,0.18)' },
+                { offset: 1, color: 'rgba(255,179,179,0)' },
+              ],
+            },
+          },
         },
       ]
     } else {
@@ -267,6 +277,7 @@ Page({
       },
       yAxis: {
         type: 'value',
+        min: 0,
         axisLabel: {
           color: 'rgba(245,248,255,0.5)',
           fontSize: 10,

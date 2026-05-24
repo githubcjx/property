@@ -3,6 +3,7 @@ const accountSvc = require('../../services/account.js')
 const statsSvc = require('../../services/stats.js')
 const { CATEGORIES, isDebtCategory, isIconKey } = require('../../utils/categories.js')
 const { formatYuan } = require('../../utils/format.js')
+const { formatRelative } = require('../../utils/date.js')
 
 const STORAGE_EXPANDED = 'idx_expanded_categories'
 
@@ -118,6 +119,7 @@ Page({
     // pre-format display strings (WXML can't do floor/format)
     visibleGroups.forEach(g => {
       g.totalText = (g.isDebt ? '−¥' : '¥') + formatYuan(g.totalFen, {})
+      g.lastUpdatedText = g.lastUpdated ? formatRelative(g.lastUpdated) : ''
       g.accounts = g.accounts.map(a => {
         const ic = a.icon || ''
         return Object.assign({}, a, {
