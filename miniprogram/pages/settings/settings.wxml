@@ -1,34 +1,44 @@
+<view class="canvas-bg"></view>
+
 <view class="page">
-  <!-- 顶部品牌 -->
-  <view class="hero">
-    <image class="hero-icon" src="/assets/logo.png" mode="aspectFill" />
-    <view class="hero-title">净值本</view>
-    <view class="hero-sub">个人净资产快照工具 · {{version}}</view>
+  <view class="settings-halo"></view>
+
+  <!-- 透明导航栏 -->
+  <view class="navbar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onBack">
+      <view class="ic ic-xs ic-back"></view>
+    </view>
+    <text class="nav-title">设置</text>
+    <view class="nav-spacer"></view>
   </view>
-  <view class="sec">
-    <view class="sec-card">
-      <button class="feedback row tap" open-type="feedback">
-        <view class="row-icon">
-          <view class="ic ic-edit"></view>
-        </view>
-        <view class="row-main">
-          <view class="row-title">反馈</view>
-          <view class="row-sub">欢迎提建议！开发者会尽力满足你的需求！</view>
-        </view>
-        <view class="row-arrow">›</view>
-      </button>
-      <view class="row tap" bindtap="onAbout">
-        <view class="row-icon">
-          <view class="ic ic-info"></view>
-        </view>
-        <view class="row-main">
-          <view class="row-title">关于小程序</view>
-          <view class="row-sub">数据存储 / 隐私 / 使用提示</view>
-        </view>
-        <view class="row-arrow">›</view>
+
+  <!-- Brand -->
+  <view class="hero entry-up">
+    <view class="hero-orb">
+      <image class="hero-icon" src="/assets/logo.png" mode="aspectFill" />
+    </view>
+    <text class="hero-title">净值本 · NetWorth</text>
+    <text class="hero-sub">PERSONAL ASSET JOURNAL · {{version}}</text>
+  </view>
+
+  <view class="sec-card glass entry-up d1">
+    <button class="feedback-row tap" hover-class="row-hover" open-type="feedback">
+      <view class="row-icon"><view class="ic ic-sm ic-edit"></view></view>
+      <view class="row-main">
+        <text class="row-title">反馈</text>
+        <text class="row-sub">欢迎提建议 · 开发者会读每一条</text>
       </view>
+      <view class="row-arrow"><view class="ic ic-xs ic-chevron-right"></view></view>
+    </button>
+    <view class="row tap" hover-class="row-hover" bindtap="onAbout">
+      <view class="row-icon"><view class="ic ic-sm ic-info"></view></view>
+      <view class="row-main">
+        <text class="row-title">关于小程序</text>
+        <text class="row-sub">数据 / 隐私 / 使用提示</text>
+      </view>
+      <view class="row-arrow"><view class="ic ic-xs ic-chevron-right"></view></view>
     </view>
   </view>
 
-  <view class="foot">{{version}}</view>
+  <view class="foot">{{version}} · MADE WITH CARE</view>
 </view>

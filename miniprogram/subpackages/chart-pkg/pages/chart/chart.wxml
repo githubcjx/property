@@ -1,12 +1,27 @@
+<view class="canvas-bg"></view>
+
 <view class="page">
+  <view class="chart-halo"></view>
+
+  <!-- 透明导航栏 -->
+  <view class="navbar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onBack">
+      <view class="ic ic-xs ic-back"></view>
+    </view>
+    <text class="nav-title">趋势 · Trends</text>
+    <view class="nav-spacer"></view>
+  </view>
+
   <!-- 文字摘要 -->
-  <view class="summary" wx:if="{{summary.rangeText}}">
-    <view class="sum-range">{{summary.rangeText}}</view>
-    <view class="sum-line" wx:for="{{summary.lines}}" wx:key="*this">{{item}}</view>
+  <view class="summary glass entry-up" wx:if="{{summary.rangeText}}">
+    <text class="sum-label">PERIOD · {{summary.rangeText}}</text>
+    <view class="sum-lines">
+      <text class="sum-line" wx:for="{{summary.lines}}" wx:key="*this">{{item}}</text>
+    </view>
   </view>
 
   <!-- Tab 切换 -->
-  <view class="tabs">
+  <view class="tabs entry-up d1">
     <view
       wx:for="{{tabs}}"
       wx:key="key"
@@ -18,10 +33,10 @@
   </view>
 
   <!-- 图表容器 -->
-  <view class="chart-wrap">
+  <view class="chart-wrap glass entry-up d2">
     <view class="empty" wx:if="{{!loading && !hasData}}">
-      <text class="empty-emoji">📈</text>
-      <view class="empty-desc">暂无数据，先在首页添加账户并记录余额</view>
+      <view class="empty-orb"></view>
+      <text class="empty-desc">暂无数据 · 先在首页添加账户并记录余额</text>
     </view>
     <ec-canvas
       id="chart"
@@ -32,7 +47,7 @@
   </view>
 
   <!-- 时间范围 Segmented Control -->
-  <view class="ranges">
+  <view class="ranges entry-up d3">
     <view
       wx:for="{{ranges}}"
       wx:key="key"
@@ -44,12 +59,12 @@
   </view>
 
   <!-- 自定义日期范围 -->
-  <view class="custom-row" wx:if="{{rangeKey === 'custom'}}">
+  <view class="custom-row entry-up d4" wx:if="{{rangeKey === 'custom'}}">
     <picker mode="date" value="{{customStart}}" end="{{customEnd}}" bindchange="onCustomStart">
-      <view class="date-pick tap">起：{{customStart}}</view>
+      <view class="date-pick glass tap">起 · {{customStart}}</view>
     </picker>
     <picker mode="date" value="{{customEnd}}" start="{{customStart}}" bindchange="onCustomEnd">
-      <view class="date-pick tap">止：{{customEnd}}</view>
+      <view class="date-pick glass tap">止 · {{customEnd}}</view>
     </picker>
   </view>
 </view>

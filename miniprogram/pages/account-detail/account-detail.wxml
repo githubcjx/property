@@ -1,62 +1,128 @@
+<view class="canvas-bg"></view>
+
 <view class="page">
-  <!-- 头部信息 -->
-  <view class="head">
-    <view class="head-row">
-      <view class="head-icon">
-        <view class="ic ic-{{iconKey}}" wx:if="{{iconKey}}"></view>
-        <text wx:else>{{accountIcon}}</text>
+  <!-- 类目光晕 -->
+  <view class="hero-halo halo-{{colorClass}}"></view>
+
+  <!-- 顶部导航 -->
+  <view class="navbar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onBack">
+      <view class="ic ic-xs ic-back"></view>
+    </view>
+    <!-- <text class="nav-title">{{accountName}}</text> -->
+    <view class="nav-actions">
+      <view class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onEdit">
+        <view class="ic ic-xs ic-edit"></view>
       </view>
-      <view class="head-actions">
-        <view class="icon-btn tap" bindtap="onEdit"><view class="ic ic-sm ic-edit"></view></view>
-        <view class="icon-btn tap" bindtap="onMore"><view class="ic ic-sm ic-more"></view></view>
+      <view class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onMore">
+        <view class="ic ic-xs ic-more"></view>
       </view>
     </view>
-    <view class="head-name">{{accountName}}</view>
-    <view class="head-balance" style="color: {{accountColor}};">{{balanceText}}</view>
   </view>
 
-  <!-- 操作按钮 -->
-  <view class="ops">
-    <view class="btn btn-dark tap ops-btn" bindtap="onOpenDelta">＋／－ 增减金额</view>
-    <view class="btn btn-ghost tap ops-btn" bindtap="onOpenSet">≡ 修改余额</view>
-  </view>
-
-  <!-- 变动记录 -->
-  <view class="tx-section">
-    <view class="tx-title">变动记录（左滑删除）</view>
-    <block wx:if="{{txList.length === 0}}">
-      <view class="empty">
-        <view class="empty-icon-wrap"><view class="ic ic-lg ic-clock"></view></view>
-        <view class="empty-desc">还没有变动记录</view>
-      </view>
-    </block>
-    <view class="tx-list" wx:else>
-      <view class="tx-row" wx:for="{{txList}}" wx:key="_id">
-        <!-- 红色删除按钮（在底层） -->
-        <view class="tx-delete-btn"
-              data-id="{{item._id}}"
-              catchtap="onTxDelete">
-          删除
+  <scroll-view scroll-y class="scroll" enable-flex>
+    <!-- Hero -->
+    <view class="hero entry-up">
+      <view class="hero-row">
+        <view class="hero-orb cat-tint-{{colorClass}}">
+          <view class="ic ic-{{iconKey}}"></view>
+          <view class="orb-ring"></view>
         </view>
-        <!-- 上层可滑动的内容行 -->
-        <view class="tx-item"
-              data-id="{{item._id}}"
-              style="transform: translateX({{swipeOpenId === item._id ? '-120rpx' : '0rpx'}});"
-              bindtouchstart="onTxTouchStart"
-              bindtouchmove="onTxTouchMove"
-              bindtouchend="onTxTouchEnd"
-              bindtap="onTxTap">
-          <view class="tx-main">
-            <text class="tx-note">{{item.note}}</text>
-            <text class="tx-time">{{item.time}}</text>
+        <view class="hero-meta">
+          <text class="hero-cat cat-{{colorClass}}">{{categoryName}} · {{categoryTag}}</text>
+          <text class="hero-name">{{accountName}}</text>
+          <text class="hero-note" wx:if="{{noteText}}">{{noteText}}</text>
+        </view>
+      </view>
+
+      <view class="hero-amount cat-{{colorClass}} entry-up d1">
+        <block wx:if="{{hideAmount}}">
+          <text class="amt-prefix">¥</text>
+          <text class="amt-int">••••••</text>
+        </block>
+        <block wx:else>
+          <text class="amt-sign" wx:if="{{isDebt}}">−</text>
+          <text class="amt-sign" wx:if="{{!isDebt && balSign}}">{{balSign}}</text>
+          <text class="amt-prefix">¥</text>
+          <text class="amt-int">{{balInt}}</text>
+          <text class="amt-frac">.{{balFrac}}</text>
+        </block>
+      </view>
+      <text class="hero-updated entry-up d2">current balance · {{updatedText}}</text>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="ops entry-up d3">
+      <view class="op-btn op-primary tap" hover-class="op-hover" bindtap="onOpenDelta"
+            style="background:linear-gradient(135deg,{{accountColor}},rgba({{burstColor}},0.55));box-shadow:0 16rpx 40rpx rgba({{burstColor}},0.35),inset 0 2rpx 0 rgba(255,255,255,0.5);">
+        <view class="ic ic-xs ic-plus" style="filter:invert(0.95);"></view>
+        <text>增减金额</text>
+      </view>
+      <view class="op-btn op-ghost tap" hover-class="op-hover-ghost" bindtap="onOpenSet">
+        <view class="ic ic-xs ic-edit"></view>
+        <text>修改余额</text>
+      </view>
+    </view>
+
+    <!-- mini sparkline -->
+    <view class="spark glass entry-up d4">
+      <text class="spark-label">RECENT · 近期曲线</text>
+      <view wx:if="{{sparkEmpty}}" class="spark-empty">· 新账户 · 暂无生长曲线 ·</view>
+      <view wx:else class="spark-chart">
+        <canvas type="2d" id="sparkCanvas" class="spark-canvas"></canvas>
+      </view>
+    </view>
+
+    <!-- 变动记录标题 -->
+    <view class="tx-head entry-up d5">
+      <text class="tx-head-title">CHANGE LOG · 变动记录</text>
+      <text class="tx-head-hint">左滑可删除</text>
+    </view>
+
+    <view class="tx-section">
+      <block wx:if="{{txList.length === 0}}">
+        <view class="tx-empty">· 暂无变动记录 ·</view>
+      </block>
+      <view class="tx-list" wx:else>
+        <view class="tx-row" wx:for="{{txList}}" wx:key="_id" style="animation-delay:{{index * 50}}ms;">
+          <view class="tx-delete-btn"
+                data-id="{{item._id}}"
+                catchtap="onTxDelete">
+            <view class="ic ic-xs ic-trash"></view>
+            <text>删除</text>
           </view>
-          <view class="tx-amounts">
-            <text class="tx-delta {{item.deltaCls}}">{{item.deltaText}}</text>
-            <text class="tx-after">{{item.afterText}}</text>
+          <view class="tx-item glass"
+                data-id="{{item._id}}"
+                style="transform: translateX({{swipeOpenId === item._id ? '-160rpx' : '0rpx'}});"
+                bindtouchstart="onTxTouchStart"
+                bindtouchmove="onTxTouchMove"
+                bindtouchend="onTxTouchEnd">
+            <view class="tx-icon {{item.positive ? 'pos' : 'neg'}}">
+              <text wx:if="{{item.type === 'set'}}">=</text>
+              <text wx:elif="{{item.positive}}">↑</text>
+              <text wx:else>↓</text>
+            </view>
+            <view class="tx-main">
+              <text class="tx-note">{{item.note}}</text>
+              <text class="tx-time">{{item.time}}</text>
+            </view>
+            <view class="tx-amounts">
+              <text class="tx-delta {{item.deltaCls}} num">{{item.deltaText}}</text>
+              <text class="tx-after num">{{item.afterText}}</text>
+            </view>
           </view>
         </view>
       </view>
     </view>
+
+    <view class="tail-space"></view>
+  </scroll-view>
+
+  <!-- 撒花 / 玻璃碎裂粒子（commit 后触发） -->
+  <view class="shatter-stage" wx:if="{{burstKey > 0}}">
+    <view wx:for="{{[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]}}" wx:key="*this"
+          class="shard shard-{{index}}"
+          style="--tx:{{(index % 2 ? 1 : -1) * (80 + index * 6)}}rpx; --ty:{{(index % 3 - 1) * (80 + index * 5)}}rpx; --rot:{{index * 37 - 180}}deg; background:rgba({{burstColor}}, 0.9); box-shadow:0 0 12rpx rgba({{burstColor}}, 0.7); animation-delay:{{index * 18}}ms;"></view>
   </view>
 </view>
 
@@ -67,7 +133,9 @@
   account-name="{{accountName}}"
   account-icon="{{accountIcon}}"
   account-icon-key="{{iconKey}}"
-  current-balance-fen="{{account.balance}}"
+  category-class="{{colorClass}}"
+  category-rgb="{{burstColor}}"
+  current-balance-fen="{{balanceRaw}}"
   bindcancel="onInputCancel"
   bindconfirm="onInputConfirm"
 />

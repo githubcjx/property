@@ -1,73 +1,139 @@
+<view class="canvas-bg"></view>
+
 <view class="page">
-  <!-- 自定义顶栏 -->
+  <!-- 顶栏 -->
   <view class="topbar" style="padding-top: {{statusBarHeight}}px;">
-    <view class="topbar-row">
-      <view class="topbar-left">
-        <text>我的净资产</text>
-        <view class="topbar-eye tap" bindtap="onToggleHide">
-          <view class="ic ic-sm {{hideAmount ? 'ic-eye-off' : 'ic-eye'}}"></view>
-        </view>
-      </view>
-      <view class="topbar-right" style="transform: translateY(60px);">
-        <view class="topbar-add tap" bindtap="onAdd">
-          <view class="ic ic-plus"></view>
-        </view>
+    <view class="top-left">
+      <text class="brand">NetWorth · 净值本</text>
+      <view class="eye-btn tap" hover-class="btn-hover" bindtap="onToggleHide">
+        <view class="ic ic-xs {{hideAmount ? 'ic-eye-off' : 'ic-eye'}}"></view>
       </view>
     </view>
-    <view class="net-amount">{{netWorthText}}</view>
+    <view class="add-btn tap" hover-class="btn-hover" bindtap="onAdd">
+      <view class="ic ic-xs ic-plus"></view>
+    </view>
+  </view>
+
+  <!-- Hero · 净资产 -->
+  <view class="hero">
+    <view class="hero-halo"></view>
+
+    <view class="hero-eyebrow entry-up">YOUR NET WORTH · 此刻</view>
+
+    <view class="hero-amount entry-up d1">
+      <block wx:if="{{hideAmount}}">
+        <text class="amt-prefix">¥</text>
+        <text class="amt-int">••••••</text>
+      </block>
+      <block wx:else>
+        <text class="amt-prefix">¥</text>
+        <text class="amt-sign" wx:if="{{netSign}}">{{netSign}}</text>
+        <text class="amt-int">{{netInt}}</text>
+        <text class="amt-frac">.{{netFrac}}</text>
+      </block>
+      <view class="amt-shine"></view>
+    </view>
+
+    <view class="hero-delta entry-up d2" wx:if="{{hasDelta}}">
+      <view class="delta-pill {{deltaPositive ? 'pos' : 'neg'}}">
+        <view class="ic ic-xs {{deltaPositive ? 'ic-trend-up' : 'ic-trend-down'}}"></view>
+        <text class="num">{{hideAmount ? '••••' : deltaText}}</text>
+        <text class="delta-pct">· {{hideAmount ? '••' : deltaPctText}}</text>
+      </view>
+      <text class="delta-label">过去 30 天</text>
+    </view>
+
+    <!-- Composition orbs -->
+    <view class="orbs entry-up d3" wx:if="{{hasData}}">
+      <view
+        wx:for="{{composition}}"
+        wx:key="id"
+        class="orb-wrap"
+      >
+        <view class="orb cat-tint-{{item.rgbName}} drift-slow"
+              style="width:{{item.sizeRpx}}rpx;height:{{item.sizeRpx}}rpx;animation-delay:{{index * 300}}ms;"></view>
+      </view>
+    </view>
   </view>
 
   <!-- 内容 -->
   <scroll-view scroll-y class="scroll" enable-flex>
     <block wx:if="{{!loading && !hasData}}">
-      <view class="empty">
-        <view class="empty-icon"><view class="ic ic-lg ic-wallet"></view></view>
+      <view class="empty-stage">
+        <view class="empty-orb"></view>
         <view class="empty-title">还没有账户</view>
         <view class="empty-desc">点击右上角「＋」添加你的第一个账户</view>
-        <view class="btn btn-primary tap empty-btn" bindtap="onAdd">添加账户</view>
+        <view class="empty-cta tap" bindtap="onAdd">
+          <view class="ic ic-xs ic-plus"></view>
+          <text>添加账户</text>
+        </view>
       </view>
     </block>
 
     <block wx:if="{{hasData}}">
       <view class="groups">
-        <view class="group" wx:for="{{groups}}" wx:key="categoryId">
-          <category-header
-            category-id="{{item.categoryId}}"
-            icon-key="{{item.icon}}"
-            tint-class="{{item.tintClass}}"
-            total-fen="{{item.totalFen}}"
-            last-updated="{{item.lastUpdated}}"
-            hide-amount="{{hideAmount}}"
-            is-debt="{{item.isDebt}}"
-            expanded="{{expandedMap[item.categoryId]}}"
-            bindtoggle="onToggleGroup"
-          />
+        <view
+          wx:for="{{groups}}"
+          wx:key="categoryId"
+          class="cat-card glass entry-up d{{index + 1}}"
+        >
+          <view class="cat-glow halo-{{item.colorClass}}"></view>
+
+          <view class="cat-row tap" data-id="{{item.categoryId}}" bindtap="onToggleGroup">
+            <view class="cat-orb {{item.tintClass}}">
+              <view class="ic-glyph {{item.glyphClass}}"></view>
+            </view>
+            <view class="cat-meta">
+              <view class="cat-line">
+                <text class="cat-name">{{item.name}}</text>
+                <text class="cat-tag">{{item.colorClass}}</text>
+              </view>
+              <text class="cat-sub">{{item.accounts.length}} 项</text>
+            </view>
+            <view class="cat-amount cat-{{item.colorClass}}">
+              <text class="num">{{hideAmount ? '¥ ••••' : item.totalText}}</text>
+            </view>
+            <view class="chev {{expandedMap[item.categoryId] ? 'chev-open' : ''}}">
+              <view class="ic ic-xs ic-chevron-right"></view>
+            </view>
+          </view>
+
           <view class="acc-list {{expandedMap[item.categoryId] ? 'expanded' : ''}}">
-            <account-card
+            <view
               wx:for="{{item.accounts}}"
               wx:for-item="acc"
               wx:key="_id"
-              account="{{acc}}"
-              hide-amount="{{hideAmount}}"
+              class="acc-row tap"
+              data-id="{{acc._id}}"
+              hover-class="acc-row-hover"
               bindtap="onAccountTap"
-            />
+            >
+              <view class="acc-icon">
+                <view class="ic ic-sm ic-{{acc.icon || 'folder'}}"></view>
+              </view>
+              <view class="acc-main">
+                <text class="acc-name">{{acc.name}}</text>
+                <view class="acc-sub">
+                  <text wx:if="{{acc.note}}" class="acc-note">{{acc.note}}</text>
+                  <text wx:if="{{!acc.includeInChart}}" class="acc-badge">未计入</text>
+                </view>
+              </view>
+              <text class="acc-amount cat-{{item.colorClass}} num">{{hideAmount ? '¥ ••••' : acc.balanceText}}</text>
+            </view>
           </view>
         </view>
-        <view class="footer-tip">{{version}}</view>
+        <view class="footer-tip">{{version}} · made with care</view>
       </view>
     </block>
-
-    <!-- 关于入口（始终展示，含空态时也可见） -->
-    <!-- <view class="about-entry tap" bindtap="onAbout">关于小程序</view> -->
   </scroll-view>
 
-  <!-- 右下角悬浮操作按钮（趋势 + 设置） -->
+  <!-- 右下角悬浮按钮组 -->
   <view class="fab-cluster">
-    <view class="fab tap" bindtap="onTrend" hover-class="fab-hover">
-      <view class="ic ic-chart"></view>
+    <view class="fab tap" hover-class="fab-hover" bindtap="onTrend">
+      <view class="ic ic-sm ic-chart"></view>
     </view>
-    <view class="fab tap" bindtap="onSettings" hover-class="fab-hover">
-      <view class="ic ic-settings"></view>
+    <view class="fab tap" hover-class="fab-hover" bindtap="onSettings">
+      <view class="ic ic-sm ic-settings"></view>
     </view>
   </view>
 </view>

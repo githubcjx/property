@@ -8,10 +8,10 @@
     "pages/settings/settings"
   ],
   "window": {
-    "backgroundColor": "#000000",
+    "backgroundColor": "#050507",
     "backgroundTextStyle": "dark",
-    "navigationBarBackgroundColor": "#000000",
-    "navigationBarTitleText": "净资产",
+    "navigationBarBackgroundColor": "#07080c",
+    "navigationBarTitleText": "净值本",
     "navigationBarTextStyle": "white",
     "navigationStyle": "default"
   },

@@ -1,21 +1,34 @@
+<view class="canvas-bg"></view>
+
 <view class="page">
-  <!-- 顶部品牌 -->
-  <view class="hero">
-    <image class="hero-icon" src="/assets/logo.png" mode="aspectFill" />
-    <view class="hero-title">净值本</view>
-    <view class="hero-sub">个人净资产快照工具 · {{version}}</view>
+  <view class="about-halo"></view>
+
+  <!-- 透明导航栏 -->
+  <view class="navbar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onBack">
+      <view class="ic ic-xs ic-back"></view>
+    </view>
+    <text class="nav-title">关于</text>
+    <view class="nav-spacer"></view>
   </view>
 
-  <!-- 分组 Q&A -->
-  <view class="sec" wx:for="{{sections}}" wx:for-item="sec" wx:key="title">
-    <view class="sec-title">{{sec.title}}</view>
-    <view class="sec-card">
+  <view class="hero entry-up">
+    <view class="hero-orb">
+      <image class="hero-icon" src="/assets/logo.png" mode="aspectFill" />
+    </view>
+    <text class="hero-title">净值本</text>
+    <text class="hero-sub">DATA IS YOURS · {{version}}</text>
+  </view>
+
+  <view class="sec entry-up d{{index + 1}}" wx:for="{{sections}}" wx:for-item="sec" wx:key="title">
+    <text class="sec-title">{{sec.title}}</text>
+    <view class="sec-card glass">
       <view class="qa" wx:for="{{sec.items}}" wx:for-item="qa" wx:key="q">
-        <view class="qa-q">{{qa.q}}</view>
-        <view class="qa-a" wx:for="{{qa.a}}" wx:for-item="p" wx:key="*this">{{p}}</view>
+        <text class="qa-q">{{qa.q}}</text>
+        <text class="qa-a" wx:for="{{qa.a}}" wx:for-item="p" wx:key="*this">{{p}}</text>
       </view>
     </view>
   </view>
 
-  <view class="foot">数据归你所有</view>
+  <view class="foot">DATA IS YOURS · 数据归你所有</view>
 </view>

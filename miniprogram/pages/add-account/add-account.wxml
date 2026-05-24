@@ -1,87 +1,174 @@
+<view class="canvas-bg"></view>
+
 <view class="page">
-  <!-- Step 1+2: 选择大类与子类 -->
-  <block wx:if="{{step === 1}}">
-    <view class="hint">选择账户类型</view>
-    <view class="cat-list">
-      <view class="cat-item" wx:for="{{categories}}" wx:key="id">
-        <view class="cat-row tap" data-id="{{item.id}}" bindtap="onToggleCategory">
-          <view class="cat-icon {{'cat-tint-' + item.colorClass}}">
-            <view class="ic ic-{{item.icon}}"></view>
-          </view>
-          <view class="cat-info">
-            <text class="cat-name">{{item.name}}</text>
-            <text class="cat-desc">{{item.desc}}</text>
-          </view>
-          <text class="arrow {{expandedCategoryId === item.id ? 'arrow-down' : ''}}">›</text>
-        </view>
-        <view class="sub-list" wx:if="{{expandedCategoryId === item.id}}">
-          <view class="sub-item tap"
-                wx:for="{{item.subTypes}}"
-                wx:for-item="sub"
-                wx:key="id"
-                data-category-id="{{item.id}}"
-                data-sub-id="{{sub.id}}"
-                bindtap="onSelectSub">
-            <view class="sub-icon"><view class="ic ic-{{sub.icon}}"></view></view>
-            <text class="sub-name">{{sub.name}}{{sub.custom ? '（自定义）' : ''}}</text>
-            <text class="arrow">›</text>
-          </view>
-        </view>
-      </view>
+  <!-- 类目光晕（form 阶段） -->
+  <view wx:if="{{step === 3 && selectedCategoryId}}"
+        class="form-halo"
+        style="background: radial-gradient(circle, rgba({{selectedRgb}}, 0.30), transparent 70%);"></view>
+
+  <!-- 顶部导航 -->
+  <view class="navbar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onBack">
+      <view class="ic ic-xs ic-back"></view>
     </view>
-  </block>
+    <text class="nav-title">{{editId ? '编辑账户' : '新增账户'}}</text>
+    <view class="nav-spacer"></view>
+  </view>
 
-  <!-- Step 3: 填写表单 -->
-  <block wx:if="{{step === 3}}">
-    <view class="form">
-      <view class="picked-row">
-        <view class="picked-icon"><view class="ic ic-{{selectedSubType.icon}}"></view></view>
-        <text class="picked-name">{{customSubName || selectedSubType.name}}</text>
-        <text class="picked-change tap" bindtap="onBackToList">{{editId ? '' : '更换'}}</text>
-      </view>
+  <!-- 步骤指示 -->
+  <view class="steps">
+    <view class="step-dot {{step >= 1 ? 'active' : ''}} {{step === 1 ? 'current' : ''}}"></view>
+    <view class="step-dot {{step >= 2 ? 'active' : ''}} {{step === 2 ? 'current' : ''}}"></view>
+    <view class="step-dot {{step >= 3 ? 'active' : ''}} {{step === 3 ? 'current' : ''}}"></view>
+  </view>
 
-      <view class="field">
-        <text class="field-label">账户名称</text>
-        <input class="field-input"
-               type="text"
-               maxlength="20"
-               placeholder="留空则使用「{{customSubName || selectedSubType.name}}」"
-               placeholder-class="ph"
-               value="{{form.name}}"
-               bindinput="onNameInput" />
-        <text class="field-hint">建议用中性名（如「储蓄 1」「日常账户」），不要写真实银行/卡号</text>
-      </view>
+  <scroll-view scroll-y class="scroll" enable-flex>
+    <!-- Step 1+2: 选择大类与子类 -->
+    <block wx:if="{{step === 1}}">
+      <view class="hint entry-up">STEP 1 · 选择账户类型</view>
+      <view class="cat-list">
+        <view
+          wx:for="{{categories}}"
+          wx:key="id"
+          class="cat-item glass entry-up d{{index + 1}}"
+          style="{{expandedCategoryId === item.id ? 'box-shadow: 0 0 60rpx rgba(' + item.rgb + ', 0.2); border-color: rgba(' + item.rgb + ', 0.4);' : ''}}"
+        >
+          <view class="cat-row tap" data-id="{{item.id}}" bindtap="onToggleCategory">
+            <view class="cat-icon {{item.tintClass}}">
+              <view class="ic-glyph {{item.glyphClass}}"></view>
+            </view>
+            <view class="cat-info">
+              <text class="cat-name">{{item.name}}</text>
+              <text class="cat-desc">{{item.desc}}</text>
+            </view>
+            <view class="cat-arrow {{expandedCategoryId === item.id ? 'open' : ''}}">
+              <view class="ic ic-xs ic-chevron-right"></view>
+            </view>
+          </view>
 
-      <view class="field" wx:if="{{!editId}}">
-        <text class="field-label">初始余额（元）</text>
-        <input class="field-input"
-               type="digit"
-               placeholder="0"
-               placeholder-class="ph"
-               value="{{form.balanceYuan}}"
-               bindinput="onBalanceInput" />
-      </view>
-
-      <view class="field row-field">
-        <text class="field-label">计入图表</text>
-        <switch checked="{{form.includeInChart}}" bindchange="onChartSwitch" color="#34D399" />
-      </view>
-
-      <view class="field">
-        <text class="field-label">备注</text>
-        <textarea class="field-textarea"
-                  maxlength="100"
-                  placeholder="如「招商银行储蓄卡」"
-                  placeholder-class="ph"
-                  value="{{form.note}}"
-                  bindinput="onNoteInput" />
-      </view>
-
-      <view class="actions">
-        <view class="btn btn-primary btn-block tap" bindtap="onSubmit">
-          {{submitting ? '...' : (editId ? '保存修改' : '添加账户')}}
+          <view class="sub-wrap {{expandedCategoryId === item.id ? 'open' : ''}}">
+            <view
+              wx:for="{{item.subTypes}}"
+              wx:for-item="sub"
+              wx:key="id"
+              class="sub-item tap"
+              hover-class="sub-hover"
+              data-category-id="{{item.id}}"
+              data-sub-id="{{sub.id}}"
+              bindtap="onSelectSub"
+            >
+              <view class="sub-icon" style="color: {{item.color}};">
+                <view class="ic ic-sm ic-{{sub.icon}}"></view>
+              </view>
+              <text class="sub-name">{{sub.name}}{{sub.custom ? '（自定义）' : ''}}</text>
+              <view class="sub-arrow"><view class="ic ic-xs ic-chevron-right"></view></view>
+            </view>
+          </view>
         </view>
       </view>
+    </block>
+
+    <!-- Step 3: 填写表单 -->
+    <block wx:if="{{step === 3}}">
+      <!-- picked preview -->
+      <view class="picked glass entry-up">
+        <view class="picked-bg" style="background: radial-gradient(circle, rgba({{selectedRgb}}, 0.4), transparent 60%);"></view>
+        <view class="picked-icon {{selectedTintClass}}">
+          <view class="ic ic-{{selectedSubType.icon || 'folder'}}"></view>
+        </view>
+        <view class="picked-info">
+          <text class="picked-cat" style="color: {{selectedCategoryColor}};">{{selectedCategoryName}}</text>
+          <text class="picked-name">{{customSubName || selectedSubType.name}}</text>
+        </view>
+        <view wx:if="{{!editId}}" class="picked-change tap" hover-class="picked-change-hover" bindtap="onBackToList"
+              style="color: {{selectedCategoryColor}}; border-color: rgba({{selectedRgb}}, 0.5); background: rgba({{selectedRgb}}, 0.1);">
+          更换
+        </view>
+      </view>
+
+      <!-- name -->
+      <view class="field entry-up d1">
+        <text class="field-label">ACCOUNT NAME · 账户名</text>
+        <view class="field-input-wrap glass">
+          <input class="field-input"
+                 type="text"
+                 maxlength="20"
+                 placeholder="给它起个中性的名字"
+                 placeholder-class="ph"
+                 value="{{form.name}}"
+                 bindinput="onNameInput" />
+        </view>
+        <text class="field-hint">建议中性名 · 别写真实银行 / 卡号</text>
+      </view>
+
+      <!-- balance -->
+      <view class="field entry-up d2" wx:if="{{!editId}}">
+        <text class="field-label">INITIAL BALANCE · 初始余额（元）</text>
+        <view class="field-input-wrap glass field-input-mono">
+          <text class="field-prefix">¥</text>
+          <input class="field-input mono"
+                 type="digit"
+                 placeholder="0.00"
+                 placeholder-class="ph"
+                 value="{{form.balanceYuan}}"
+                 bindinput="onBalanceInput" />
+        </view>
+      </view>
+
+      <!-- toggle -->
+      <view class="toggle-row glass entry-up d3">
+        <view class="toggle-info">
+          <text class="toggle-title">计入趋势图</text>
+          <text class="toggle-sub">参与净资产计算</text>
+        </view>
+        <view class="toggle tap {{form.includeInChart ? 'on' : ''}}"
+              bindtap="onChartSwitch"
+              style="{{form.includeInChart ? 'background:' + selectedCategoryColor + ';box-shadow:0 0 24rpx rgba(' + selectedRgb + ', 0.55);' : ''}}">
+          <view class="toggle-knob"></view>
+        </view>
+      </view>
+
+      <!-- note -->
+      <view class="field entry-up d4">
+        <text class="field-label">NOTE · 备注</text>
+        <view class="field-input-wrap glass">
+          <textarea class="field-textarea"
+                    maxlength="100"
+                    placeholder="可写下来源、心情、注意事项..."
+                    placeholder-class="ph"
+                    value="{{form.note}}"
+                    bindinput="onNoteInput" />
+        </view>
+      </view>
+
+      <view class="submit-btn tap entry-up d5"
+            hover-class="submit-hover"
+            bindtap="onSubmit"
+            style="background:linear-gradient(135deg,{{selectedCategoryColor}},rgba({{selectedRgb}},0.5));box-shadow:0 16rpx 40rpx rgba({{selectedRgb}},0.45),inset 0 2rpx 0 rgba(255,255,255,0.5);">
+        <text>{{editId ? '保存修改' : '✓ 添加账户'}}</text>
+        <view class="submit-shine"></view>
+      </view>
+
+      <view class="tail-space"></view>
+    </block>
+  </scroll-view>
+
+  <!-- 成功遮罩 + 碎裂粒子 -->
+  <view wx:if="{{showSuccess}}" class="success-overlay">
+    <view class="success-mask"></view>
+    <view class="success-content">
+      <view class="success-orb"
+            style="background:radial-gradient(circle at 30% 30%,rgba({{selectedRgb}},0.85),rgba({{selectedRgb}},0.2) 70%); border-color:rgba({{selectedRgb}},0.5); box-shadow:inset 0 4rpx 0 rgba(255,255,255,0.3),0 0 80rpx rgba({{selectedRgb}},0.55);">
+        <view class="success-check"></view>
+      </view>
+      <text class="success-title">{{editId ? '已保存' : '账户已添加'}}</text>
+      <text class="success-sub">glass crystallized · 一切就绪</text>
     </view>
-  </block>
+
+    <view class="shatter-stage">
+      <view wx:for="{{[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21]}}" wx:key="*this"
+            class="shard"
+            style="--tx:{{(index % 2 ? 1 : -1) * (140 + index * 8)}}rpx; --ty:{{(index % 3 - 1) * (140 + index * 6)}}rpx; --rot:{{index * 41 - 220}}deg; background:rgba({{selectedRgb}}, 0.9); box-shadow:0 0 16rpx rgba({{selectedRgb}}, 0.8); animation-delay:{{index * 16}}ms;"></view>
+    </view>
+  </view>
 </view>

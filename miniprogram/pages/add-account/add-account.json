@@ -1,4 +1,5 @@
 {
   "navigationBarTitleText": "添加账户",
+  "navigationStyle": "custom",
   "usingComponents": {}
 }

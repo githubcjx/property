@@ -1,19 +1,34 @@
-<view class="page" wx:if="{{tx}}">
-  <view class="close tap" bindtap="onClose"><view class="ic ic-sm ic-close"></view></view>
+<view class="canvas-bg"></view>
 
-  <view class="head">
-    <view class="head-icon">
-      <view class="ic ic-{{iconKey}}" wx:if="{{iconKey}}"></view>
-      <text wx:else>{{accountIcon}}</text>
+<view class="page" wx:if="{{tx}}">
+  <view class="tx-halo"
+        style="background: radial-gradient(circle, rgba({{categoryRgb}}, 0.25), transparent 70%);"></view>
+
+  <view class="navbar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onClose">
+      <view class="ic ic-xs ic-back"></view>
     </view>
-    <view class="head-name">{{accountName}}</view>
-    <view class="head-type">{{typeText}}</view>
+    <text class="nav-title">变动详情</text>
+    <view class="nav-spacer"></view>
   </view>
 
-  <view class="delta {{deltaCls}}">{{deltaText}}</view>
-  <view class="after">变动后余额 {{afterText}}</view>
+  <view class="hero entry-up">
+    <view class="hero-orb cat-tint-{{categoryClass}}">
+      <view class="ic ic-{{iconKey}}"></view>
+    </view>
+    <text class="hero-name">{{accountName}}</text>
+    <text class="hero-type" style="color: {{categoryColor}};">{{typeText === '修改余额' ? 'SET BALANCE · 修改余额' : 'DELTA · 增减金额'}}</text>
+  </view>
 
-  <view class="info">
+  <view class="hero-amount entry-up d1" style="color: {{positive ? 'var(--ice-blue)' : 'var(--debt)'}}; text-shadow: 0 0 56rpx {{positive ? 'rgba(167, 211, 255, 0.55)' : 'rgba(255, 179, 179, 0.5)'}};">
+    <text class="amt-sign" wx:if="{{deltaSign}}">{{deltaSign}}</text>
+    <text class="amt-prefix">¥</text>
+    <text class="amt-int">{{amtInt}}</text>
+    <text class="amt-frac">.{{amtFrac}}</text>
+  </view>
+  <text class="hero-after entry-up d2">变动后余额 {{afterText}}</text>
+
+  <view class="info glass entry-up d3">
     <view class="info-row">
       <text class="info-label">备注</text>
       <text class="info-value">{{tx.note || typeText}}</text>
@@ -21,6 +36,10 @@
     <view class="info-row">
       <text class="info-label">时间</text>
       <text class="info-value">{{timeText}}</text>
+    </view>
+    <view class="info-row last">
+      <text class="info-label">账户</text>
+      <text class="info-value">{{categoryName}} · {{accountName}}</text>
     </view>
   </view>
 </view>

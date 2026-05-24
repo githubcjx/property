@@ -49,9 +49,15 @@ Page({
     hasData: false,
     hideAmount: false,
 
+    statusBarHeight: 20,
+
     ec: {
       lazyLoad: true,
     },
+  },
+
+  onBack() {
+    wx.navigateBack()
   },
 
   // 非 setData 状态
@@ -62,7 +68,11 @@ Page({
 
   onLoad() {
     pageRef = this
-    this.setData({ hideAmount: app.globalData.hideAmount })
+    const sysInfo = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
+    this.setData({
+      hideAmount: app.globalData.hideAmount,
+      statusBarHeight: sysInfo.statusBarHeight || 20,
+    })
     // 设置默认自定义日期：近 7 天
     const now = new Date()
     const start = new Date(now.getTime() - 6 * 86400000)
@@ -163,15 +173,15 @@ Page({
           symbolSize: 4,
           showSymbol: false,
           data: data.series.netWorth,
-          lineStyle: { color: '#FFFFFF', width: 2 },
-          itemStyle: { color: '#FFFFFF' },
+          lineStyle: { color: '#a7d3ff', width: 2, shadowColor: 'rgba(167,211,255,0.5)', shadowBlur: 8 },
+          itemStyle: { color: '#a7d3ff' },
           areaStyle: {
             color: {
               type: 'linear',
               x: 0, y: 0, x2: 0, y2: 1,
               colorStops: [
-                { offset: 0, color: 'rgba(255,255,255,0.18)' },
-                { offset: 1, color: 'rgba(255,255,255,0)' },
+                { offset: 0, color: 'rgba(167,211,255,0.38)' },
+                { offset: 1, color: 'rgba(167,211,255,0)' },
               ],
             },
           },
@@ -184,8 +194,8 @@ Page({
           symbolSize: 4,
           showSymbol: false,
           data: data.series.debt,
-          lineStyle: { color: '#F87171', width: 1.5 },
-          itemStyle: { color: '#F87171' },
+          lineStyle: { color: '#ffb3b3', width: 1.4 },
+          itemStyle: { color: '#ffb3b3' },
         },
       ]
     } else {
@@ -198,8 +208,18 @@ Page({
           symbolSize: 4,
           showSymbol: false,
           data: data.series.liquid,
-          lineStyle: { color: '#34D399', width: 2 },
-          itemStyle: { color: '#34D399' },
+          lineStyle: { color: '#a7d3ff', width: 2, shadowColor: 'rgba(167,211,255,0.4)', shadowBlur: 6 },
+          itemStyle: { color: '#a7d3ff' },
+          areaStyle: {
+            color: {
+              type: 'linear',
+              x: 0, y: 0, x2: 0, y2: 1,
+              colorStops: [
+                { offset: 0, color: 'rgba(167,211,255,0.30)' },
+                { offset: 1, color: 'rgba(167,211,255,0)' },
+              ],
+            },
+          },
         },
         {
           name: '投资',
@@ -209,8 +229,8 @@ Page({
           symbolSize: 4,
           showSymbol: false,
           data: data.series.investment,
-          lineStyle: { color: '#A78BFA', width: 2 },
-          itemStyle: { color: '#A78BFA' },
+          lineStyle: { color: '#c8b5ff', width: 1.6 },
+          itemStyle: { color: '#c8b5ff' },
         },
       ]
     }
@@ -219,7 +239,7 @@ Page({
       backgroundColor: 'transparent',
       grid: { left: 6, right: 12, top: 32, bottom: 24, containLabel: true },
       legend: {
-        textStyle: { color: 'rgba(235,235,245,0.8)', fontSize: 11 },
+        textStyle: { color: 'rgba(245,248,255,0.78)', fontSize: 11 },
         top: 0,
         right: 0,
         icon: 'circle',
@@ -228,9 +248,9 @@ Page({
       },
       tooltip: {
         trigger: 'axis',
-        backgroundColor: '#2C2C2E',
+        backgroundColor: 'rgba(20, 22, 30, 0.92)',
         borderWidth: 0,
-        textStyle: { color: '#FFFFFF', fontSize: 12 },
+        textStyle: { color: '#f5f8ff', fontSize: 12 },
         formatter: tooltipFormatter,
       },
       xAxis: {
@@ -240,7 +260,7 @@ Page({
         axisLine: { lineStyle: { color: 'rgba(255,255,255,0.12)' } },
         axisTick: { show: false },
         axisLabel: {
-          color: 'rgba(235,235,245,0.5)',
+          color: 'rgba(245,248,255,0.5)',
           fontSize: 10,
           interval: 'auto',
         },
@@ -248,7 +268,7 @@ Page({
       yAxis: {
         type: 'value',
         axisLabel: {
-          color: 'rgba(235,235,245,0.5)',
+          color: 'rgba(245,248,255,0.5)',
           fontSize: 10,
           formatter: yFormatter,
         },

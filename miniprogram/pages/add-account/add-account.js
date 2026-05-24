@@ -1,6 +1,14 @@
 const accountSvc = require('../../services/account.js')
-const { CATEGORIES, getSubType } = require('../../utils/categories.js')
+const { CATEGORIES, getSubType, getCategory } = require('../../utils/categories.js')
 const { yuanToFen, fenToYuan } = require('../../utils/format.js')
+
+const CAT_RGB = {
+  liquid: '167, 211, 255',
+  investment: '200, 181, 255',
+  fixed: '183, 232, 240',
+  receivable: '224, 234, 255',
+  debt: '255, 179, 179',
+}
 
 // 三步流程：
 //   step=1 选大类 → step=2 选子类（同页内展开） → step=3 填写表单
@@ -8,9 +16,19 @@ const { yuanToFen, fenToYuan } = require('../../utils/format.js')
 Page({
   data: {
     step: 1,
-    categories: CATEGORIES,
+    categories: CATEGORIES.map(c => Object.assign({}, c, {
+      tintClass: 'cat-tint-' + c.colorClass,
+      glyphClass: 'ic-glyph-' + c.id,
+      rgb: CAT_RGB[c.colorClass] || '167, 211, 255',
+    })),
+    statusBarHeight: 20,
+
     expandedCategoryId: '',
     selectedCategoryId: '',
+    selectedCategoryColor: '#a7d3ff',
+    selectedRgb: '167, 211, 255',
+    selectedCategoryName: '',
+    selectedTintClass: '',
     selectedSubType: null,
     customSubName: '',
 
@@ -23,9 +41,14 @@ Page({
 
     editId: '',
     submitting: false,
+
+    showSuccess: false,
+    burstKey: 0,
   },
 
   onLoad(query) {
+    const sysInfo = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
+    this.setData({ statusBarHeight: sysInfo.statusBarHeight || 20 })
     if (query.editId) {
       this.loadEdit(query.editId)
     }
@@ -35,10 +58,15 @@ Page({
     try {
       const acc = await accountSvc.getAccount(id)
       const sub = getSubType(acc.categoryId, acc.subType)
+      const cat = getCategory(acc.categoryId)
       this.setData({
         editId: id,
         step: 3,
         selectedCategoryId: acc.categoryId,
+        selectedCategoryColor: cat ? cat.color : '#a7d3ff',
+        selectedRgb: CAT_RGB[cat ? cat.colorClass : 'liquid'],
+        selectedCategoryName: cat ? cat.name : '',
+        selectedTintClass: 'cat-tint-' + (cat ? cat.colorClass : 'liquid'),
         selectedSubType: sub || { id: acc.subType, name: acc.name, icon: acc.icon, custom: true },
         customSubName: sub ? '' : acc.name,
         form: {
@@ -65,9 +93,9 @@ Page({
     const { categoryId, subId } = e.currentTarget.dataset
     const sub = getSubType(categoryId, subId)
     if (!sub) return
+    const cat = getCategory(categoryId)
 
     if (sub.custom) {
-      // 弹出输入框
       wx.showModal({
         title: '自定义名称',
         editable: true,
@@ -77,6 +105,10 @@ Page({
             const name = (res.content || '').trim()
             this.setData({
               selectedCategoryId: categoryId,
+              selectedCategoryColor: cat.color,
+              selectedRgb: CAT_RGB[cat.colorClass],
+              selectedCategoryName: cat.name,
+              selectedTintClass: 'cat-tint-' + cat.colorClass,
               selectedSubType: sub,
               customSubName: name,
               step: 3,
@@ -90,6 +122,10 @@ Page({
 
     this.setData({
       selectedCategoryId: categoryId,
+      selectedCategoryColor: cat.color,
+      selectedRgb: CAT_RGB[cat.colorClass],
+      selectedCategoryName: cat.name,
+      selectedTintClass: 'cat-tint-' + cat.colorClass,
       selectedSubType: sub,
       customSubName: '',
       step: 3,
@@ -105,18 +141,18 @@ Page({
     this.setData({ step: 1, selectedSubType: null, selectedCategoryId: '' })
   },
 
-  onNameInput(e) {
-    this.setData({ 'form.name': e.detail.value })
+  onBack() {
+    if (this.data.step === 3 && !this.data.editId) {
+      this.setData({ step: 1, selectedSubType: null, selectedCategoryId: '' })
+    } else {
+      wx.navigateBack()
+    }
   },
-  onBalanceInput(e) {
-    this.setData({ 'form.balanceYuan': e.detail.value })
-  },
-  onChartSwitch(e) {
-    this.setData({ 'form.includeInChart': e.detail.value })
-  },
-  onNoteInput(e) {
-    this.setData({ 'form.note': e.detail.value })
-  },
+
+  onNameInput(e)    { this.setData({ 'form.name': e.detail.value }) },
+  onBalanceInput(e) { this.setData({ 'form.balanceYuan': e.detail.value }) },
+  onChartSwitch()   { this.setData({ 'form.includeInChart': !this.data.form.includeInChart }) },
+  onNoteInput(e)    { this.setData({ 'form.note': e.detail.value }) },
 
   async onSubmit() {
     if (this.data.submitting) return
@@ -128,9 +164,8 @@ Page({
     }
 
     const balanceFen = yuanToFen(form.balanceYuan || 0)
-
     this.setData({ submitting: true })
-    wx.showLoading({ title: editId ? '保存中' : '创建中', mask: true })
+
     try {
       if (editId) {
         await accountSvc.updateAccount(editId, {
@@ -151,14 +186,15 @@ Page({
           icon: selectedSubType ? selectedSubType.icon : 'folder',
         })
       }
-      wx.hideLoading()
-      wx.showToast({ icon: 'success', title: editId ? '已保存' : '已添加' })
-      setTimeout(() => wx.navigateBack(), 400)
+      // success animation overlay
+      this.setData({
+        showSuccess: true,
+        burstKey: this.data.burstKey + 1,
+      })
+      setTimeout(() => wx.navigateBack(), 1500)
     } catch (err) {
-      wx.hideLoading()
       console.error(err)
       wx.showToast({ icon: 'none', title: '操作失败：' + (err.errMsg || err.message || '') })
-    } finally {
       this.setData({ submitting: false })
     }
   },

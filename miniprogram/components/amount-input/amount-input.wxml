@@ -1,71 +1,80 @@
 <wxs src="./display.wxs" module="dp" />
 
-<view wx:if="{{visible}}" class="ai-mask" bindtap="onCancel" catchtouchmove="noop">
-  <view class="ai-sheet" catchtap="noop">
-    <!-- 顶部：标题 + 取消 + 完成 -->
+<view wx:if="{{visible}}"
+      class="ai-mask {{closing ? 'ai-mask-out' : 'ai-mask-in'}}"
+      bindtap="onCancel"
+      catchtouchmove="noop">
+  <view class="ai-sheet glass-2 {{closing ? 'ai-sheet-out' : 'ai-sheet-in'}}" catchtap="noop">
+    <view class="ai-handle"></view>
+
+    <!-- header -->
     <view class="ai-head">
       <view class="ai-cancel tap" bindtap="onCancel">取消</view>
       <view class="ai-title">{{title}}</view>
-      <view class="ai-confirm tap" bindtap="onConfirm">{{submitting ? '...' : '完成'}}</view>
-    </view>
-
-    <!-- 账户行 -->
-    <view class="ai-acc">
-      <view class="ai-acc-icon">
-        <view class="ic ic-{{accountIconKey}}" wx:if="{{accountIconKey}}"></view>
-        <text wx:else>{{accountIcon}}</text>
+      <view class="ai-confirm tap" bindtap="onConfirm"
+            style="color: var(--{{categoryClass === 'liquid' ? 'ice-blue' : categoryClass}}); text-shadow: 0 0 16rpx rgba({{categoryRgb}}, 0.45);">
+        {{submitting ? '...' : '完成'}}
       </view>
-      <view class="ai-acc-name">{{accountName}}</view>
     </view>
 
-    <!-- 输入展示 -->
-    <view class="ai-amount">
+    <!-- account chip -->
+    <view class="ai-acc">
+      <view class="ai-acc-icon cat-tint-{{categoryClass}}">
+        <view class="ic ic-sm ic-{{accountIconKey || 'folder'}}"></view>
+      </view>
+      <view class="ai-acc-meta">
+        <text class="ai-acc-name">{{accountName}}</text>
+        <text class="ai-acc-bal">当前余额 <text class="num">{{dp.fenToCNY(currentBalanceFen)}}</text></text>
+      </view>
+    </view>
+
+    <!-- big amount -->
+    <view class="ai-amount" style="color: var(--{{categoryClass === 'liquid' ? 'ice-blue' : categoryClass}}); text-shadow: 0 0 48rpx rgba({{categoryRgb}}, 0.5);">
+      <text class="ai-amount-sign" wx:if="{{mode === 'delta'}}">{{sign === 1 ? '+' : '−'}}</text>
       <text class="ai-amount-cny">¥</text>
-      <text class="ai-amount-num">{{dp.display(raw, sign)}}</text>
+      <text class="ai-amount-num">{{raw || '0'}}</text>
+      <text class="ai-amount-caret" style="background: var(--{{categoryClass === 'liquid' ? 'ice-blue' : categoryClass}}); box-shadow: 0 0 12rpx rgba({{categoryRgb}}, 0.7);"></text>
     </view>
 
-    <!-- +/- Tab（仅增减金额时显示） -->
+    <!-- sign tabs -->
     <view class="ai-sign-tabs" wx:if="{{mode === 'delta'}}">
       <view class="ai-sign-tab tap {{sign === 1 ? 'active pos' : ''}}"
-            data-s="1" bindtap="onSelectSign">+</view>
+            data-s="1" bindtap="onSelectSign">
+        <view class="ic ic-xs ic-plus"></view>
+        <text>增加</text>
+      </view>
       <view class="ai-sign-tab tap {{sign === -1 ? 'active neg' : ''}}"
-            data-s="-1" bindtap="onSelectSign">−</view>
+            data-s="-1" bindtap="onSelectSign">
+        <view class="ic ic-xs ic-minus"></view>
+        <text>减少</text>
+      </view>
     </view>
 
-    <!-- 当前余额展示 -->
-    <view class="ai-cur" wx:if="{{mode === 'set' || mode === 'delta'}}">
-      当前余额：{{dp.fenToCNY(currentBalanceFen)}}
-    </view>
-
-    <!-- 备注 -->
+    <!-- note -->
     <view class="ai-note-wrap">
-      <input
-        class="ai-note"
-        type="text"
-        maxlength="40"
-        confirm-type="done"
-        placeholder="{{defaultNote}}"
-        placeholder-class="ai-note-ph"
-        value="{{note}}"
-        bindinput="onNoteInput"
-      />
+      <input class="ai-note"
+             type="text" maxlength="40" confirm-type="done"
+             placeholder="加一句备注..."
+             placeholder-class="ai-note-ph"
+             value="{{note}}"
+             bindinput="onNoteInput" />
     </view>
 
-    <!-- 数字键盘 -->
+    <!-- keypad -->
     <view class="ai-keys">
-      <view class="ai-key tap" data-k="1" bindtap="onKey">1</view>
-      <view class="ai-key tap" data-k="2" bindtap="onKey">2</view>
-      <view class="ai-key tap" data-k="3" bindtap="onKey">3</view>
-      <view class="ai-key tap" data-k="4" bindtap="onKey">4</view>
-      <view class="ai-key tap" data-k="5" bindtap="onKey">5</view>
-      <view class="ai-key tap" data-k="6" bindtap="onKey">6</view>
-      <view class="ai-key tap" data-k="7" bindtap="onKey">7</view>
-      <view class="ai-key tap" data-k="8" bindtap="onKey">8</view>
-      <view class="ai-key tap" data-k="9" bindtap="onKey">9</view>
-      <view class="ai-key tap" data-k="." bindtap="onKey">.</view>
-      <view class="ai-key tap" data-k="0" bindtap="onKey">0</view>
-      <view class="ai-key tap ai-key-back" data-k="back" bindtap="onKey">
-        <view class="ic ic-back"></view>
+      <view class="ai-key tap" hover-class="ai-key-press" data-k="1" bindtap="onKey">1</view>
+      <view class="ai-key tap" hover-class="ai-key-press" data-k="2" bindtap="onKey">2</view>
+      <view class="ai-key tap" hover-class="ai-key-press" data-k="3" bindtap="onKey">3</view>
+      <view class="ai-key tap" hover-class="ai-key-press" data-k="4" bindtap="onKey">4</view>
+      <view class="ai-key tap" hover-class="ai-key-press" data-k="5" bindtap="onKey">5</view>
+      <view class="ai-key tap" hover-class="ai-key-press" data-k="6" bindtap="onKey">6</view>
+      <view class="ai-key tap" hover-class="ai-key-press" data-k="7" bindtap="onKey">7</view>
+      <view class="ai-key tap" hover-class="ai-key-press" data-k="8" bindtap="onKey">8</view>
+      <view class="ai-key tap" hover-class="ai-key-press" data-k="9" bindtap="onKey">9</view>
+      <view class="ai-key tap" hover-class="ai-key-press" data-k="." bindtap="onKey">.</view>
+      <view class="ai-key tap" hover-class="ai-key-press" data-k="0" bindtap="onKey">0</view>
+      <view class="ai-key ai-key-back tap" hover-class="ai-key-press" data-k="back" bindtap="onKey">
+        <view class="ic ic-sm ic-back"></view>
       </view>
     </view>
   </view>

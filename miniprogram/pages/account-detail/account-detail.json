@@ -1,5 +1,6 @@
 {
   "navigationBarTitleText": "账户",
+  "navigationStyle": "custom",
   "usingComponents": {
     "amount-input": "/components/amount-input/amount-input"
   }

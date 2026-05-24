@@ -54,7 +54,8 @@ const CATEGORIES = [
     icon: 'handshake',
     desc: '他人欠款 / 待收款项',
     subTypes: [
-      { id: 'other', name: '应收款', icon: 'handshake', custom: true },
+      { id: 'lend',  name: '他人欠款', icon: 'handshake' },
+      { id: 'other', name: '其他',     icon: 'folder', custom: true },
     ],
   },
   {
@@ -65,7 +66,9 @@ const CATEGORIES = [
     icon: 'debt',
     desc: '贷款 / 信用卡 / 借款',
     subTypes: [
-      { id: 'other', name: '负债', icon: 'debt', custom: true },
+      { id: 'loan',   name: '贷款',   icon: 'loan' },
+      { id: 'credit', name: '信用卡', icon: 'credit' },
+      { id: 'other',  name: '其他',   icon: 'folder', custom: true },
     ],
   },
 ]
@@ -79,7 +82,8 @@ const CATEGORY_MAP = CATEGORIES.reduce((m, c) => {
 const KNOWN_ICONS = [
   'cash', 'alipay', 'wechat', 'bank',
   'fund', 'stock', 'house', 'car',
-  'handshake', 'debt', 'folder', 'wallet',
+  'handshake', 'debt', 'loan', 'credit',
+  'folder', 'wallet',
 ]
 
 function isIconKey(s) {

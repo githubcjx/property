@@ -1,8 +1,5 @@
 {
-  "navigationBarTitleText": "净资产",
+  "navigationBarTitleText": "净值本",
   "navigationStyle": "custom",
-  "usingComponents": {
-    "category-header": "/components/category-header/category-header",
-    "account-card": "/components/account-card/account-card"
-  }
+  "usingComponents": {}
 }
