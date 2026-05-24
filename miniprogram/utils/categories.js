@@ -36,7 +36,7 @@ const CATEGORIES = [
   {
     id: 'fixed',
     name: '固定资产',
-    color: '#FBBF24',
+    color: '#B7E8F0',
     colorClass: 'fixed',
     icon: 'house',
     desc: '房产 / 车辆等长期资产',

@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "openapi": []
+  },
+  "triggers": [
+    {
+      "name": "monthly-25-2100-bj",
+      "type": "timer",
+      "config": "0 0 13 25 * * *"
+    }
+  ]
+}
