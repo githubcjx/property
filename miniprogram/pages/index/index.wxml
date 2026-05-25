@@ -131,15 +131,22 @@
     </block>
   </scroll-view>
 
-  <!-- 右下角悬浮按钮组 -->
-  <view class="fab-cluster">
+  <!-- 左下：功能按钮组 -->
+  <view class="fab-cluster fab-cluster-left">
     <view class="fab fab-health tap" hover-class="fab-health-hover" bindtap="onHealth">
       <view class="fab-pulse-aura"></view>
       <view class="ic ic-sm ic-health-pulse"></view>
     </view>
+    <view class="fab fab-milestones tap" hover-class="fab-milestones-hover" bindtap="onMilestones">
+      <view class="ic ic-sm ic-trophy"></view>
+    </view>
     <view class="fab tap" hover-class="fab-hover" bindtap="onTrend">
       <view class="ic ic-sm ic-chart"></view>
     </view>
+  </view>
+
+  <!-- 右下：设置 -->
+  <view class="fab-cluster fab-cluster-right">
     <view class="fab tap" hover-class="fab-hover" bindtap="onSettings">
       <view class="ic ic-sm ic-settings"></view>
     </view>

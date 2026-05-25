@@ -231,6 +231,9 @@ Page({
   onHealth() {
     wx.navigateTo({ url: '/pages/health/health' })
   },
+  onMilestones() {
+    wx.navigateTo({ url: '/pages/milestones/milestones' })
+  },
   onSettings() {
     wx.navigateTo({ url: '/pages/settings/settings' })
   },

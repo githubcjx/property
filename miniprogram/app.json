@@ -6,7 +6,8 @@
     "pages/transaction-detail/transaction-detail",
     "pages/about/about",
     "pages/settings/settings",
-    "pages/health/health"
+    "pages/health/health",
+    "pages/milestones/milestones"
   ],
   "window": {
     "backgroundColor": "#050507",

@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>里程碑 · 原型</title>
+<style>
+  :root {
+    --bg-0: #050507;
+    --bg-1: #08090c;
+    --bg-2: #0c0d12;
+
+    --glass-0: rgba(255, 255, 255, 0.025);
+    --glass-1: rgba(255, 255, 255, 0.05);
+    --glass-2: rgba(255, 255, 255, 0.08);
+    --glass-3: rgba(255, 255, 255, 0.12);
+
+    --hairline: rgba(255, 255, 255, 0.08);
+    --hairline-hi: rgba(255, 255, 255, 0.16);
+
+    --ink-100: #f5f8ff;
+    --ink-80:  rgba(245, 248, 255, 0.78);
+    --ink-60:  rgba(245, 248, 255, 0.55);
+    --ink-40:  rgba(245, 248, 255, 0.36);
+    --ink-20:  rgba(245, 248, 255, 0.18);
+
+    --ice-blue:   #a7d3ff;
+    --lavender:   #c8b5ff;
+
+    /* 里程碑专用：达成=ice-blue 系，未达成=灰，回撤=暖橘 */
+    --achieved: #a7d3ff;
+    --achieved-rgb: 167, 211, 255;
+    --pending:  rgba(245, 248, 255, 0.18);
+    --recede:   #f6d68a;
+    --recede-rgb: 246, 214, 138;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    background: #0a0b10;
+    color: var(--ink-100);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    display: flex;
+    justify-content: center;
+    padding: 24px 12px 60px;
+  }
+
+  /* ===== Phone frame ===== */
+  .phone {
+    position: relative;
+    width: 390px;
+    min-height: 920px;
+    border-radius: 44px;
+    background: var(--bg-0);
+    overflow: hidden;
+    box-shadow:
+      0 30px 80px rgba(0,0,0,0.55),
+      0 0 0 1px rgba(255,255,255,0.05) inset;
+  }
+
+  .canvas-bg {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% 0%, rgba(167, 211, 255, 0.12), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 100% 100%, rgba(200, 181, 255, 0.06), transparent 60%),
+      linear-gradient(180deg, #07080c 0%, #050507 100%);
+    overflow: hidden;
+  }
+  .canvas-bg::before {
+    content: '';
+    position: absolute; inset: -20%;
+    background:
+      radial-gradient(ellipse 30% 25% at 28% 25%, rgba(167, 211, 255, 0.18), transparent 65%),
+      radial-gradient(ellipse 35% 28% at 72% 65%, rgba(200, 181, 255, 0.10), transparent 65%);
+    filter: blur(48px);
+  }
+
+  .content { position: relative; z-index: 1; padding: 56px 20px 40px; }
+
+  /* status bar */
+  .statusbar {
+    position: absolute; top: 18px; left: 0; right: 0;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 28px;
+    font-size: 14px; font-weight: 600;
+    color: var(--ink-100);
+    z-index: 2;
+  }
+  .statusbar .icons { display: flex; gap: 6px; opacity: 0.85; font-size: 11px; }
+
+  /* nav */
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 22px;
+  }
+  .nav .back {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--glass-1);
+    border: 1px solid var(--hairline);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: var(--ink-80);
+  }
+  .nav .title { font-size: 16px; font-weight: 600; letter-spacing: 0.4px; }
+  .nav .share {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--glass-1);
+    border: 1px solid var(--hairline);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; color: var(--ink-80);
+  }
+
+  /* ===== Hero · 下一关大进度 ===== */
+  .hero {
+    position: relative;
+    padding: 28px 24px 24px;
+    border-radius: 28px;
+    background:
+      linear-gradient(155deg, rgba(167,211,255,0.12), rgba(200,181,255,0.07) 65%, rgba(255,255,255,0.02));
+    border: 1px solid var(--hairline);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: -30%; right: -20%;
+    width: 320px; height: 320px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(167,211,255,0.30), transparent 70%);
+    filter: blur(24px);
+  }
+  .hero-eyebrow {
+    position: relative;
+    font-size: 11px;
+    color: var(--ink-60);
+    letter-spacing: 2px;
+    margin-bottom: 22px;
+    text-transform: uppercase;
+  }
+
+  /* 大圆弧进度 */
+  .ring-wrap {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    margin: 0 auto 24px;
+  }
+  .ring-bg, .ring-fill {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+  }
+  .ring-bg {
+    background:
+      radial-gradient(circle, transparent 67%, rgba(255,255,255,0.08) 67.5%, rgba(255,255,255,0.08) 76%, transparent 76.5%);
+  }
+  .ring-fill {
+    --score-deg: 232deg;   /* 64.5% × 360 = 232.2 */
+    background:
+      conic-gradient(from -90deg, #a7d3ff 0deg, #c8b5ff var(--score-deg), transparent var(--score-deg));
+    -webkit-mask: radial-gradient(circle, transparent 67%, #000 67.5%, #000 76%, transparent 76.5%);
+            mask: radial-gradient(circle, transparent 67%, #000 67.5%, #000 76%, transparent 76.5%);
+    filter: drop-shadow(0 0 10px rgba(167,211,255,0.45));
+  }
+  /* 弧端的高光小球 */
+  .ring-tip {
+    position: absolute;
+    /* 64.5% on circle from -90deg start → angle = -90 + 232 = 142deg */
+    --tip-deg: 142deg;
+    top: 50%; left: 50%;
+    width: 12px; height: 12px;
+    margin-left: -6px; margin-top: -6px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow:
+      0 0 12px rgba(255,255,255,0.85),
+      0 0 24px rgba(167,211,255,0.6);
+    transform: rotate(var(--tip-deg)) translateY(-86px) rotate(calc(-1 * var(--tip-deg)));
+  }
+
+  .ring-center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .ring-next-label {
+    font-size: 11px;
+    color: var(--ink-60);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .ring-target {
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--ink-100);
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+  .ring-pct {
+    margin-top: 12px;
+    padding: 4px 12px;
+    border-radius: 12px;
+    background: rgba(167,211,255,0.18);
+    border: 1px solid rgba(167,211,255,0.35);
+    font-size: 13px;
+    color: var(--ice-blue);
+    font-weight: 600;
+  }
+
+  .hero-meta {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .meta-item {
+    padding: 14px 14px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--hairline);
+  }
+  .meta-k { font-size: 10px; color: var(--ink-60); letter-spacing: 0.5px; }
+  .meta-v {
+    margin-top: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink-100);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.2px;
+  }
+  .meta-v .small { font-size: 11px; color: var(--ink-60); font-weight: 400; margin-left: 3px; }
+
+  .hero-tip {
+    position: relative;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--hairline);
+    font-size: 12px;
+    color: var(--ink-80);
+    line-height: 1.55;
+  }
+  .hero-tip .em { color: var(--ice-blue); font-weight: 500; }
+
+  /* ===== Section title ===== */
+  .section-title {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 4px;
+    margin: 20px 0 14px;
+  }
+  .section-title h3 {
+    font-size: 13px; font-weight: 600;
+    color: var(--ink-80);
+    letter-spacing: 0.8px;
+    margin: 0;
+  }
+  .section-title .sub { font-size: 11px; color: var(--ink-60); }
+
+  /* ===== Timeline ===== */
+  .timeline {
+    position: relative;
+    padding: 6px 16px 6px;
+    border-radius: 24px;
+    background: var(--glass-0);
+    border: 1px solid var(--hairline);
+  }
+  /* vertical track */
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 36px;
+    top: 28px;
+    bottom: 28px;
+    width: 1.5px;
+    background:
+      linear-gradient(180deg,
+        rgba(167,211,255,0.40) 0%,
+        rgba(167,211,255,0.40) 55%,
+        rgba(255,255,255,0.08) 55%,
+        rgba(255,255,255,0.08) 100%);
+  }
+
+  .ms-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 0;
+  }
+
+  .ms-dot {
+    position: relative;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--glass-1);
+    border: 1.5px solid var(--hairline);
+    font-size: 14px;
+    color: var(--ink-40);
+    z-index: 1;
+  }
+  .ms-row.achieved .ms-dot {
+    background: linear-gradient(140deg, rgba(167,211,255,0.45), rgba(200,181,255,0.35));
+    border-color: rgba(167,211,255,0.5);
+    color: #fff;
+    box-shadow: 0 0 16px rgba(167,211,255,0.35);
+  }
+  .ms-row.current .ms-dot {
+    background: rgba(167,211,255,0.18);
+    border: 1.5px solid var(--ice-blue);
+    color: var(--ice-blue);
+    box-shadow: 0 0 16px rgba(167,211,255,0.35);
+    animation: ms-pulse 2.4s ease-out infinite;
+  }
+  @keyframes ms-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(167,211,255,0.55); }
+    70%  { box-shadow: 0 0 0 14px rgba(167,211,255,0); }
+    100% { box-shadow: 0 0 0 0 rgba(167,211,255,0); }
+  }
+  .ms-row.future .ms-dot { opacity: 0.55; }
+
+  .ms-body { flex: 1; min-width: 0; }
+  .ms-target {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink-100);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.2px;
+  }
+  .ms-row.future .ms-target { color: var(--ink-40); font-weight: 500; }
+  .ms-sub {
+    margin-top: 3px;
+    font-size: 11px;
+    color: var(--ink-60);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ms-sub .sep { width: 2px; height: 2px; background: var(--ink-40); border-radius: 50%; }
+
+  .ms-meta-right {
+    flex-shrink: 0;
+    font-size: 11px;
+    color: var(--ink-40);
+    text-align: right;
+  }
+  .ms-meta-right .duration {
+    font-weight: 500;
+    color: var(--ink-80);
+    font-size: 12px;
+  }
+
+  /* current 进度迷你条 */
+  .ms-mini-progress {
+    margin-top: 8px;
+    height: 4px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+  .ms-mini-progress .fill {
+    position: absolute;
+    top: 0; bottom: 0; left: 0;
+    border-radius: 2px;
+    background: linear-gradient(90deg, rgba(167,211,255,0.55), #a7d3ff);
+    box-shadow: 0 0 8px rgba(167,211,255,0.45);
+  }
+
+  /* ===== 历史峰值 / 旅程 ===== */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .stat-card {
+    padding: 16px 16px 14px;
+    border-radius: 18px;
+    background: var(--glass-1);
+    border: 1px solid var(--hairline);
+  }
+  .stat-card.wide { grid-column: 1 / -1; }
+  .stat-k {
+    font-size: 11px;
+    color: var(--ink-60);
+    letter-spacing: 0.4px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .stat-k .badge-mini {
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 8px;
+    background: rgba(246,214,138,0.15);
+    color: var(--recede);
+    border: 1px solid rgba(246,214,138,0.25);
+  }
+  .stat-v {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--ink-100);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.3px;
+    line-height: 1.1;
+  }
+  .stat-foot {
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--ink-60);
+    line-height: 1.5;
+  }
+
+  /* annotation outside */
+  .legend {
+    position: fixed; top: 24px; left: 24px;
+    max-width: 280px;
+    padding: 16px 18px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.75);
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .legend b { color: #fff; }
+  .legend .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  .legend .dot.achieved { background: var(--achieved); box-shadow: 0 0 6px rgba(167,211,255,0.6); }
+  .legend .dot.current  { background: rgba(167,211,255,0.22); border: 1.5px solid var(--ice-blue); }
+  .legend .dot.future   { background: var(--pending); }
+  @media (max-width: 920px) { .legend { display: none; } }
+</style>
+</head>
+<body>
+
+<aside class="legend">
+  <div><b>里程碑 · 原型说明</b></div>
+  <div style="margin-top:10px;">
+    <span class="dot achieved"></span>已达成 ·
+    <span class="dot current"></span>当前 ·
+    <span class="dot future"></span>未达成
+  </div>
+  <div style="margin-top:10px; color: rgba(255,255,255,0.6);">
+    数据基于 accounts + transactions 即时算出。当前净值 ¥64.5w，最近 6 月平均 +¥4.2w / 月。历史峰值 ¥68w，当前回撤 5.1%。
+  </div>
+</aside>
+
+<div class="phone">
+  <div class="canvas-bg"></div>
+
+  <div class="statusbar">
+    <span>9:41</span>
+    <span class="icons">● ● ● ▮</span>
+  </div>
+
+  <div class="content">
+    <!-- Nav -->
+    <div class="nav">
+      <div class="back">‹</div>
+      <div class="title">里程碑</div>
+      <div class="share">↗</div>
+    </div>
+
+    <!-- Hero · 下一关 -->
+    <div class="hero">
+      <div class="hero-eyebrow">NEXT MILESTONE · 下一关</div>
+
+      <div class="ring-wrap">
+        <div class="ring-bg"></div>
+        <div class="ring-fill"></div>
+        <div class="ring-tip"></div>
+        <div class="ring-center">
+          <div class="ring-next-label">即将抵达</div>
+          <div class="ring-target">¥100 万</div>
+          <div class="ring-pct">64.5%</div>
+        </div>
+      </div>
+
+      <div class="hero-meta">
+        <div class="meta-item">
+          <div class="meta-k">还差</div>
+          <div class="meta-v">¥35.5<span class="small">万</span></div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-k">近 6 月增速</div>
+          <div class="meta-v">+¥4.2<span class="small">万 / 月</span></div>
+        </div>
+      </div>
+
+      <div class="hero-tip">
+        按当前节奏，预计在 <span class="em">2026 年 12 月</span> 前后跨过下一关。坚持记账，每一笔都被记录。
+      </div>
+    </div>
+
+    <!-- 里程碑时间线 -->
+    <div class="section-title">
+      <h3>财富之路 · 9 关</h3>
+      <span class="sub">5 / 9 已达成</span>
+    </div>
+
+    <div class="timeline">
+
+      <!-- achieved 1 -->
+      <div class="ms-row achieved">
+        <div class="ms-dot">✓</div>
+        <div class="ms-body">
+          <div class="ms-target">¥1 万</div>
+          <div class="ms-sub">
+            <span>2023 年 8 月 6 日</span>
+          </div>
+        </div>
+        <div class="ms-meta-right">
+          <div class="duration">22 天</div>
+          <div>用时</div>
+        </div>
+      </div>
+
+      <!-- achieved 2 -->
+      <div class="ms-row achieved">
+        <div class="ms-dot">✓</div>
+        <div class="ms-body">
+          <div class="ms-target">¥5 万</div>
+          <div class="ms-sub">
+            <span>2024 年 1 月 22 日</span>
+          </div>
+        </div>
+        <div class="ms-meta-right">
+          <div class="duration">5 个月</div>
+          <div>距上一关</div>
+        </div>
+      </div>
+
+      <!-- achieved 3 -->
+      <div class="ms-row achieved">
+        <div class="ms-dot">✓</div>
+        <div class="ms-body">
+          <div class="ms-target">¥10 万</div>
+          <div class="ms-sub">
+            <span>2024 年 4 月 11 日</span>
+          </div>
+        </div>
+        <div class="ms-meta-right">
+          <div class="duration">2 个月</div>
+          <div>距上一关</div>
+        </div>
+      </div>
+
+      <!-- achieved 4 -->
+      <div class="ms-row achieved">
+        <div class="ms-dot">✓</div>
+        <div class="ms-body">
+          <div class="ms-target">¥30 万</div>
+          <div class="ms-sub">
+            <span>2024 年 11 月 3 日</span>
+          </div>
+        </div>
+        <div class="ms-meta-right">
+          <div class="duration">7 个月</div>
+          <div>距上一关</div>
+        </div>
+      </div>
+
+      <!-- achieved 5 -->
+      <div class="ms-row achieved">
+        <div class="ms-dot">✓</div>
+        <div class="ms-body">
+          <div class="ms-target">¥50 万</div>
+          <div class="ms-sub">
+            <span>2025 年 6 月 18 日</span>
+          </div>
+        </div>
+        <div class="ms-meta-right">
+          <div class="duration">7 个月</div>
+          <div>距上一关</div>
+        </div>
+      </div>
+
+      <!-- CURRENT -->
+      <div class="ms-row current">
+        <div class="ms-dot">●</div>
+        <div class="ms-body">
+          <div class="ms-target">¥100 万</div>
+          <div class="ms-sub">
+            <span>进度 64.5%</span>
+            <span class="sep"></span>
+            <span>预计 2026 年 12 月</span>
+          </div>
+          <div class="ms-mini-progress">
+            <div class="fill" style="width: 64.5%;"></div>
+          </div>
+        </div>
+        <div class="ms-meta-right">
+          <div class="duration" style="color: var(--ice-blue);">还差 ¥35.5w</div>
+          <div>进行中</div>
+        </div>
+      </div>
+
+      <!-- future -->
+      <div class="ms-row future">
+        <div class="ms-dot">○</div>
+        <div class="ms-body">
+          <div class="ms-target">¥300 万</div>
+          <div class="ms-sub"><span>高净值参考门槛</span></div>
+        </div>
+      </div>
+
+      <div class="ms-row future">
+        <div class="ms-dot">○</div>
+        <div class="ms-body">
+          <div class="ms-target">¥500 万</div>
+          <div class="ms-sub"><span>—</span></div>
+        </div>
+      </div>
+
+      <div class="ms-row future" style="padding-bottom: 18px;">
+        <div class="ms-dot">○</div>
+        <div class="ms-body">
+          <div class="ms-target">¥1000 万</div>
+          <div class="ms-sub"><span>千万级</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 历史峰值 / 旅程统计 -->
+    <div class="section-title">
+      <h3>旅程</h3>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-k">
+          历史峰值
+          <span class="badge-mini">距峰 -5.1%</span>
+        </div>
+        <div class="stat-v">¥68 万</div>
+        <div class="stat-foot">2025 年 4 月 12 日<br/>距今 408 天</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-k">首次破零</div>
+        <div class="stat-v">2023 / 07 / 15</div>
+        <div class="stat-foot">记账以来 1,045 天</div>
+      </div>
+
+      <div class="stat-card wide">
+        <div class="stat-k">资产翻倍</div>
+        <div class="stat-v">已翻 6 倍</div>
+        <div class="stat-foot">¥10w → ¥20w 用了 4 个月 · ¥20w → ¥40w 用了 9 个月 · ¥40w → ¥80w 预计还需 12 个月</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

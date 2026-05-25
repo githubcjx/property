@@ -1,0 +1,152 @@
+<view class="canvas-bg" wx:if="{{!reduceMotion}}"></view>
+
+<view class="page {{reduceMotion ? 'no-motion' : ''}}">
+  <!-- 透明导航栏 -->
+  <view class="navbar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onBack">
+      <view class="ic ic-xs ic-back"></view>
+    </view>
+    <text class="nav-title">里程碑</text>
+  </view>
+
+  <!-- 空态 -->
+  <block wx:if="{{!loading && !hasData}}">
+    <view class="empty-stage">
+      <view class="empty-orb">
+        <view class="ic ic-lg ic-trophy"></view>
+      </view>
+      <view class="empty-title">还没有账户数据</view>
+      <view class="empty-desc">回到首页添加账户、记录余额，便可开启第一关</view>
+    </view>
+  </block>
+
+  <block wx:if="{{hasData}}">
+    <scroll-view scroll-y class="scroll" enable-flex>
+
+      <!-- ============ Hero · 下一关 ============ -->
+      <view class="hero entry-up" wx:if="{{nextTarget}}">
+        <view class="hero-eyebrow">NEXT MILESTONE · 下一关</view>
+
+        <view class="ring-wrap {{nextTarget.isHighlight ? 'ring-highlight' : ''}}">
+          <view class="ring-bg"></view>
+          <view class="ring-fill" style="--score-deg: {{ringDeg}};"></view>
+          <view class="ring-tip" style="--tip-deg: {{ringTipDeg}};"></view>
+          <view class="ring-center">
+            <view class="ring-next-label">即将抵达</view>
+            <view class="ring-target">{{nextTarget.amountText}}</view>
+            <view class="ring-pct">{{nextTarget.progressPctText}}%</view>
+          </view>
+        </view>
+
+        <view class="hero-meta">
+          <view class="meta-item">
+            <view class="meta-k">还差</view>
+            <view class="meta-v num">{{nextTarget.remainingText}}</view>
+          </view>
+          <view class="meta-item">
+            <view class="meta-k">近 6 月增速</view>
+            <view class="meta-v num">{{monthlyRateText}}<text class="meta-suffix">/ 月</text></view>
+          </view>
+        </view>
+
+        <view class="hero-tip" wx:if="{{nextTarget.predictedText}}">
+          按当前节奏，预计在 <text class="em">{{nextTarget.predictedText}}</text> 前后跨过下一关
+        </view>
+        <view class="hero-tip" wx:elif="{{monthlyRateText === '¥0' || monthlyRateText[0] === '-'}}">
+          近 6 月增速不足以预测，先持续记录每月余额
+        </view>
+      </view>
+
+      <!-- ============ 全部达成态 ============ -->
+      <view class="hero hero-done entry-up" wx:if="{{allDone}}">
+        <view class="done-orb"><view class="ic ic-lg ic-trophy"></view></view>
+        <view class="done-title">所有关口已达成</view>
+        <view class="done-desc">当前 {{currentText}}，是一段了不起的旅程</view>
+      </view>
+
+      <!-- ============ 时间线 ============ -->
+      <view class="sec-title entry-up d1">
+        <text class="sec-name">财富之路 · {{totalCount}} 关</text>
+        <text class="sec-sub">{{achievedCount}} / {{totalCount}} 已达成</text>
+      </view>
+
+      <view class="timeline" style="--achieved-stop: {{achievedCount / totalCount * 100}}%;">
+        <view
+          wx:for="{{milestones}}"
+          wx:key="amount"
+          class="ms-row ms-{{item.status}} {{item.isHighlight ? 'ms-highlight' : ''}}"
+        >
+          <view class="ms-dot">
+            <block wx:if="{{item.status === 'achieved'}}">✓</block>
+            <block wx:elif="{{item.status === 'current'}}">●</block>
+            <block wx:else>○</block>
+          </view>
+
+          <view class="ms-body">
+            <view class="ms-target">
+              <text>{{item.amountText}}</text>
+              <text wx:if="{{item.isHighlight}}" class="ms-tag-star">★</text>
+            </view>
+
+            <!-- achieved -->
+            <view wx:if="{{item.status === 'achieved'}}" class="ms-sub">
+              <text>{{item.achievedDateText}}</text>
+            </view>
+
+            <!-- current -->
+            <view wx:if="{{item.status === 'current'}}" class="ms-sub">
+              <text>进度 {{item.progressPctText}}%</text>
+              <text wx:if="{{item.predictedText}}" class="sep"></text>
+              <text wx:if="{{item.predictedText}}">预计 {{item.predictedText}}</text>
+            </view>
+
+            <!-- future highlight tag -->
+            <view wx:if="{{item.status === 'future' && item.isHighlight}}" class="ms-sub">
+              <text>关键关口 · 复利启航</text>
+            </view>
+
+            <!-- current 进度条 -->
+            <view wx:if="{{item.status === 'current'}}" class="ms-mini-progress">
+              <view class="fill" style="width: {{item.progressPctText}}%;"></view>
+            </view>
+          </view>
+
+          <view class="ms-meta-right" wx:if="{{item.status === 'achieved' && item.durationText}}">
+            <view class="duration">{{item.durationText}}</view>
+            <view class="duration-label">{{item.durationLabel}}</view>
+            <view wx:if="{{item.speedupText}}" class="speedup speedup-{{item.speedupKind}}">{{item.speedupText}}</view>
+          </view>
+
+          <view class="ms-meta-right" wx:if="{{item.status === 'current'}}">
+            <view class="duration current-remaining">还差 {{item.remainingText}}</view>
+            <view class="duration-label">进行中</view>
+          </view>
+        </view>
+      </view>
+
+      <!-- ============ 旅程 ============ -->
+      <view class="sec-title entry-up">
+        <text class="sec-name">旅程</text>
+      </view>
+
+      <view class="stats-grid">
+        <view class="stat-card glass" wx:if="{{peak}}">
+          <view class="stat-k">
+            历史峰值
+            <text wx:if="{{peak.drawdownText}}" class="badge-mini">距峰 {{peak.drawdownText}}</text>
+          </view>
+          <view class="stat-v num">{{peak.amountText}}</view>
+          <view class="stat-foot">{{peak.dateText}}\n距今 {{peak.daysAgo}} 天</view>
+        </view>
+
+        <view class="stat-card glass" wx:if="{{firstPositive}}">
+          <view class="stat-k">首次破零</view>
+          <view class="stat-v num">{{firstPositive.dateText}}</view>
+          <view class="stat-foot">记账以来 {{firstPositive.daysAgo}} 天</view>
+        </view>
+      </view>
+
+      <view class="bottom-spacer"></view>
+    </scroll-view>
+  </block>
+</view>

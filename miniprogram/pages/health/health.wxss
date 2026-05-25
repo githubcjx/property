@@ -25,6 +25,8 @@
   justify-content: center;
   -webkit-backdrop-filter: blur(20rpx);
   backdrop-filter: blur(20rpx);
+  position: relative;
+  z-index: 1;
 }
 .nav-btn-hover { background: var(--glass-3); transform: scale(0.96); }
 .nav-title {
