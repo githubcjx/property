@@ -1,6 +1,6 @@
-<view class="canvas-bg"></view>
+<view class="canvas-bg" wx:if="{{!reduceMotion}}"></view>
 
-<view class="page">
+<view class="page {{reduceMotion ? 'no-motion' : ''}}">
   <view class="chart-halo"></view>
 
   <!-- 透明导航栏 -->
@@ -8,7 +8,7 @@
     <view class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onBack">
       <view class="ic ic-xs ic-back"></view>
     </view>
-    <text class="nav-title">趋势 · Trends</text>
+    <text class="nav-title">趋势</text>
     <view class="nav-spacer"></view>
   </view>
 

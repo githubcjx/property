@@ -1,6 +1,6 @@
-<view class="canvas-bg"></view>
+<view class="canvas-bg" wx:if="{{!reduceMotion}}"></view>
 
-<view class="page">
+<view class="page {{reduceMotion ? 'no-motion' : ''}}">
   <view class="settings-halo"></view>
 
   <!-- 透明导航栏 -->
@@ -22,6 +22,14 @@
   </view>
 
   <view class="sec-card glass entry-up d1">
+    <view class="row row-switch">
+      <view class="row-icon"><view class="ic ic-sm ic-settings"></view></view>
+      <view class="row-main">
+        <text class="row-title">简化动效</text>
+        <text class="row-sub">关闭模糊与持续动画，省电降温</text>
+      </view>
+      <switch checked="{{reduceMotion}}" bindchange="onReduceMotionChange" color="#a7d3ff" />
+    </view>
     <button class="feedback-row tap" hover-class="row-hover" open-type="feedback">
       <view class="row-icon"><view class="ic ic-sm ic-edit"></view></view>
       <view class="row-main">

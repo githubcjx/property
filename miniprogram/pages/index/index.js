@@ -43,6 +43,7 @@ Page({
 
     wobbleMap: {},
     netShineKey: 0,
+    reduceMotion: false,
   },
 
   onLoad() {
@@ -51,12 +52,16 @@ Page({
     this.setData({
       statusBarHeight: sysInfo.statusBarHeight || 20,
       hideAmount: app.globalData.hideAmount,
+      reduceMotion: app.globalData.reduceMotion,
       expandedMap: stored,
     })
   },
 
   onShow() {
-    this.setData({ hideAmount: app.globalData.hideAmount })
+    this.setData({
+      hideAmount: app.globalData.hideAmount,
+      reduceMotion: app.globalData.reduceMotion,
+    })
     this.refresh()
   },
 
@@ -222,6 +227,9 @@ Page({
   },
   onTrend() {
     wx.navigateTo({ url: '/subpackages/chart-pkg/pages/chart/chart' })
+  },
+  onHealth() {
+    wx.navigateTo({ url: '/pages/health/health' })
   },
   onSettings() {
     wx.navigateTo({ url: '/pages/settings/settings' })

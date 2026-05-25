@@ -1,3 +1,4 @@
+const app = getApp()
 const accountSvc = require('../../services/account.js')
 const { CATEGORIES, getSubType, getCategory } = require('../../utils/categories.js')
 const { yuanToFen, fenToYuan } = require('../../utils/format.js')
@@ -44,11 +45,15 @@ Page({
 
     showSuccess: false,
     burstKey: 0,
+    reduceMotion: false,
   },
 
   onLoad(query) {
     const sysInfo = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
-    this.setData({ statusBarHeight: sysInfo.statusBarHeight || 20 })
+    this.setData({
+      statusBarHeight: sysInfo.statusBarHeight || 20,
+      reduceMotion: app.globalData.reduceMotion,
+    })
     if (query.editId) {
       this.loadEdit(query.editId)
     }

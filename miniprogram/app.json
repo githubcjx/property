@@ -5,7 +5,8 @@
     "pages/account-detail/account-detail",
     "pages/transaction-detail/transaction-detail",
     "pages/about/about",
-    "pages/settings/settings"
+    "pages/settings/settings",
+    "pages/health/health"
   ],
   "window": {
     "backgroundColor": "#050507",

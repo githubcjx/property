@@ -17,6 +17,7 @@ Component({
     categoryClass: { type: String, value: 'liquid' },
     categoryRgb: { type: String, value: '167, 211, 255' },
     currentBalanceFen: { type: Number, value: 0 },
+    reduceMotion: { type: Boolean, value: false },
   },
   data: {
     raw: '',

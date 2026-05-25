@@ -1,7 +1,10 @@
+const app = getApp()
+
 Page({
   data: {
     version: 'V1.1',
     statusBarHeight: 20,
+    reduceMotion: false,
     sections: [
       {
         title: '关于这个小程序',
@@ -84,7 +87,14 @@ Page({
 
   onLoad() {
     const sysInfo = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
-    this.setData({ statusBarHeight: sysInfo.statusBarHeight || 20 })
+    this.setData({
+      statusBarHeight: sysInfo.statusBarHeight || 20,
+      reduceMotion: app.globalData.reduceMotion,
+    })
+  },
+
+  onShow() {
+    this.setData({ reduceMotion: app.globalData.reduceMotion })
   },
 
   onBack() {

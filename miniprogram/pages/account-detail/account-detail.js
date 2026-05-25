@@ -70,11 +70,15 @@ Page({
       accountId: query.id || '',
       statusBarHeight: sysInfo.statusBarHeight || 20,
       hideAmount: app.globalData.hideAmount,
+      reduceMotion: app.globalData.reduceMotion,
     })
   },
 
   onShow() {
-    this.setData({ hideAmount: app.globalData.hideAmount })
+    this.setData({
+      hideAmount: app.globalData.hideAmount,
+      reduceMotion: app.globalData.reduceMotion,
+    })
     this.refresh()
   },
 

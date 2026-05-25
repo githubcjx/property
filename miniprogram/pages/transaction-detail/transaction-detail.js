@@ -1,3 +1,4 @@
+const app = getApp()
 const txSvc = require('../../services/transaction.js')
 const accountSvc = require('../../services/account.js')
 const { formatYuan, formatDelta, yuanToFen, fenToYuan } = require('../../utils/format.js')
@@ -68,6 +69,7 @@ Page({
     editDate: '',
     editTime: '',
     submitting: false,
+    reduceMotion: false,
   },
 
   onLoad(query) {
@@ -75,8 +77,13 @@ Page({
     this.setData({
       statusBarHeight: sysInfo.statusBarHeight || 20,
       txId: query.id || '',
+      reduceMotion: app.globalData.reduceMotion,
     })
     this.load(query.id)
+  },
+
+  onShow() {
+    this.setData({ reduceMotion: app.globalData.reduceMotion })
   },
 
   async load(id) {

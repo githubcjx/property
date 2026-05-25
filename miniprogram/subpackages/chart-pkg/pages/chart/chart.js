@@ -48,6 +48,7 @@ Page({
     loading: true,
     hasData: false,
     hideAmount: false,
+    reduceMotion: false,
 
     statusBarHeight: 20,
 
@@ -71,6 +72,7 @@ Page({
     const sysInfo = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
     this.setData({
       hideAmount: app.globalData.hideAmount,
+      reduceMotion: app.globalData.reduceMotion,
       statusBarHeight: sysInfo.statusBarHeight || 20,
     })
     // 设置默认自定义日期：近 7 天
@@ -89,6 +91,10 @@ Page({
       ecComp.init(initChart)
     }
     this.refresh()
+  },
+
+  onShow() {
+    this.setData({ reduceMotion: app.globalData.reduceMotion })
   },
 
   onUnload() {

@@ -1,6 +1,6 @@
-<view class="canvas-bg"></view>
+<view class="canvas-bg" wx:if="{{!reduceMotion}}"></view>
 
-<view class="page">
+<view class="page {{reduceMotion ? 'no-motion' : ''}}">
   <!-- 顶栏 -->
   <view class="topbar" style="padding-top: {{statusBarHeight}}px;">
     <view class="top-left">
@@ -133,6 +133,10 @@
 
   <!-- 右下角悬浮按钮组 -->
   <view class="fab-cluster">
+    <view class="fab fab-health tap" hover-class="fab-health-hover" bindtap="onHealth">
+      <view class="fab-pulse-aura"></view>
+      <view class="ic ic-sm ic-health-pulse"></view>
+    </view>
     <view class="fab tap" hover-class="fab-hover" bindtap="onTrend">
       <view class="ic ic-sm ic-chart"></view>
     </view>

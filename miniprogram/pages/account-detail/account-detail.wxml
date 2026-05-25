@@ -1,6 +1,6 @@
-<view class="canvas-bg"></view>
+<view class="canvas-bg" wx:if="{{!reduceMotion}}"></view>
 
-<view class="page">
+<view class="page {{reduceMotion ? 'no-motion' : ''}}">
   <!-- 类目光晕 -->
   <view class="hero-halo halo-{{colorClass}}"></view>
 
@@ -137,6 +137,7 @@
   category-class="{{colorClass}}"
   category-rgb="{{burstColor}}"
   current-balance-fen="{{balanceRaw}}"
+  reduce-motion="{{reduceMotion}}"
   bindcancel="onInputCancel"
   bindconfirm="onInputConfirm"
 />

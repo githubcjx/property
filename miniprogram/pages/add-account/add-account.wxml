@@ -1,6 +1,6 @@
-<view class="canvas-bg"></view>
+<view class="canvas-bg" wx:if="{{!reduceMotion}}"></view>
 
-<view class="page">
+<view class="page {{reduceMotion ? 'no-motion' : ''}}">
   <!-- 类目光晕（form 阶段） -->
   <view wx:if="{{step === 3 && selectedCategoryId}}"
         class="form-halo"

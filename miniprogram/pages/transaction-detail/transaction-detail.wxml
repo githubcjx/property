@@ -1,6 +1,6 @@
-<view class="canvas-bg"></view>
+<view class="canvas-bg" wx:if="{{!reduceMotion}}"></view>
 
-<view class="page" wx:if="{{tx}}">
+<view class="page {{reduceMotion ? 'no-motion' : ''}}" wx:if="{{tx}}">
   <view class="tx-halo"
         style="background: radial-gradient(circle, rgba({{categoryRgb}}, 0.25), transparent 70%);"></view>
 

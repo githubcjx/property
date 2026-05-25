@@ -5,6 +5,7 @@ App({
   globalData: {
     hideAmount: false,
     cloudReady: false,
+    reduceMotion: wx.getStorageSync('pref_reduce_motion') === true,
   },
 
   onLaunch() {
@@ -31,5 +32,12 @@ App({
   toggleHideAmount() {
     this.globalData.hideAmount = !this.globalData.hideAmount
     return this.globalData.hideAmount
+  },
+
+  setReduceMotion(v) {
+    const next = !!v
+    this.globalData.reduceMotion = next
+    wx.setStorageSync('pref_reduce_motion', next)
+    return next
   },
 })
