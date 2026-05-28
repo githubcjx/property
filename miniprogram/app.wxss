@@ -327,13 +327,21 @@ button.btn-reset::after { display: none; }
   --neg: #e8627d;
 
   /* —— 新拟态双阴影（供覆盖与页面复用）—— */
-  --neu-dark: #c5cee3;
+  /* 注意：必须用 rpx，小程序 WXSS 对 rem 支持不稳定（会导致阴影几乎不可见）*/
+  --neu-dark: #c2cbe0;
   --neu-light: #ffffff;
-  --neu-raised: 0.45rem 0.45rem 0.9rem var(--neu-dark), -0.38rem -0.38rem 0.8rem var(--neu-light);
-  --neu-raised-sm: 0.3rem 0.3rem 0.6rem var(--neu-dark), -0.25rem -0.25rem 0.5rem var(--neu-light);
-  --neu-inset: inset 0.25rem 0.25rem 0.6rem var(--neu-dark), inset -0.25rem -0.25rem 0.6rem var(--neu-light);
+  --neu-raised: 12rpx 12rpx 24rpx var(--neu-dark), -10rpx -10rpx 20rpx var(--neu-light);
+  --neu-raised-sm: 8rpx 8rpx 16rpx var(--neu-dark), -7rpx -7rpx 14rpx var(--neu-light);
+  --neu-inset: inset 8rpx 8rpx 16rpx var(--neu-dark), inset -8rpx -8rpx 16rpx var(--neu-light);
 
   color: var(--ink-100);
+  background: var(--bg-1);
+}
+
+/* 页面根容器在新拟态下也要铺浅底——
+   否则原生 page 根的深色会透出来，且凹凸阴影需要"容器与卡片同色"才成立 */
+.page.theme-neu {
+  background: var(--bg-1);
 }
 
 /* 背景：把深色星云换成浅色纯底，去掉星点/光晕 */

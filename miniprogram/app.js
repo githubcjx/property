@@ -56,4 +56,12 @@ App({
   themeClass() {
     return this.globalData.theme === 'neu' ? 'theme-neu' : ''
   },
+
+  // 设置原生 page 根背景色（避免过度滚动回弹时露出另一主题的底色）
+  applyNativeBg() {
+    const color = this.globalData.theme === 'neu' ? '#e4ebf5' : '#050507'
+    if (wx.setBackgroundColor) {
+      wx.setBackgroundColor({ backgroundColor: color })
+    }
+  },
 })

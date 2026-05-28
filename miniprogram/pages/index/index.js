@@ -68,6 +68,7 @@ Page({
       reduceMotion: app.globalData.reduceMotion,
       themeClass: app.themeClass(),
     })
+    app.applyNativeBg()
     this.refresh()
   },
 

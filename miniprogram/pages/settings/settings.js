@@ -29,6 +29,7 @@ Page({
       theme: app.globalData.theme,
       themeClass: app.themeClass(),
     })
+    app.applyNativeBg()
   },
 
   onThemeTap(e) {
@@ -36,6 +37,7 @@ Page({
     if (!key || key === this.data.theme) return
     app.setTheme(key)
     this.setData({ theme: key, themeClass: app.themeClass() })
+    app.applyNativeBg()
   },
 
   onReduceMotionChange(e) {
