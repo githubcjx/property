@@ -44,6 +44,10 @@ Page({
     wobbleMap: {},
     netShineKey: 0,
     reduceMotion: false,
+
+    // 工具 · 分析中心面板
+    toolsVisible: false,
+    toolsClosing: false,
   },
 
   onLoad() {
@@ -235,18 +239,23 @@ Page({
   onAdd() {
     wx.navigateTo({ url: '/pages/add-account/add-account' })
   },
-  onTrend() {
-    wx.navigateTo({ url: '/subpackages/chart-pkg/pages/chart/chart' })
+
+  // 工具 · 分析中心面板
+  onOpenTools() {
+    this.setData({ toolsVisible: true, toolsClosing: false })
   },
-  onHealth() {
-    wx.navigateTo({ url: '/pages/health/health' })
+  onCloseTools() {
+    if (!this.data.toolsVisible) return
+    this.setData({ toolsClosing: true })
+    setTimeout(() => this.setData({ toolsVisible: false, toolsClosing: false }), 240)
   },
-  onMilestones() {
-    wx.navigateTo({ url: '/pages/milestones/milestones' })
+  onToolTap(e) {
+    const url = e.currentTarget.dataset.url
+    this.setData({ toolsVisible: false, toolsClosing: false })
+    if (url) wx.navigateTo({ url })
   },
-  onPeerBenchmark() {
-    wx.navigateTo({ url: '/pages/peer-benchmark/peer-benchmark' })
-  },
+  onSheetNoop() {},
+
   onSettings() {
     wx.navigateTo({ url: '/pages/settings/settings' })
   },
