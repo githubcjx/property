@@ -244,6 +244,9 @@ Page({
   onMilestones() {
     wx.navigateTo({ url: '/pages/milestones/milestones' })
   },
+  onPeerBenchmark() {
+    wx.navigateTo({ url: '/pages/peer-benchmark/peer-benchmark' })
+  },
   onSettings() {
     wx.navigateTo({ url: '/pages/settings/settings' })
   },

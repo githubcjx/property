@@ -143,6 +143,9 @@
     <view class="fab tap" hover-class="fab-hover" bindtap="onTrend">
       <view class="ic ic-sm ic-chart"></view>
     </view>
+    <view class="fab tap" hover-class="fab-hover" bindtap="onPeerBenchmark">
+      <view class="ic ic-sm ic-peers"></view>
+    </view>
   </view>
 
   <!-- 右下：设置 -->

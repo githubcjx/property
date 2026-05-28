@@ -1,0 +1,141 @@
+<view class="canvas-bg" wx:if="{{!reduceMotion}}"></view>
+
+<view class="page {{reduceMotion ? 'no-motion' : ''}}">
+  <!-- 透明导航栏 -->
+  <view class="navbar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onBack">
+      <view class="ic ic-xs ic-back"></view>
+    </view>
+    <text class="nav-title">同龄对标</text>
+  </view>
+
+  <!-- 空态：无账户 -->
+  <block wx:if="{{!loading && !hasData}}">
+    <view class="empty-stage">
+      <view class="empty-orb"><view class="ic ic-lg ic-peers"></view></view>
+      <view class="empty-title">还没有账户数据</view>
+      <view class="empty-desc">回到首页添加账户、记录余额,即可与同龄人对标</view>
+    </view>
+  </block>
+
+  <!-- 需要出生年份 -->
+  <block wx:elif="{{!loading && hasData && !hasAge}}">
+    <view class="setup-stage">
+      <view class="setup-orb"><view class="ic ic-lg ic-peers"></view></view>
+      <view class="setup-title">先告诉我你的出生年份</view>
+      <view class="setup-desc">同龄对标需要按年龄分组。出生年份只存在本机,不会上传。</view>
+      <picker mode="date" fields="year" start="1940-01-01" end="{{endBirthDate}}" value="{{birthDate}}" bindchange="onPickBirth">
+        <view class="setup-cta tap" hover-class="btn-hover">选择出生年份</view>
+      </picker>
+    </view>
+  </block>
+
+  <!-- 正文 -->
+  <block wx:elif="{{hasData && hasAge && inRange}}">
+    <scroll-view scroll-y class="scroll" enable-flex>
+
+      <!-- ============ Hero ============ -->
+      <view class="hero entry-up">
+        <view class="hero-top">
+          <text class="eyebrow">PEER BENCHMARK</text>
+          <picker mode="date" fields="year" start="1940-01-01" end="{{endBirthDate}}" value="{{birthDate}}" bindchange="onPickBirth">
+            <view class="cohort-chip">{{cohortLabel}} <text class="pen">✎</text></view>
+          </picker>
+        </view>
+
+        <view class="unlock-pill"><view class="d"></view>已解锁 · 本次有效</view>
+
+        <view class="headline">
+          <text class="lead">你超过了同龄</text>
+          <text class="pct">{{percentileText}}</text>
+          <text class="unit">%</text>
+        </view>
+
+        <view class="sub-row">
+          <text class="tier-badge">{{tierText}}</text>
+          <text class="sub-note">{{source.scopeText}}</text>
+        </view>
+
+        <!-- 百分位分布条 -->
+        <view class="dist">
+          <view class="dist-track">
+            <view class="dist-fill" style="width: {{percentile}}%;"></view>
+            <view class="dist-tick" style="left: 50%;"></view>
+            <view class="dist-tick" style="left: 75%;"></view>
+            <view class="dist-tick" style="left: 90%;"></view>
+            <view class="dist-pin" style="left: {{pinPct}}%;">
+              <view class="pin-flag">你 · {{percentileText}}%</view>
+              <view class="pin-dot"></view>
+            </view>
+          </view>
+          <view class="dist-axis">
+            <text class="ax" style="left: 50%;">中位</text>
+            <text class="ax" style="left: 75%;">前25%</text>
+            <text class="ax" style="left: 90%;">前10%</text>
+          </view>
+        </view>
+
+        <view class="hero-meta">
+          <view class="meta-item">
+            <view class="meta-k">同龄中位数</view>
+            <view class="meta-v num">{{medianText}}</view>
+          </view>
+          <view class="meta-item">
+            <view class="meta-k">你的净资产</view>
+            <view class="meta-v num">{{netWorthText}}</view>
+          </view>
+        </view>
+
+        <view class="hero-tip" wx:if="{{nextTier}}">
+          再增加 <text class="em">{{nextTier.gapText}}</text>(至 {{nextTier.targetText}}),即可跻身 <text class="em">{{nextTier.tierText}}</text> 的同龄人。
+        </view>
+        <view class="hero-tip" wx:else>
+          你已站在同龄人的最顶端,继续保持。
+        </view>
+      </view>
+
+      <!-- ============ 同龄财富阶梯 ============ -->
+      <view class="section-title">
+        <text class="sec-name">同龄财富阶梯</text>
+        <text class="sec-sub">{{cohortLabel}}</text>
+      </view>
+
+      <view class="ladder">
+        <block wx:for="{{ladder}}" wx:key="tier">
+          <!-- 你的位置插入 -->
+          <view wx:if="{{index === youLadderIndex}}" class="lad-you">
+            <view class="yk">
+              <text class="you-tag">你</text>
+              <text class="yl">超过 {{percentileText}}% 同龄人</text>
+            </view>
+            <text class="yv num">{{youNetWorthText}}</text>
+          </view>
+
+          <view class="lad-row {{item.isMedian ? 'median' : ''}} {{index === 0 ? 'top' : ''}}">
+            <text class="lad-k">{{item.tier}}</text>
+            <text class="lad-v num">{{item.valueText}}</text>
+          </view>
+        </block>
+
+        <!-- 你在最底部 -->
+        <view wx:if="{{youLadderIndex >= ladder.length}}" class="lad-you">
+          <view class="yk">
+            <text class="you-tag">你</text>
+            <text class="yl">超过 {{percentileText}}% 同龄人</text>
+          </view>
+          <text class="yv num">{{youNetWorthText}}</text>
+        </view>
+      </view>
+
+      <!-- ============ 来源声明 ============ -->
+      <view class="source-card">
+        <view class="src-ic">i</view>
+        <view class="src-txt">
+          对照数据:<text class="b">{{source.name}}</text> · {{source.scopeText}} · {{source.year}}。{{source.note}}
+        </view>
+      </view>
+
+      <view class="bottom-spacer"></view>
+    </scroll-view>
+  </block>
+</view>
