@@ -65,6 +65,16 @@ Page({
     this.refresh()
   },
 
+  // 定义本方法即可激活右上角「...」菜单里的「发送给朋友」
+  // 显式指定 imageUrl：否则微信会截取当前页面作分享缩略图，导致净资产数字被带进分享卡片
+  onShareAppMessage() {
+    return {
+      title: '净值本 · 极简记录你的净资产',
+      path: '/pages/index/index',
+      imageUrl: '/assets/logo.png',
+    }
+  },
+
   async refresh() {
     this.setData({ loading: true })
     try {

@@ -3,7 +3,7 @@ const CLOUD_ENV_ID = 'cloud1-d9g5kur3sa2da3193'
 
 App({
   globalData: {
-    hideAmount: false,
+    hideAmount: wx.getStorageSync('pref_hide_amount') === true,
     cloudReady: false,
     reduceMotion: wx.getStorageSync('pref_reduce_motion') === true,
   },
@@ -31,6 +31,7 @@ App({
 
   toggleHideAmount() {
     this.globalData.hideAmount = !this.globalData.hideAmount
+    wx.setStorageSync('pref_hide_amount', this.globalData.hideAmount)
     return this.globalData.hideAmount
   },
 

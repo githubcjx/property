@@ -81,11 +81,13 @@ Page({
     const current = r.milestones.find(m => m.status === 'current')
     const achievedCount = r.milestones.filter(m => m.status === 'achieved').length
 
-    // 处理隐藏金额：保留结构，文案换成占位符
+    // 处理隐藏金额：保留结构，金额与进度% 都换成占位符
+    // （进度% × 固定关口可反推净资产，故一并遮蔽；环弧/进度条的视觉宽度另在 wxml 中和）
     const milestones = r.milestones.map(m => {
       const c = Object.assign({}, m)
-      if (hide) {
-        if (c.status === 'current') c.remainingText = '¥••'
+      if (hide && c.status === 'current') {
+        c.remainingText = '¥••'
+        c.progressPctText = '••'
       }
       return c
     })
@@ -94,9 +96,12 @@ Page({
     let ringDeg = '0deg'
     let ringTipDeg = '-90deg'
     if (current) {
-      nextTarget = current
-      ringDeg = pctToDeg(current.progressPct)
-      ringTipDeg = pctToTipDeg(current.progressPct)
+      // hero 的"还差"与环心进度% 同样会反推金额：隐藏时换占位符，并把环弧/弧端小球归零
+      nextTarget = hide
+        ? Object.assign({}, current, { remainingText: '¥••', progressPctText: '••' })
+        : current
+      ringDeg = hide ? '0deg' : pctToDeg(current.progressPct)
+      ringTipDeg = hide ? '-90deg' : pctToTipDeg(current.progressPct)
     }
 
     const peak = r.peak ? Object.assign({}, r.peak, hide ? { amountText: '¥••' } : {}) : null

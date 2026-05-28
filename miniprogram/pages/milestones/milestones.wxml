@@ -30,7 +30,7 @@
         <view class="ring-wrap {{nextTarget.isHighlight ? 'ring-highlight' : ''}}">
           <view class="ring-bg"></view>
           <view class="ring-fill" style="--score-deg: {{ringDeg}};"></view>
-          <view class="ring-tip" style="--tip-deg: {{ringTipDeg}};"></view>
+          <view class="ring-tip" wx:if="{{!hideAmount}}" style="--tip-deg: {{ringTipDeg}};"></view>
           <view class="ring-center">
             <view class="ring-next-label">即将抵达</view>
             <view class="ring-target">{{nextTarget.amountText}}</view>
@@ -107,7 +107,7 @@
 
             <!-- current 进度条 -->
             <view wx:if="{{item.status === 'current'}}" class="ms-mini-progress">
-              <view class="fill" style="width: {{item.progressPctText}}%;"></view>
+              <view class="fill" style="width: {{hideAmount ? 0 : item.progressPct}}%;"></view>
             </view>
           </view>
 
@@ -136,7 +136,7 @@
             <text wx:if="{{peak.drawdownText}}" class="badge-mini">距峰 {{peak.drawdownText}}</text>
           </view>
           <view class="stat-v num">{{peak.amountText}}</view>
-          <view class="stat-foot">{{peak.dateText}}\n距今 {{peak.daysAgo}} 天</view>
+          <view class="stat-foot">{{peak.dateText}}<view>距今 {{peak.daysAgo}} 天</view></view>
         </view>
 
         <view class="stat-card glass" wx:if="{{firstPositive}}">
