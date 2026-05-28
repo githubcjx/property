@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>工具 · 分析中心 · 原型</title>
+<style>
+  :root {
+    --bg-0: #050507;
+    --glass-0: rgba(255,255,255,0.025);
+    --glass-1: rgba(255,255,255,0.05);
+    --glass-2: rgba(255,255,255,0.08);
+    --glass-3: rgba(255,255,255,0.12);
+    --hairline: rgba(255,255,255,0.08);
+    --hairline-hi: rgba(255,255,255,0.16);
+    --ink-100: #f5f8ff;
+    --ink-80:  rgba(245,248,255,0.78);
+    --ink-60:  rgba(245,248,255,0.55);
+    --ink-40:  rgba(245,248,255,0.36);
+    --ink-20:  rgba(245,248,255,0.18);
+    --ice-blue: #a7d3ff;
+    --lavender: #c8b5ff;
+    --gold:     #f3dfa3;
+    --mint:     #8fe6cf;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: #0a0b10;
+    color: var(--ink-100);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", system-ui, sans-serif;
+    font-size: 14px; line-height: 1.4;
+    display: flex; justify-content: center;
+    padding: 24px 12px 60px;
+  }
+
+  .phone {
+    position: relative;
+    width: 390px; min-height: 844px;
+    border-radius: 44px;
+    background: var(--bg-0);
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.05) inset;
+  }
+  .canvas-bg {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% 0%, rgba(167,211,255,0.12), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 100% 100%, rgba(200,181,255,0.06), transparent 60%),
+      linear-gradient(180deg, #07080c 0%, #050507 100%);
+  }
+
+  .statusbar {
+    position: absolute; top: 18px; left: 0; right: 0;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 28px; font-size: 14px; font-weight: 600; color: var(--ink-100); z-index: 5;
+  }
+  .statusbar .icons { display: flex; gap: 6px; opacity: 0.85; font-size: 11px; }
+
+  /* ===== home behind (dimmed) ===== */
+  .home { position: absolute; inset: 0; z-index: 1; padding: 56px 22px 0; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; }
+  .top-left { display: flex; align-items: center; gap: 12px; }
+  .brand { font-size: 14px; color: var(--ink-80); letter-spacing: 0.3px; font-weight: 600; }
+  .icon-btn {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--glass-1); border: 1px solid var(--hairline);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .icon-btn svg { width: 16px; height: 16px; }
+
+  .hero-eyebrow { font-size: 11px; color: var(--ink-60); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px; }
+  .hero-amount { font-size: 46px; font-weight: 700; letter-spacing: -1.5px; color: var(--ink-100); font-variant-numeric: tabular-nums; }
+  .hero-amount .cur { font-size: 26px; color: var(--ink-80); font-weight: 600; margin-right: 2px; }
+  .hero-amount .frac { font-size: 24px; color: var(--ink-40); }
+  .delta { margin-top: 16px; display: flex; align-items: center; gap: 10px; }
+  .delta-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 14px;
+    background: rgba(143,230,207,0.12); border: 1px solid rgba(143,230,207,0.28);
+    color: var(--mint); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums;
+  }
+  .delta-label { font-size: 12px; color: var(--ink-60); }
+
+  /* single labeled entry on home (collapsed state, faded behind sheet) */
+  .entry-fab {
+    position: absolute; left: 22px; bottom: 36px;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 16px 11px 13px; border-radius: 18px;
+    background: var(--glass-2); border: 1px solid var(--hairline-hi);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .entry-fab svg { width: 19px; height: 19px; }
+  .entry-fab .lab { font-size: 14px; font-weight: 600; color: var(--ink-100); }
+  .add-fab {
+    position: absolute; right: 22px; bottom: 36px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: linear-gradient(140deg, rgba(167,211,255,0.9), rgba(200,181,255,0.85));
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 10px 28px rgba(167,211,255,0.35);
+  }
+  .add-fab svg { width: 22px; height: 22px; }
+
+  /* ===== scrim ===== */
+  .scrim {
+    position: absolute; inset: 0; z-index: 2;
+    background: rgba(3,4,7,0.62);
+    backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+  }
+
+  /* ===== bottom sheet ===== */
+  .sheet {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 3;
+    padding: 12px 22px 40px;
+    border-radius: 30px 30px 0 0;
+    background: linear-gradient(180deg, #111319 0%, #0a0b10 100%);
+    border-top: 1px solid var(--hairline-hi);
+    box-shadow: 0 -20px 60px rgba(0,0,0,0.5);
+  }
+  .sheet::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 120px;
+    border-radius: 30px 30px 0 0;
+    background: radial-gradient(ellipse 70% 100% at 50% 0%, rgba(167,211,255,0.08), transparent 70%);
+    pointer-events: none;
+  }
+  .handle { width: 40px; height: 4px; border-radius: 2px; background: var(--ink-20); margin: 2px auto 16px; }
+
+  .sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .sheet-title { font-size: 17px; font-weight: 600; color: var(--ink-100); letter-spacing: 0.3px; }
+  .sheet-title .sub { font-size: 12px; color: var(--ink-60); font-weight: 400; margin-left: 8px; }
+  .sheet-close {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--glass-1); border: 1px solid var(--hairline);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .sheet-close svg { width: 14px; height: 14px; }
+
+  .group-label { font-size: 11px; color: var(--ink-40); letter-spacing: 1px; margin: 20px 2px 12px; }
+
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px 6px; }
+  .cell { display: flex; flex-direction: column; align-items: center; gap: 9px; padding: 6px 0; }
+  .chip {
+    width: 56px; height: 56px; border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    background: var(--glass-1); border: 1px solid var(--hairline);
+  }
+  .chip svg { width: 26px; height: 26px; position: relative; z-index: 1; }
+  .chip::after {
+    content: ''; position: absolute; inset: 0; border-radius: 18px;
+    opacity: 0.9; filter: blur(10px); z-index: 0;
+  }
+  .cell .label { font-size: 12px; color: var(--ink-80); font-weight: 500; }
+
+  /* tints */
+  .chip.t-mint   { background: rgba(143,230,207,0.14); border-color: rgba(143,230,207,0.3); }
+  .chip.t-mint::after   { background: radial-gradient(circle, rgba(143,230,207,0.35), transparent 70%); }
+  .chip.t-ice    { background: rgba(167,211,255,0.14); border-color: rgba(167,211,255,0.3); }
+  .chip.t-ice::after    { background: radial-gradient(circle, rgba(167,211,255,0.35), transparent 70%); }
+  .chip.t-lav    { background: rgba(200,181,255,0.14); border-color: rgba(200,181,255,0.3); }
+  .chip.t-lav::after    { background: radial-gradient(circle, rgba(200,181,255,0.32), transparent 70%); }
+  .chip.t-gold   { background: rgba(243,223,163,0.14); border-color: rgba(243,223,163,0.3); }
+  .chip.t-gold::after   { background: radial-gradient(circle, rgba(243,223,163,0.3), transparent 70%); }
+  .chip.t-neutral { background: var(--glass-1); border-color: var(--hairline); }
+  .chip.t-neutral::after { background: none; }
+  .chip.t-more {
+    background: transparent; border: 1.5px dashed var(--ink-20);
+  }
+  .chip.t-more::after { background: none; }
+  .cell.more .label { color: var(--ink-40); }
+
+  /* legend */
+  .legend {
+    position: fixed; top: 24px; left: 24px; max-width: 300px;
+    padding: 16px 18px; border-radius: 14px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.72); font-size: 12px; line-height: 1.65;
+  }
+  .legend b { color: #fff; }
+  .legend hr { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 10px 0; }
+  .legend .tag { display: inline-block; padding: 1px 7px; border-radius: 7px; font-size: 11px; background: rgba(167,211,255,0.14); color: var(--ice-blue); border: 1px solid rgba(167,211,255,0.28); }
+  @media (max-width: 980px) { .legend { display: none; } }
+</style>
+</head>
+<body>
+
+<aside class="legend">
+  <div><b>工具 · 分析中心 · 原型说明</b></div>
+  <hr/>
+  <div><b>方案 B(金刚区式底部面板)</b>:首页只留一个带文字的「工具」入口,点开后弹出此面板。</div>
+  <hr/>
+  <div>遵循调研结论:<br/>· <span class="tag">每行 4 个</span> 金刚区经验值<br/>· <span class="tag">图标必带文字</span> NN/G:纯图标=发现性硬伤<br/>· <span class="tag">分组</span> 认得出 > 记得住<br/>· 砍掉 speed-dial(Material 3 已淘汰)</div>
+  <hr/>
+  <div><b>IA 取舍</b>:`＋添加` 独占右上角(最高频);设置/关于收进「通用」组;新功能只需往网格加格子,首页永不再挤。</div>
+  <hr/>
+  <div>数字为占位示意。</div>
+</aside>
+
+<div class="phone">
+  <div class="canvas-bg"></div>
+
+  <div class="statusbar">
+    <span>9:41</span>
+    <span class="icons">● ● ● ▮</span>
+  </div>
+
+  <!-- home behind -->
+  <div class="home">
+    <div class="topbar">
+      <div class="top-left">
+        <span class="brand">NetWorth · 净值本</span>
+        <div class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#f5f8ff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+      </div>
+      <div class="add-fab" style="position:static;width:36px;height:36px;box-shadow:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#07131f" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </div>
+    </div>
+
+    <div class="hero-eyebrow">YOUR NET WORTH · 此刻</div>
+    <div class="hero-amount"><span class="cur">¥</span>645,231<span class="frac">.00</span></div>
+    <div class="delta">
+      <span class="delta-pill">▲ +¥42,180 · +7.0%</span>
+      <span class="delta-label">过去 30 天</span>
+    </div>
+
+    <!-- single labeled entry (collapsed) -->
+    <div class="entry-fab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#f5f8ff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      <span class="lab">工具</span>
+    </div>
+    <div class="add-fab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#07131f" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </div>
+  </div>
+
+  <!-- scrim -->
+  <div class="scrim"></div>
+
+  <!-- bottom sheet -->
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sheet-head">
+      <div class="sheet-title">工具<span class="sub">分析中心</span></div>
+      <div class="sheet-close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#f5f8ff" stroke-width="1.8" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
+    </div>
+
+    <div class="group-label">洞察与成长</div>
+    <div class="grid">
+      <div class="cell">
+        <div class="chip t-mint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#8fe6cf" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/></svg>
+        </div>
+        <span class="label">财务体检</span>
+      </div>
+      <div class="cell">
+        <div class="chip t-ice">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#a7d3ff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg>
+        </div>
+        <span class="label">净值趋势</span>
+      </div>
+      <div class="cell">
+        <div class="chip t-lav">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#c8b5ff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 21v-1a6 6 0 0 1 12 0v1"/><path d="M16 7a3 3 0 0 1 0 6"/><path d="M21 21v-1a6 6 0 0 0-4-5.6"/></svg>
+        </div>
+        <span class="label">同龄对标</span>
+      </div>
+      <div class="cell">
+        <div class="chip t-gold">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#f3dfa3" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+        </div>
+        <span class="label">里程碑</span>
+      </div>
+    </div>
+
+    <div class="group-label">通用</div>
+    <div class="grid">
+      <div class="cell">
+        <div class="chip t-neutral">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#cdd6e6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <span class="label">设置</span>
+      </div>
+      <div class="cell">
+        <div class="chip t-neutral">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#cdd6e6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        </div>
+        <span class="label">关于</span>
+      </div>
+      <div class="cell more">
+        <div class="chip t-more">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#5d6475" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="6" x2="12" y2="18"/><line x1="6" y1="12" x2="18" y2="12"/></svg>
+        </div>
+        <span class="label">敬请期待</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
