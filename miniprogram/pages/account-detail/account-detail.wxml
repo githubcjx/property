@@ -1,6 +1,6 @@
-<view class="canvas-bg" wx:if="{{!reduceMotion}}"></view>
+<view class="canvas-bg {{themeClass}}" wx:if="{{!reduceMotion}}"></view>
 
-<view class="page {{reduceMotion ? 'no-motion' : ''}}">
+<view class="page {{reduceMotion ? 'no-motion' : ''}} {{themeClass}}">
   <!-- 类目光晕 -->
   <view class="hero-halo halo-{{colorClass}}"></view>
 

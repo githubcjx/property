@@ -11,6 +11,7 @@ Page({
   data: {
     statusBarHeight: 20,
     reduceMotion: false,
+    themeClass: '',
     hideAmount: false,
     loading: true,
 
@@ -46,6 +47,7 @@ Page({
     this.setData({
       statusBarHeight: sysInfo.statusBarHeight || 20,
       reduceMotion: app.globalData.reduceMotion,
+      themeClass: app.themeClass(),
       hideAmount: app.globalData.hideAmount,
       birthYear: by,
       birthDate: by ? (by + '-06-01') : '2000-06-01',
@@ -56,6 +58,7 @@ Page({
   onShow() {
     this.setData({
       reduceMotion: app.globalData.reduceMotion,
+      themeClass: app.themeClass(),
       hideAmount: app.globalData.hideAmount,
     })
     this.refresh()

@@ -46,6 +46,7 @@ Page({
     showSuccess: false,
     burstKey: 0,
     reduceMotion: false,
+    themeClass: '',
   },
 
   onLoad(query) {
@@ -53,6 +54,7 @@ Page({
     this.setData({
       statusBarHeight: sysInfo.statusBarHeight || 20,
       reduceMotion: app.globalData.reduceMotion,
+      themeClass: app.themeClass(),
     })
     if (query.editId) {
       this.loadEdit(query.editId)

@@ -19,6 +19,7 @@ Page({
   data: {
     statusBarHeight: 20,
     reduceMotion: false,
+    themeClass: '',
     hideAmount: false,
     loading: true,
     hasData: false,
@@ -49,6 +50,7 @@ Page({
     this.setData({
       statusBarHeight: sysInfo.statusBarHeight || 20,
       reduceMotion: app.globalData.reduceMotion,
+      themeClass: app.themeClass(),
       hideAmount: app.globalData.hideAmount,
     })
   },
@@ -56,6 +58,7 @@ Page({
   onShow() {
     this.setData({
       reduceMotion: app.globalData.reduceMotion,
+      themeClass: app.themeClass(),
       hideAmount: app.globalData.hideAmount,
     })
     this.refresh()

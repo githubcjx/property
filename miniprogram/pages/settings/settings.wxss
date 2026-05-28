@@ -142,6 +142,39 @@
 .row-arrow { color: var(--ink-40); }
 .row-trailing { font-size: 20rpx; color: var(--ink-40); }
 
+/* 主题分段控件 */
+.theme-seg {
+  display: flex;
+  flex-shrink: 0;
+  padding: 4rpx;
+  border-radius: 18rpx;
+  background: var(--glass-2);
+  border: 1rpx solid var(--hairline);
+}
+.theme-seg-item {
+  padding: 10rpx 22rpx;
+  border-radius: 14rpx;
+  font-size: 24rpx;
+  color: var(--ink-60);
+  transition: all 0.25s var(--ease-soft);
+}
+.theme-seg-item.active {
+  color: var(--ink-100);
+  background: var(--glass-3);
+  box-shadow: inset 0 1rpx 0 rgba(255,255,255,0.12);
+}
+/* 新拟态下分段控件用凹陷/凸起表达选中 */
+.theme-neu .theme-seg {
+  background: var(--bg-1);
+  border: none;
+  box-shadow: var(--neu-inset);
+}
+.theme-neu .theme-seg-item.active {
+  background: var(--bg-1);
+  color: var(--ice-blue);
+  box-shadow: var(--neu-raised-sm);
+}
+
 .foot {
   text-align: center;
   margin-top: 72rpx;

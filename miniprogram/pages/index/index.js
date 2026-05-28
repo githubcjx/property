@@ -36,6 +36,7 @@ Page({
     hasDelta: false,
 
     hideAmount: false,
+    themeClass: '',
     groups: [],
     composition: [],
     statusBarHeight: 20,
@@ -56,6 +57,7 @@ Page({
       statusBarHeight: sysInfo.statusBarHeight || 20,
       hideAmount: app.globalData.hideAmount,
       reduceMotion: app.globalData.reduceMotion,
+      themeClass: app.themeClass(),
       expandedMap: stored,
     })
   },
@@ -64,6 +66,7 @@ Page({
     this.setData({
       hideAmount: app.globalData.hideAmount,
       reduceMotion: app.globalData.reduceMotion,
+      themeClass: app.themeClass(),
     })
     this.refresh()
   },

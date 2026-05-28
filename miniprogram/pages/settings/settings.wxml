@@ -1,6 +1,6 @@
-<view class="canvas-bg" wx:if="{{!reduceMotion}}"></view>
+<view class="canvas-bg {{themeClass}}" wx:if="{{!reduceMotion}}"></view>
 
-<view class="page {{reduceMotion ? 'no-motion' : ''}}">
+<view class="page {{reduceMotion ? 'no-motion' : ''}} {{themeClass}}">
   <view class="settings-halo"></view>
 
   <!-- 透明导航栏 -->
@@ -22,6 +22,23 @@
   </view>
 
   <view class="sec-card glass entry-up d1">
+    <!-- 第一行：主题切换 -->
+    <view class="row row-theme">
+      <view class="row-icon"><view class="ic ic-sm ic-palette"></view></view>
+      <view class="row-main">
+        <text class="row-title">主题</text>
+        <text class="row-sub">切换整体视觉风格</text>
+      </view>
+      <view class="theme-seg">
+        <view
+          wx:for="{{themes}}"
+          wx:key="key"
+          class="theme-seg-item {{theme === item.key ? 'active' : ''}}"
+          data-key="{{item.key}}"
+          bindtap="onThemeTap"
+        >{{item.name}}</view>
+      </view>
+    </view>
     <view class="row row-switch">
       <view class="row-icon"><view class="ic ic-sm ic-settings"></view></view>
       <view class="row-main">

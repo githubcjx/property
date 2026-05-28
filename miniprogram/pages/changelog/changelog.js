@@ -5,6 +5,7 @@ Page({
     version: 'V1.5',
     statusBarHeight: 20,
     reduceMotion: false,
+    themeClass: '',
     // 版本由提交记录归并而来,自新到旧排列
     releases: [
       {
@@ -64,11 +65,12 @@ Page({
     this.setData({
       statusBarHeight: sysInfo.statusBarHeight || 20,
       reduceMotion: app.globalData.reduceMotion,
+      themeClass: app.themeClass(),
     })
   },
 
   onShow() {
-    this.setData({ reduceMotion: app.globalData.reduceMotion })
+    this.setData({ reduceMotion: app.globalData.reduceMotion, themeClass: app.themeClass() })
   },
 
   onBack() {

@@ -6,6 +6,8 @@ App({
     hideAmount: wx.getStorageSync('pref_hide_amount') === true,
     cloudReady: false,
     reduceMotion: wx.getStorageSync('pref_reduce_motion') === true,
+    // 主题：'glass'（默认冰玻璃深色）/ 'neu'（新拟态浅色）
+    theme: wx.getStorageSync('pref_theme') || 'glass',
   },
 
   onLaunch() {
@@ -40,5 +42,18 @@ App({
     this.globalData.reduceMotion = next
     wx.setStorageSync('pref_reduce_motion', next)
     return next
+  },
+
+  // 主题切换。theme: 'glass' | 'neu'
+  setTheme(theme) {
+    const next = theme === 'neu' ? 'neu' : 'glass'
+    this.globalData.theme = next
+    wx.setStorageSync('pref_theme', next)
+    return next
+  },
+
+  // 供页面拼到根节点 class 上：'' | 'theme-neu'
+  themeClass() {
+    return this.globalData.theme === 'neu' ? 'theme-neu' : ''
   },
 })

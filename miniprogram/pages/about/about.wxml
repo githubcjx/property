@@ -1,6 +1,6 @@
-<view class="canvas-bg" wx:if="{{!reduceMotion}}"></view>
+<view class="canvas-bg {{themeClass}}" wx:if="{{!reduceMotion}}"></view>
 
-<view class="page {{reduceMotion ? 'no-motion' : ''}}">
+<view class="page {{reduceMotion ? 'no-motion' : ''}} {{themeClass}}">
   <view class="about-halo"></view>
 
   <!-- 透明导航栏 -->

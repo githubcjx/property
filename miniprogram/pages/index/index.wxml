@@ -1,6 +1,6 @@
-<view class="canvas-bg" wx:if="{{!reduceMotion}}"></view>
+<view class="canvas-bg {{themeClass}}" wx:if="{{!reduceMotion}}"></view>
 
-<view class="page {{reduceMotion ? 'no-motion' : ''}}">
+<view class="page {{reduceMotion ? 'no-motion' : ''}} {{themeClass}}">
   <!-- 顶栏 -->
   <view class="topbar" style="padding-top: {{statusBarHeight}}px;">
     <view class="top-left">

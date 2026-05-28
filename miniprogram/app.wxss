@@ -280,6 +280,129 @@ button.btn-reset::after { display: none; }
 }
 
 /* ============================================================
+   主题：新拟态（Neumorphism / Soft UI）—— 浅色
+   挂载方式：在页面根 .canvas-bg 与 .page 上加 class="theme-neu"
+   原则：只改颜色与表面质感（双阴影），不改任何容器位置/布局。
+   机制同 .no-motion —— 根 class 覆盖 CSS 变量 + 共享表面工具类。
+   ============================================================ */
+.theme-neu {
+  /* —— 表面：全部同色（新拟态核心）—— */
+  --bg-0: #dfe6f3;
+  --bg-1: #e4ebf5;
+  --bg-2: #e4ebf5;
+  --glass-0: #e4ebf5;
+  --glass-1: #e4ebf5;
+  --glass-2: #e4ebf5;
+  --glass-3: #dde4f1;
+
+  /* —— 描边：新拟态靠阴影，不靠边线 —— */
+  --hairline: rgba(155, 170, 207, 0.0);
+  --hairline-hi: rgba(255, 255, 255, 0.7);
+
+  /* —— 文字：深色（加深以保证可读，区别于原 demo 的低对比）—— */
+  --ink-100: #3d4768;
+  --ink-80:  #5a6790;
+  --ink-60:  #7d8aae;
+  --ink-40:  #9eaacb;
+  --ink-20:  #c2cae0;
+
+  /* —— 强调色：蓝紫 —— */
+  --ice-blue:   #6d5dfc;
+  --accent:     #6d5dfc;
+
+  /* —— 类别色（浅底可读版）—— */
+  --liquid:     #2fa898;
+  --investment: #6d5dfc;
+  --fixed:      #4d9be6;
+  --receivable: #4d7fe6;
+  --debt:       #e8627d;
+
+  --liquid-rgb:     47, 168, 152;
+  --investment-rgb: 109, 93, 252;
+  --fixed-rgb:      77, 155, 230;
+  --receivable-rgb: 77, 127, 230;
+  --debt-rgb:       232, 98, 125;
+
+  --pos: #2e9e7e;
+  --neg: #e8627d;
+
+  /* —— 新拟态双阴影（供覆盖与页面复用）—— */
+  --neu-dark: #c5cee3;
+  --neu-light: #ffffff;
+  --neu-raised: 0.45rem 0.45rem 0.9rem var(--neu-dark), -0.38rem -0.38rem 0.8rem var(--neu-light);
+  --neu-raised-sm: 0.3rem 0.3rem 0.6rem var(--neu-dark), -0.25rem -0.25rem 0.5rem var(--neu-light);
+  --neu-inset: inset 0.25rem 0.25rem 0.6rem var(--neu-dark), inset -0.25rem -0.25rem 0.6rem var(--neu-light);
+
+  color: var(--ink-100);
+}
+
+/* 背景：把深色星云换成浅色纯底，去掉星点/光晕 */
+.canvas-bg.theme-neu {
+  background: #e4ebf5;
+}
+.canvas-bg.theme-neu::before,
+.canvas-bg.theme-neu::after {
+  display: none;
+}
+
+/* 共享表面工具类 → 新拟态凸起（去模糊、去边线、双阴影）*/
+.theme-neu .glass,
+.theme-neu .glass-2,
+.theme-neu .card,
+.theme-neu .card-sub {
+  background: var(--bg-1) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border: 1rpx solid transparent !important;
+  box-shadow: var(--neu-raised) !important;
+}
+
+/* 分隔线在浅底上换成浅灰 */
+.theme-neu .divider { background: rgba(155, 170, 207, 0.25); }
+
+/* 主按钮：紫色渐变 + 凸起 */
+.theme-neu .btn-primary {
+  background: linear-gradient(135deg, #6d5dfc, #8abdff);
+  color: #ffffff;
+  box-shadow: var(--neu-raised), inset 0 2rpx 0 rgba(255, 255, 255, 0.35);
+}
+.theme-neu .btn-dark,
+.theme-neu .btn-ghost {
+  background: var(--bg-1);
+  color: var(--ink-100);
+  border: 1rpx solid transparent;
+  box-shadow: var(--neu-raised-sm);
+}
+
+/* tap 反馈：按下变凹陷（用 :active，仅对带 .tap 的可点元素）*/
+.theme-neu .glass.tap:active,
+.theme-neu .card.tap:active {
+  box-shadow: var(--neu-inset) !important;
+}
+
+/* 悬浮按钮（普通的）→ 新拟态凸起；强调色 FAB 保留各自渐变 */
+.theme-neu .fab:not(.fab-health):not(.fab-milestones) {
+  background: var(--bg-1);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 1rpx solid transparent;
+  box-shadow: var(--neu-raised);
+}
+
+/* 线条图标的白色描边烤进了 data-uri SVG，浅底会隐形 → 用 filter 压深为灰。
+   强调色 FAB 上的图标仍需白色，单独排除。 */
+.theme-neu .ic { filter: brightness(0.34); }
+.theme-neu .fab-health .ic,
+.theme-neu .fab-milestones .ic,
+.theme-neu .btn-primary .ic { filter: none; }
+/* 类别 orb 内的白色字形在浅色 tint 上仍需偏白，保持不反色 */
+.theme-neu .ic-glyph-liquid,
+.theme-neu .ic-glyph-investment,
+.theme-neu .ic-glyph-fixed,
+.theme-neu .ic-glyph-receivable,
+.theme-neu .ic-glyph-debt { filter: none; }
+
+/* ============================================================
    Keyframes
    ============================================================ */
 @keyframes drift {
@@ -381,6 +504,7 @@ button.btn-reset::after { display: none; }
 .ic-trend-down { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='%23ffb3b3'><polygon points='12 20 22 6 2 6'/></svg>"); }
 .ic-health-pulse { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><path d='M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z'/><path d='M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27'/></svg>"); }
 .ic-trophy { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9H4.5a2.5 2.5 0 0 1 0-5H6'/><path d='M18 9h1.5a2.5 2.5 0 0 0 0-5H18'/><path d='M4 22h16'/><path d='M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22'/><path d='M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22'/><path d='M18 2H6v7a6 6 0 0 0 12 0V2Z'/></svg>"); }
+.ic-palette { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23f5f8ff' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><circle cx='13.5' cy='6.5' r='.5' fill='%23f5f8ff'/><circle cx='17.5' cy='10.5' r='.5' fill='%23f5f8ff'/><circle cx='8.5' cy='7.5' r='.5' fill='%23f5f8ff'/><circle cx='6.5' cy='12.5' r='.5' fill='%23f5f8ff'/><path d='M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z'/></svg>"); }
 .ic-peers { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/><circle cx='9' cy='7' r='4'/><path d='M22 21v-2a4 4 0 0 0-3-3.87'/><path d='M16 3.13a4 4 0 0 1 0 7.75'/></svg>"); }
 .ic-apps { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23f5f8ff' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='3' width='7' height='7' rx='1.5'/><rect x='14' y='3' width='7' height='7' rx='1.5'/><rect x='3' y='14' width='7' height='7' rx='1.5'/><rect x='14' y='14' width='7' height='7' rx='1.5'/></svg>"); }
 
