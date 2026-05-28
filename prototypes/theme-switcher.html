@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>主题切换 · 原型</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: #0a0b10;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", system-ui, sans-serif;
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    padding: 28px 16px 60px;
+    color: #fff;
+  }
+
+  /* ===== Phone frame (themed) ===== */
+  .phone {
+    /* —— 默认主题变量（极光冰蓝），JS 切换时覆盖 —— */
+    --bg-0: #050507;
+    --bg-1: #08090c;
+    --bg-2: #0c0d12;
+    --ink-100: #f5f8ff;
+    --ink-80: rgba(245,248,255,0.78);
+    --ink-60: rgba(245,248,255,0.55);
+    --ink-40: rgba(245,248,255,0.36);
+    --accent: #a7d3ff;
+    --accent-2: #c8b5ff;
+    --accent-rgb: 167,211,255;
+    --liquid: #a7d3ff;
+    --investment: #c8b5ff;
+    --fixed: #b7e8f0;
+    --debt: #ffb3b3;
+    --neb-1: rgba(167,211,255,0.14);
+    --neb-2: rgba(200,181,255,0.09);
+
+    position: relative;
+    width: 360px;
+    height: 760px;
+    border-radius: 44px;
+    background: var(--bg-0);
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.05) inset;
+    transition: background 0.5s ease;
+  }
+  .nebula {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% 0%, var(--neb-1), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 100% 100%, var(--neb-2), transparent 60%),
+      linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 100%);
+    transition: background 0.5s ease;
+  }
+  .nebula::before {
+    content: '';
+    position: absolute; inset: -20%;
+    background:
+      radial-gradient(ellipse 30% 25% at 28% 28%, var(--neb-1), transparent 65%),
+      radial-gradient(ellipse 35% 28% at 72% 65%, var(--neb-2), transparent 65%);
+    filter: blur(40px);
+  }
+  .screen { position: relative; z-index: 1; padding: 50px 20px 20px; height: 100%; }
+
+  .statusbar {
+    position: absolute; top: 16px; left: 0; right: 0;
+    display: flex; justify-content: space-between; padding: 0 28px;
+    font-size: 13px; font-weight: 600; color: var(--ink-100); z-index: 2;
+  }
+
+  .scr-title { font-size: 17px; font-weight: 600; margin-bottom: 18px; color: var(--ink-100); }
+
+  /* —— Mini home preview —— */
+  .hero {
+    position: relative;
+    padding: 22px 20px;
+    border-radius: 24px;
+    background: linear-gradient(150deg, rgba(var(--accent-rgb),0.12), rgba(255,255,255,0.02));
+    border: 1px solid rgba(255,255,255,0.08);
+    overflow: hidden;
+    margin-bottom: 14px;
+    transition: background 0.5s ease;
+  }
+  .hero::before {
+    content: ''; position: absolute; top: -40%; right: -10%;
+    width: 220px; height: 220px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(var(--accent-rgb),0.30), transparent 70%);
+    filter: blur(18px);
+  }
+  .hero-eyebrow { position: relative; font-size: 10px; letter-spacing: 2px; color: var(--ink-60); margin-bottom: 8px; }
+  .hero-amount {
+    position: relative;
+    font-size: 34px; font-weight: 600; color: var(--ink-100);
+    font-variant-numeric: tabular-nums; letter-spacing: -1px;
+  }
+  .hero-amount .cur { font-size: 18px; color: var(--ink-60); margin-right: 2px; }
+  .hero-delta {
+    position: relative; display: inline-flex; align-items: center; gap: 4px;
+    margin-top: 10px; padding: 3px 10px; border-radius: 12px;
+    background: rgba(var(--accent-rgb),0.16);
+    border: 1px solid rgba(var(--accent-rgb),0.3);
+    color: var(--accent); font-size: 12px; font-weight: 600;
+  }
+
+  .cat {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; border-radius: 18px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 10px;
+  }
+  .cat-orb {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; flex-shrink: 0;
+  }
+  .cat-orb.liquid     { background: rgba(var(--accent-rgb),0.18); color: var(--liquid); border: 1px solid rgba(var(--accent-rgb),0.3); }
+  .cat-orb.investment { background: rgba(255,255,255,0.06); color: var(--investment); border: 1px solid rgba(255,255,255,0.1); }
+  .cat-name { flex: 1; font-size: 14px; color: var(--ink-100); }
+  .cat-amt { font-size: 14px; font-weight: 600; color: var(--ink-100); font-variant-numeric: tabular-nums; }
+
+  .fab-row { display: flex; gap: 10px; margin-top: 16px; }
+  .fab {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  .fab.primary {
+    background: linear-gradient(135deg, rgba(var(--accent-rgb),0.55), rgba(255,255,255,0.12));
+    border: 1px solid rgba(255,255,255,0.25);
+    box-shadow: 0 8px 20px rgba(var(--accent-rgb),0.35);
+    color: #fff;
+  }
+  .fab.ghost { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: var(--ink-80); }
+
+  /* —— Theme swatch grid —— */
+  .picker-title { font-size: 13px; color: var(--ink-60); letter-spacing: 1px; margin: 22px 0 12px; }
+  .swatches { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .swatch {
+    position: relative;
+    border-radius: 16px;
+    padding: 12px 10px 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+  .swatch:active { transform: scale(0.96); }
+  .swatch.active { border-color: rgba(255,255,255,0.5); box-shadow: 0 0 0 1px rgba(255,255,255,0.3); }
+  .swatch.active::after {
+    content: '✓'; position: absolute; top: 8px; right: 10px;
+    font-size: 12px; color: #fff;
+  }
+  .sw-dots { display: flex; gap: 4px; margin-bottom: 8px; }
+  .sw-dot { width: 16px; height: 16px; border-radius: 50%; }
+  .sw-name { font-size: 11px; color: rgba(255,255,255,0.85); }
+
+  /* annotation */
+  .legend {
+    max-width: 300px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.7);
+    align-self: center;
+  }
+  .legend h2 { font-size: 16px; color: #fff; margin-bottom: 12px; }
+  .legend code { background: rgba(255,255,255,0.08); padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+  .legend ul { padding-left: 18px; margin: 8px 0; }
+  .legend li { margin: 4px 0; }
+  @media (max-width: 860px) { .legend { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="phone" id="phone">
+  <div class="nebula"></div>
+  <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+
+  <div class="screen">
+    <div class="scr-title">主题</div>
+
+    <!-- live preview -->
+    <div class="hero">
+      <div class="hero-eyebrow">YOUR NET WORTH · 此刻</div>
+      <div class="hero-amount"><span class="cur">¥</span>645,200</div>
+      <div class="hero-delta">↑ +¥31,905 · +5.2%</div>
+    </div>
+
+    <div class="cat">
+      <div class="cat-orb liquid">◆</div>
+      <div class="cat-name">流动资金</div>
+      <div class="cat-amt">¥85,000</div>
+    </div>
+    <div class="cat">
+      <div class="cat-orb investment">▲</div>
+      <div class="cat-name">投资</div>
+      <div class="cat-amt">¥120,000</div>
+    </div>
+
+    <div class="fab-row">
+      <div class="fab primary">♥</div>
+      <div class="fab ghost">🏆</div>
+      <div class="fab ghost">📈</div>
+    </div>
+
+    <!-- theme picker -->
+    <div class="picker-title">选择风格</div>
+    <div class="swatches" id="swatches"></div>
+  </div>
+</div>
+
+<aside class="legend">
+  <h2>主题切换 · 原型</h2>
+  <p>点左侧色卡，整机实时换肤。所有主题共用<b>深色玻璃底</b>，只切换强调色与背景星云色调。</p>
+  <p>实现机制：</p>
+  <ul>
+    <li>每套主题 = 一组 CSS 变量（<code>--bg / --accent / --liquid …</code>）</li>
+    <li>app.wxss 定义 <code>.theme-xxx</code> 覆盖类</li>
+    <li>页面根节点加 <code>theme-{{theme}}</code>，变量级联到全部子元素</li>
+    <li>偏好存 <code>pref_theme</code>，<code>onShow</code> 同步（同 hideAmount 套路）</li>
+  </ul>
+  <p style="color:rgba(255,255,255,0.5);">87 处白色玻璃叠加在深色底上全部继续有效，零回归。</p>
+</aside>
+
+<script>
+  const THEMES = [
+    { key: 'aurora', name: '极光冰蓝', vars: {
+      '--bg-0':'#050507','--bg-1':'#08090c','--accent':'#a7d3ff','--accent-2':'#c8b5ff',
+      '--accent-rgb':'167,211,255','--liquid':'#a7d3ff','--investment':'#c8b5ff',
+      '--neb-1':'rgba(167,211,255,0.14)','--neb-2':'rgba(200,181,255,0.09)',
+      '--ink-100':'#f5f8ff','--ink-60':'rgba(245,248,255,0.55)','--ink-80':'rgba(245,248,255,0.78)' },
+      dots: ['#a7d3ff','#c8b5ff','#08090c'] },
+
+    { key: 'gilded', name: '鎏金暮光', vars: {
+      '--bg-0':'#0a0805','--bg-1':'#0e0b07','--accent':'#f3dfa3','--accent-2':'#e8b96a',
+      '--accent-rgb':'232,185,106','--liquid':'#f3dfa3','--investment':'#e8c98a',
+      '--neb-1':'rgba(232,185,106,0.14)','--neb-2':'rgba(243,223,163,0.08)',
+      '--ink-100':'#fbf6ec','--ink-60':'rgba(251,246,236,0.55)','--ink-80':'rgba(251,246,236,0.78)' },
+      dots: ['#f3dfa3','#e8b96a','#0e0b07'] },
+
+    { key: 'neon', name: '霓虹赛博', vars: {
+      '--bg-0':'#05060a','--bg-1':'#080910','--accent':'#ff6ec7','--accent-2':'#5ee7ff',
+      '--accent-rgb':'255,110,199','--liquid':'#5ee7ff','--investment':'#ff6ec7',
+      '--neb-1':'rgba(255,110,199,0.16)','--neb-2':'rgba(94,231,255,0.12)',
+      '--ink-100':'#f5f0ff','--ink-60':'rgba(245,240,255,0.55)','--ink-80':'rgba(245,240,255,0.78)' },
+      dots: ['#ff6ec7','#5ee7ff','#080910'] },
+
+    { key: 'emerald', name: '林间墨翠', vars: {
+      '--bg-0':'#04080699'.slice(0,7),'--bg-1':'#060c09','--accent':'#6ee7b7','--accent-2':'#a3e635',
+      '--accent-rgb':'110,231,183','--liquid':'#6ee7b7','--investment':'#a3e635',
+      '--neb-1':'rgba(110,231,183,0.14)','--neb-2':'rgba(163,230,53,0.08)',
+      '--ink-100':'#eefbf4','--ink-60':'rgba(238,251,244,0.55)','--ink-80':'rgba(238,251,244,0.78)' },
+      dots: ['#6ee7b7','#a3e635','#060c09'] },
+
+    { key: 'twilight', name: '暮山绛紫', vars: {
+      '--bg-0':'#0a0710','--bg-1':'#0e0a16','--accent':'#c4a3ff','--accent-2':'#ff9ec4',
+      '--accent-rgb':'196,163,255','--liquid':'#c4a3ff','--investment':'#ff9ec4',
+      '--neb-1':'rgba(196,163,255,0.15)','--neb-2':'rgba(255,158,196,0.09)',
+      '--ink-100':'#f6f0ff','--ink-60':'rgba(246,240,255,0.55)','--ink-80':'rgba(246,240,255,0.78)' },
+      dots: ['#c4a3ff','#ff9ec4','#0e0a16'] },
+
+    { key: 'obsidian', name: '曜石单色', vars: {
+      '--bg-0':'#000000','--bg-1':'#070708','--accent':'#e8eaed','--accent-2':'#b8bcc4',
+      '--accent-rgb':'232,234,237','--liquid':'#e8eaed','--investment':'#b8bcc4',
+      '--neb-1':'rgba(232,234,237,0.08)','--neb-2':'rgba(184,188,196,0.05)',
+      '--ink-100':'#f5f6f8','--ink-60':'rgba(245,246,248,0.55)','--ink-80':'rgba(245,246,248,0.78)' },
+      dots: ['#e8eaed','#b8bcc4','#070708'] },
+  ];
+
+  const phone = document.getElementById('phone');
+  const grid = document.getElementById('swatches');
+  let activeKey = 'aurora';
+
+  function applyTheme(t) {
+    for (const k in t.vars) phone.style.setProperty(k, t.vars[k]);
+    activeKey = t.key;
+    render();
+  }
+  function render() {
+    grid.innerHTML = '';
+    THEMES.forEach(t => {
+      const el = document.createElement('div');
+      el.className = 'swatch' + (t.key === activeKey ? ' active' : '');
+      el.style.background = `linear-gradient(140deg, ${t.dots[0]}22, ${t.dots[2]})`;
+      el.innerHTML =
+        '<div class="sw-dots">' +
+          t.dots.map(c => `<div class="sw-dot" style="background:${c}"></div>`).join('') +
+        '</div>' +
+        `<div class="sw-name">${t.name}</div>`;
+      el.onclick = () => applyTheme(t);
+      grid.appendChild(el);
+    });
+  }
+  applyTheme(THEMES[0]);
+</script>
+
+</body>
+</html>

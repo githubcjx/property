@@ -1,0 +1,42 @@
+<view class="canvas-bg" wx:if="{{!reduceMotion}}"></view>
+
+<view class="page {{reduceMotion ? 'no-motion' : ''}}">
+  <view class="cl-halo"></view>
+
+  <!-- 透明导航栏 -->
+  <view class="navbar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onBack">
+      <view class="ic ic-xs ic-back"></view>
+    </view>
+    <text class="nav-title">更新日志</text>
+    <view class="nav-spacer"></view>
+  </view>
+
+  <view class="hero entry-up">
+    <text class="hero-title">更新日志</text>
+    <text class="hero-sub">CHANGELOG · {{version}}</text>
+  </view>
+
+  <view
+    class="rel entry-up d{{index + 1}}"
+    wx:for="{{releases}}"
+    wx:for-item="rel"
+    wx:key="version"
+  >
+    <view class="rel-head">
+      <view class="rel-badge {{rel.highlight ? 'rel-badge-hi' : ''}}">{{rel.version}}</view>
+      <view class="rel-meta">
+        <text class="rel-title">{{rel.title}}</text>
+        <text class="rel-date">{{rel.date}}</text>
+      </view>
+    </view>
+    <view class="rel-card">
+      <view class="cl-item" wx:for="{{rel.items}}" wx:for-item="it" wx:key="*this">
+        <view class="cl-dot"></view>
+        <text class="cl-text">{{it}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="foot">净值本 · MADE WITH CARE</view>
+</view>

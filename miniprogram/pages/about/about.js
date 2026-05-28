@@ -2,7 +2,7 @@ const app = getApp()
 
 Page({
   data: {
-    version: 'V1.1',
+    version: 'V1.5',
     statusBarHeight: 20,
     reduceMotion: false,
     sections: [

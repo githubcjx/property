@@ -21,7 +21,7 @@ function splitAmount(fen) {
 
 Page({
   data: {
-    version: 'V1.1',
+    version: 'V1.5',
     loading: true,
     hasData: false,
 
@@ -42,7 +42,6 @@ Page({
     expandedMap: {},
 
     wobbleMap: {},
-    netShineKey: 0,
     reduceMotion: false,
 
     // 工具 · 分析中心面板
@@ -172,7 +171,6 @@ Page({
       netInt: parts.int,
       netFrac: parts.frac,
       hasData: accounts.length > 0,
-      netShineKey: this.data.netShineKey + 1,
     })
 
     this.animateNetWorth(netWorth)
@@ -180,6 +178,11 @@ Page({
 
   animateNetWorth(targetFen) {
     if (this._netRaf) clearTimeout(this._netRaf)
+    // 金额隐藏时显示的是 ••••,无需逐帧 setData 滚动那些不可见的数字(buildGroups 已写入终值)
+    if (this.data.hideAmount) {
+      this._lastDisplayed = targetFen
+      return
+    }
     const startFen = this._lastDisplayed != null ? this._lastDisplayed : 0
     if (startFen === targetFen) {
       this._lastDisplayed = targetFen
@@ -247,7 +250,8 @@ Page({
   onCloseTools() {
     if (!this.data.toolsVisible) return
     this.setData({ toolsClosing: true })
-    setTimeout(() => this.setData({ toolsVisible: false, toolsClosing: false }), 240)
+    // 与 .tools-sheet.closing 退出动画(0.28s)对齐,等动画跑完再卸载,避免提前移除造成跳变
+    setTimeout(() => this.setData({ toolsVisible: false, toolsClosing: false }), 300)
   },
   onToolTap(e) {
     const url = e.currentTarget.dataset.url

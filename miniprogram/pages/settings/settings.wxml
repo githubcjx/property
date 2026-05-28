@@ -38,6 +38,14 @@
       </view>
       <view class="row-arrow"><view class="ic ic-xs ic-chevron-right"></view></view>
     </button>
+    <view class="row tap" hover-class="row-hover" bindtap="onChangelog">
+      <view class="row-icon"><view class="ic ic-sm ic-clock"></view></view>
+      <view class="row-main">
+        <text class="row-title">更新日志</text>
+        <text class="row-sub">看看每个版本更新了什么</text>
+      </view>
+      <view class="row-arrow"><view class="ic ic-xs ic-chevron-right"></view></view>
+    </view>
     <view class="row tap" hover-class="row-hover" bindtap="onAbout">
       <view class="row-icon"><view class="ic ic-sm ic-info"></view></view>
       <view class="row-main">

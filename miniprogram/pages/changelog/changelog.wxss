@@ -1,0 +1,159 @@
+.page {
+  min-height: 100vh;
+  padding: 0 28rpx 64rpx;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ============ 透明 navbar ============ */
+.navbar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 14rpx;
+  position: relative;
+  z-index: 5;
+}
+.nav-title {
+  font-size: 26rpx;
+  color: var(--ink-80);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+.nav-btn {
+  width: 56rpx; height: 56rpx;
+  border-radius: 50%;
+  background: var(--glass-2);
+  border: 1rpx solid var(--hairline);
+  display: flex; align-items: center; justify-content: center;
+}
+.nav-btn-hover { background: var(--glass-3); transform: scale(0.95); }
+.nav-spacer { width: 56rpx; }
+
+.cl-halo {
+  position: absolute;
+  top: -40rpx; left: 50%;
+  transform: translateX(-50%);
+  width: 560rpx; height: 560rpx;
+  background: radial-gradient(circle, rgba(167, 211, 255, 0.16), transparent 70%);
+  filter: blur(56rpx);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ============ Hero ============ */
+.hero {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32rpx 0 24rpx;
+}
+.hero-title {
+  font-size: 38rpx;
+  color: var(--ink-100);
+  font-weight: 300;
+  letter-spacing: 2rpx;
+}
+.hero-sub {
+  margin-top: 8rpx;
+  font-size: 18rpx;
+  color: var(--ink-40);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* ============ Release ============ */
+.rel {
+  position: relative;
+  z-index: 1;
+  margin-top: 28rpx;
+}
+.rel-head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16rpx;
+  padding: 0 4rpx 14rpx;
+}
+.rel-badge {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: var(--ink-100);
+  padding: 6rpx 18rpx;
+  border-radius: 999rpx;
+  background: var(--glass-2);
+  border: 1rpx solid var(--hairline-hi);
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+.rel-badge-hi {
+  color: #0a0d12;
+  background: linear-gradient(135deg, var(--ice-blue), rgba(167, 211, 255, 0.55));
+  border-color: transparent;
+  box-shadow: 0 8rpx 24rpx rgba(167, 211, 255, 0.35);
+}
+.rel-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 12rpx;
+}
+.rel-title {
+  font-size: 26rpx;
+  color: var(--ink-100);
+  font-weight: 500;
+}
+.rel-date {
+  font-size: 20rpx;
+  color: var(--ink-40);
+  font-variant-numeric: tabular-nums;
+}
+
+.rel-card {
+  border-radius: 28rpx;
+  overflow: hidden;
+  /* 性能:与首页卡片一致,用半透明渐变 + 描边代替 backdrop-filter,滚动时不重算毛玻璃 */
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.04));
+  border: 1rpx solid var(--hairline);
+  box-shadow: inset 0 2rpx 0 rgba(255, 255, 255, 0.08), 0 16rpx 48rpx rgba(0, 0, 0, 0.4);
+}
+
+.cl-item {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 16rpx;
+  padding: 20rpx 28rpx;
+  border-bottom: 1rpx solid var(--hairline);
+}
+.cl-item:last-child { border-bottom: none; }
+.cl-dot {
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
+  margin-top: 12rpx;
+  background: var(--ice-blue);
+  box-shadow: 0 0 12rpx rgba(167, 211, 255, 0.6);
+  flex-shrink: 0;
+}
+.cl-text {
+  flex: 1;
+  font-size: 23rpx;
+  line-height: 1.7;
+  color: var(--ink-80);
+}
+
+.foot {
+  position: relative;
+  z-index: 1;
+  margin-top: 56rpx;
+  text-align: center;
+  font-size: 18rpx;
+  color: var(--ink-20);
+  letter-spacing: 0.22em;
+}

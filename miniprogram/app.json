@@ -6,6 +6,7 @@
     "pages/transaction-detail/transaction-detail",
     "pages/about/about",
     "pages/settings/settings",
+    "pages/changelog/changelog",
     "pages/health/health",
     "pages/milestones/milestones",
     "pages/peer-benchmark/peer-benchmark"

@@ -98,7 +98,8 @@ view, text { box-sizing: border-box; }
     radial-gradient(ellipse 30% 25% at 28% 30%, rgba(167, 211, 255, 0.14), transparent 65%),
     radial-gradient(ellipse 35% 28% at 72% 65%, rgba(200, 181, 255, 0.09), transparent 65%),
     radial-gradient(ellipse 25% 20% at 80% 20%, rgba(183, 232, 240, 0.07), transparent 60%);
-  animation: drift 38s ease-in-out infinite alternate;
+  /* 性能:背景保持静态。原 drift 无限动画会让全屏 blur(48rpx) 层每帧重新栅格化,
+     并强制其上方所有 backdrop-filter 持续重绘 —— 这是「打开几分钟后发烫」的主因。 */
   filter: blur(48rpx);
 }
 .canvas-bg::after {
@@ -290,9 +291,12 @@ button.btn-reset::after { display: none; }
   0%, 100% { transform: translateY(0) rotate(0deg); }
   50%      { transform: translateY(-3rpx) rotate(1deg); }
 }
+/* 性能:pulse-glow 全部用于装饰光晕/光球。原先动 scale,而这些元素多带 filter: blur(),
+   缩放会让模糊层每帧重算 —— 改为只呼吸 opacity(合成层廉价),所有页面的光晕一次性受益。
+   附带修复:原 scale 会覆盖元素用于居中的 translate,去掉后居中不再被打断。 */
 @keyframes pulse-glow {
-  0%, 100% { opacity: 0.5; transform: scale(1); }
-  50%      { opacity: 0.95; transform: scale(1.08); }
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 0.95; }
 }
 @keyframes shine-sweep {
   0%   { transform: translateX(-150%) skewX(-20deg); opacity: 0; }

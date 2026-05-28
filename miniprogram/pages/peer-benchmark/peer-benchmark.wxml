@@ -43,7 +43,7 @@
           </picker>
         </view>
 
-        <view class="unlock-pill"><view class="d"></view>已解锁 · 本次有效</view>
+        <!-- <view class="unlock-pill"><view class="d"></view>已解锁 · 本次有效</view> -->
 
         <view class="headline">
           <text class="lead">你超过了同龄</text>

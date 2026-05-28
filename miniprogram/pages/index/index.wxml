@@ -75,7 +75,7 @@
         <view
           wx:for="{{groups}}"
           wx:key="categoryId"
-          class="cat-card glass entry-up d{{index + 1}}"
+          class="cat-card entry-up d{{index + 1}}"
         >
           <view class="cat-glow halo-{{item.colorClass}}"></view>
 

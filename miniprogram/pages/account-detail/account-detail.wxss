@@ -11,7 +11,7 @@
   transform: translateX(-50%);
   width: 720rpx; height: 720rpx;
   filter: blur(56rpx);
-  animation: pulse-glow 7s ease-in-out infinite;
+  /* 体感&性能:此处光晕脉动几乎无法察觉,直接静态化,省掉持续合成开销 */
   pointer-events: none;
   z-index: 0;
 }
@@ -44,11 +44,10 @@
 .nav-btn {
   width: 56rpx; height: 56rpx;
   border-radius: 50%;
-  background: var(--glass-1);
+  /* 性能:导航按钮叠在 hero 之上,backdrop-filter 会随光晕/滚动重算;改纯色玻璃质感 */
+  background: var(--glass-2);
   border: 1rpx solid var(--hairline);
   display: flex; align-items: center; justify-content: center;
-  -webkit-backdrop-filter: blur(20rpx);
-  backdrop-filter: blur(20rpx);
 }
 .nav-btn-hover { background: var(--glass-3); transform: scale(0.95); }
 
@@ -76,7 +75,6 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  animation: drift-icon 5s ease-in-out infinite;
 }
 .hero-orb .ic { width: 56rpx; height: 56rpx; }
 .orb-ring {
@@ -85,7 +83,6 @@
   border-radius: 44rpx;
   border: 1rpx solid rgba(255,255,255,0.12);
   pointer-events: none;
-  animation: drift-icon 8s ease-in-out infinite reverse;
 }
 .hero-meta {
   flex: 1; min-width: 0;
