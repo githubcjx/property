@@ -1,10 +1,13 @@
 const app = getApp()
+const { getTheme } = require('../../utils/theme.js')
 
 Page({
   data: {
     version: 'V1.5',
     statusBarHeight: 20,
     reduceMotion: false,
+    theme: 'aurora',
+    themeName: '',
   },
 
   onLoad() {
@@ -12,11 +15,21 @@ Page({
     this.setData({
       statusBarHeight: sysInfo.statusBarHeight || 20,
       reduceMotion: app.globalData.reduceMotion,
+      theme: app.globalData.theme,
+      themeName: getTheme(app.globalData.theme).name,
     })
   },
 
   onShow() {
-    this.setData({ reduceMotion: app.globalData.reduceMotion })
+    this.setData({
+      reduceMotion: app.globalData.reduceMotion,
+      theme: app.globalData.theme,
+      themeName: getTheme(app.globalData.theme).name,
+    })
+  },
+
+  onTheme() {
+    wx.navigateTo({ url: '/pages/theme/theme' })
   },
 
   onReduceMotionChange(e) {

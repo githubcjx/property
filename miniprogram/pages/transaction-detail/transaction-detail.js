@@ -70,6 +70,7 @@ Page({
     editTime: '',
     submitting: false,
     reduceMotion: false,
+    theme: 'aurora',
   },
 
   onLoad(query) {
@@ -78,12 +79,13 @@ Page({
       statusBarHeight: sysInfo.statusBarHeight || 20,
       txId: query.id || '',
       reduceMotion: app.globalData.reduceMotion,
+      theme: app.globalData.theme,
     })
     this.load(query.id)
   },
 
   onShow() {
-    this.setData({ reduceMotion: app.globalData.reduceMotion })
+    this.setData({ reduceMotion: app.globalData.reduceMotion, theme: app.globalData.theme })
   },
 
   async load(id) {

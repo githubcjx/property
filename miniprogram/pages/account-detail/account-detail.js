@@ -71,6 +71,7 @@ Page({
       statusBarHeight: sysInfo.statusBarHeight || 20,
       hideAmount: app.globalData.hideAmount,
       reduceMotion: app.globalData.reduceMotion,
+      theme: app.globalData.theme,
     })
   },
 
@@ -78,6 +79,7 @@ Page({
     this.setData({
       hideAmount: app.globalData.hideAmount,
       reduceMotion: app.globalData.reduceMotion,
+      theme: app.globalData.theme,
     })
     this.refresh()
   },

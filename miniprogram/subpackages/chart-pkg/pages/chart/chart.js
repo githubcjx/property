@@ -1,6 +1,7 @@
 const app = getApp()
 const echarts = require('../../ec-canvas/echarts')
 const chartSvc = require('../../../../services/chart.js')
+const { getTheme } = require('../../../../utils/theme.js')
 
 // Tab 与时间范围常量
 const TABS = [
@@ -49,6 +50,7 @@ Page({
     hasData: false,
     hideAmount: false,
     reduceMotion: false,
+    theme: 'aurora',
 
     statusBarHeight: 20,
 
@@ -73,6 +75,7 @@ Page({
     this.setData({
       hideAmount: app.globalData.hideAmount,
       reduceMotion: app.globalData.reduceMotion,
+      theme: app.globalData.theme,
       statusBarHeight: sysInfo.statusBarHeight || 20,
     })
     // 设置默认自定义日期：近 7 天
@@ -94,7 +97,10 @@ Page({
   },
 
   onShow() {
-    this.setData({ reduceMotion: app.globalData.reduceMotion })
+    this.setData({
+      reduceMotion: app.globalData.reduceMotion,
+      theme: app.globalData.theme,
+    })
   },
 
   onUnload() {
@@ -148,6 +154,11 @@ Page({
   },
 
   buildOption(data, tabKey, hide) {
+    const t = getTheme(app.globalData.theme)
+    const accent = t.accent
+    const accentRgb = t.accentRgb
+    const invest = t.investment
+
     const yFormatter = hide
       ? () => '***'
       : (v) => {
@@ -179,15 +190,15 @@ Page({
           symbolSize: 4,
           showSymbol: false,
           data: data.series.netWorth,
-          lineStyle: { color: '#a7d3ff', width: 2, shadowColor: 'rgba(167,211,255,0.5)', shadowBlur: 8 },
-          itemStyle: { color: '#a7d3ff' },
+          lineStyle: { color: accent, width: 2, shadowColor: `rgba(${accentRgb},0.5)`, shadowBlur: 8 },
+          itemStyle: { color: accent },
           areaStyle: {
             color: {
               type: 'linear',
               x: 0, y: 0, x2: 0, y2: 1,
               colorStops: [
-                { offset: 0, color: 'rgba(167,211,255,0.38)' },
-                { offset: 1, color: 'rgba(167,211,255,0)' },
+                { offset: 0, color: `rgba(${accentRgb},0.38)` },
+                { offset: 1, color: `rgba(${accentRgb},0)` },
               ],
             },
           },
@@ -224,15 +235,15 @@ Page({
           symbolSize: 4,
           showSymbol: false,
           data: data.series.liquid,
-          lineStyle: { color: '#a7d3ff', width: 2, shadowColor: 'rgba(167,211,255,0.4)', shadowBlur: 6 },
-          itemStyle: { color: '#a7d3ff' },
+          lineStyle: { color: accent, width: 2, shadowColor: `rgba(${accentRgb},0.4)`, shadowBlur: 6 },
+          itemStyle: { color: accent },
           areaStyle: {
             color: {
               type: 'linear',
               x: 0, y: 0, x2: 0, y2: 1,
               colorStops: [
-                { offset: 0, color: 'rgba(167,211,255,0.30)' },
-                { offset: 1, color: 'rgba(167,211,255,0)' },
+                { offset: 0, color: `rgba(${accentRgb},0.30)` },
+                { offset: 1, color: `rgba(${accentRgb},0)` },
               ],
             },
           },
@@ -245,8 +256,8 @@ Page({
           symbolSize: 4,
           showSymbol: false,
           data: data.series.investment,
-          lineStyle: { color: '#c8b5ff', width: 1.6 },
-          itemStyle: { color: '#c8b5ff' },
+          lineStyle: { color: invest, width: 1.6 },
+          itemStyle: { color: invest },
         },
       ]
     }

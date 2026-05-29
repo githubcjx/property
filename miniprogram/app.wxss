@@ -53,6 +53,12 @@ page {
   --neg: #ffb3b3;
 
   --accent: var(--ice-blue);
+  --accent-2: var(--investment);
+  --accent-rgb: 167, 211, 255;
+
+  /* —— Nebula tints (page-level background, overridden per theme) —— */
+  --neb-1: rgba(167, 211, 255, 0.14);
+  --neb-2: rgba(200, 181, 255, 0.09);
 
   /* —— Motion easing —— */
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -85,9 +91,9 @@ view, text { box-sizing: border-box; }
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(167, 211, 255, 0.10), transparent 60%),
-    radial-gradient(ellipse 50% 40% at 100% 100%, rgba(200, 181, 255, 0.06), transparent 60%),
-    linear-gradient(180deg, #07080c 0%, #050507 100%);
+    radial-gradient(ellipse 80% 50% at 50% 0%, var(--neb-1), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 100% 100%, var(--neb-2), transparent 60%),
+    linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 100%);
   overflow: hidden;
 }
 .canvas-bg::before {
@@ -95,9 +101,9 @@ view, text { box-sizing: border-box; }
   position: absolute;
   inset: -20%;
   background:
-    radial-gradient(ellipse 30% 25% at 28% 30%, rgba(167, 211, 255, 0.14), transparent 65%),
-    radial-gradient(ellipse 35% 28% at 72% 65%, rgba(200, 181, 255, 0.09), transparent 65%),
-    radial-gradient(ellipse 25% 20% at 80% 20%, rgba(183, 232, 240, 0.07), transparent 60%);
+    radial-gradient(ellipse 30% 25% at 28% 30%, var(--neb-1), transparent 65%),
+    radial-gradient(ellipse 35% 28% at 72% 65%, var(--neb-2), transparent 65%),
+    radial-gradient(ellipse 25% 20% at 80% 20%, rgba(var(--fixed-rgb), 0.07), transparent 60%);
   /* 性能:背景保持静态。原 drift 无限动画会让全屏 blur(48rpx) 层每帧重新栅格化,
      并强制其上方所有 backdrop-filter 持续重绘 —— 这是「打开几分钟后发烫」的主因。 */
   filter: blur(48rpx);
@@ -110,8 +116,8 @@ view, text { box-sizing: border-box; }
     radial-gradient(2rpx 2rpx at 38% 70%, rgba(255,255,255,0.30), transparent 60%),
     radial-gradient(2rpx 2rpx at 67% 12%, rgba(255,255,255,0.40), transparent 60%),
     radial-gradient(2rpx 2rpx at 82% 80%, rgba(255,255,255,0.30), transparent 60%),
-    radial-gradient(3rpx 3rpx at 22% 88%, rgba(167, 211, 255,0.40), transparent 60%),
-    radial-gradient(3rpx 3rpx at 90% 40%, rgba(200, 181, 255,0.30), transparent 60%);
+    radial-gradient(3rpx 3rpx at 22% 88%, rgba(var(--accent-rgb),0.40), transparent 60%),
+    radial-gradient(3rpx 3rpx at 90% 40%, rgba(var(--investment-rgb),0.30), transparent 60%);
   opacity: 0.7;
 }
 
@@ -208,9 +214,9 @@ view, text { box-sizing: border-box; }
   position: relative; overflow: hidden;
 }
 .btn-primary {
-  background: linear-gradient(135deg, var(--ice-blue), rgba(167, 211, 255, 0.55));
+  background: linear-gradient(135deg, var(--ice-blue), rgba(var(--accent-rgb), 0.55));
   color: #0a0d12;
-  box-shadow: 0 16rpx 40rpx rgba(167, 211, 255, 0.35), inset 0 2rpx 0 rgba(255,255,255,0.5);
+  box-shadow: 0 16rpx 40rpx rgba(var(--accent-rgb), 0.35), inset 0 2rpx 0 rgba(255,255,255,0.5);
 }
 .btn-dark {
   background: var(--glass-2);
@@ -383,6 +389,7 @@ button.btn-reset::after { display: none; }
 .ic-trophy { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9H4.5a2.5 2.5 0 0 1 0-5H6'/><path d='M18 9h1.5a2.5 2.5 0 0 0 0-5H18'/><path d='M4 22h16'/><path d='M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22'/><path d='M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22'/><path d='M18 2H6v7a6 6 0 0 0 12 0V2Z'/></svg>"); }
 .ic-peers { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/><circle cx='9' cy='7' r='4'/><path d='M22 21v-2a4 4 0 0 0-3-3.87'/><path d='M16 3.13a4 4 0 0 1 0 7.75'/></svg>"); }
 .ic-apps { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23f5f8ff' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='3' width='7' height='7' rx='1.5'/><rect x='14' y='3' width='7' height='7' rx='1.5'/><rect x='3' y='14' width='7' height='7' rx='1.5'/><rect x='14' y='14' width='7' height='7' rx='1.5'/></svg>"); }
+.ic-palette { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23f5f8ff' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><circle cx='13.5' cy='6.5' r='1.2'/><circle cx='17.5' cy='10.5' r='1.2'/><circle cx='8.5' cy='7.5' r='1.2'/><circle cx='6.5' cy='12.5' r='1.2'/><path d='M12 2a10 10 0 0 0 0 20c1.1 0 2-.9 2-2 0-.55-.2-1-.5-1.4-.3-.4-.5-.85-.5-1.35a1.5 1.5 0 0 1 1.5-1.5H17a5 5 0 0 0 5-5c0-4.42-4.48-8-10-8z'/></svg>"); }
 
 /* sub-type icons */
 .ic-cash      { --ic-src: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23f5f8ff' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><rect x='2' y='6' width='20' height='12' rx='2'/><circle cx='12' cy='12' r='3'/><line x1='6' y1='12' x2='6.01' y2='12'/><line x1='18' y1='12' x2='18.01' y2='12'/></svg>"); background-image: var(--ic-src); }
@@ -406,3 +413,96 @@ button.btn-reset::after { display: none; }
 .ic-glyph-fixed      { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22' fill='none' stroke='%23ffffff' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'><rect x='4' y='6' width='14' height='12' rx='2'/><path d='M4 10 L 18 10' opacity='0.6'/><path d='M7 6 L 11 2 L 15 6'/></svg>"); }
 .ic-glyph-receivable { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22' fill='none' stroke='%23ffffff' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'><circle cx='11' cy='11' r='7'/><path d='M11 6 L 11 11 L 14 13'/></svg>"); }
 .ic-glyph-debt       { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22' fill='none' stroke='%23ffffff' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'><circle cx='8' cy='11' r='4'/><circle cx='14' cy='11' r='4'/></svg>"); }
+
+/* ============================================================
+   主题 · Theme overrides
+   机制：每套主题 = 一组 CSS 变量覆盖。页面根节点(.page)与 .canvas-bg 上挂
+   class="theme-{{theme}}"，变量级联到全部子元素。默认主题(aurora)即 page 基色，
+   无需 class。所有白色玻璃叠加在深色底上继续有效，只切换强调色 / 类别色 / 星云色。
+   --debt / --neg 在所有主题保持红色（财务「负向」语义）。
+   ============================================================ */
+.theme-gilded {
+  --bg-0: #0a0805; --bg-1: #0e0b07; --bg-2: #14100a;
+  --ink-100: #fbf6ec;
+  --ink-80: rgba(251, 246, 236, 0.78);
+  --ink-60: rgba(251, 246, 236, 0.55);
+  --ink-40: rgba(251, 246, 236, 0.36);
+  --ink-20: rgba(251, 246, 236, 0.18);
+  --ice-blue: #f3dfa3; --accent: #f3dfa3; --accent-2: #e8b96a;
+  --accent-rgb: 243, 223, 163;
+  --liquid: #f3dfa3;     --liquid-rgb: 243, 223, 163;
+  --investment: #e8c98a; --investment-rgb: 232, 201, 138;
+  --fixed: #d9b38c;      --fixed-rgb: 217, 179, 140;
+  --receivable: #f7ecd2; --receivable-rgb: 247, 236, 210;
+  --pos: #f3dfa3;
+  --neb-1: rgba(243, 223, 163, 0.13);
+  --neb-2: rgba(232, 185, 106, 0.08);
+}
+.theme-neon {
+  --bg-0: #05060a; --bg-1: #080910; --bg-2: #0d0f1a;
+  --ink-100: #f5f0ff;
+  --ink-80: rgba(245, 240, 255, 0.78);
+  --ink-60: rgba(245, 240, 255, 0.55);
+  --ink-40: rgba(245, 240, 255, 0.36);
+  --ink-20: rgba(245, 240, 255, 0.18);
+  --ice-blue: #5ee7ff; --accent: #5ee7ff; --accent-2: #ff6ec7;
+  --accent-rgb: 94, 231, 255;
+  --liquid: #5ee7ff;     --liquid-rgb: 94, 231, 255;
+  --investment: #ff6ec7; --investment-rgb: 255, 110, 199;
+  --fixed: #a78bfa;      --fixed-rgb: 167, 139, 250;
+  --receivable: #c9f7ff; --receivable-rgb: 201, 247, 255;
+  --pos: #5ee7ff;
+  --neb-1: rgba(255, 110, 199, 0.16);
+  --neb-2: rgba(94, 231, 255, 0.12);
+}
+.theme-emerald {
+  --bg-0: #040806; --bg-1: #060c09; --bg-2: #0a1410;
+  --ink-100: #eefbf4;
+  --ink-80: rgba(238, 251, 244, 0.78);
+  --ink-60: rgba(238, 251, 244, 0.55);
+  --ink-40: rgba(238, 251, 244, 0.36);
+  --ink-20: rgba(238, 251, 244, 0.18);
+  --ice-blue: #6ee7b7; --accent: #6ee7b7; --accent-2: #a3e635;
+  --accent-rgb: 110, 231, 183;
+  --liquid: #6ee7b7;     --liquid-rgb: 110, 231, 183;
+  --investment: #a3e635; --investment-rgb: 163, 230, 53;
+  --fixed: #5eead4;      --fixed-rgb: 94, 234, 212;
+  --receivable: #ecfccb; --receivable-rgb: 236, 252, 203;
+  --pos: #6ee7b7;
+  --neb-1: rgba(110, 231, 183, 0.14);
+  --neb-2: rgba(163, 230, 53, 0.08);
+}
+.theme-twilight {
+  --bg-0: #0a0710; --bg-1: #0e0a16; --bg-2: #161020;
+  --ink-100: #f6f0ff;
+  --ink-80: rgba(246, 240, 255, 0.78);
+  --ink-60: rgba(246, 240, 255, 0.55);
+  --ink-40: rgba(246, 240, 255, 0.36);
+  --ink-20: rgba(246, 240, 255, 0.18);
+  --ice-blue: #c4a3ff; --accent: #c4a3ff; --accent-2: #ff9ec4;
+  --accent-rgb: 196, 163, 255;
+  --liquid: #c4a3ff;     --liquid-rgb: 196, 163, 255;
+  --investment: #ff9ec4; --investment-rgb: 255, 158, 196;
+  --fixed: #a3c4ff;      --fixed-rgb: 163, 196, 255;
+  --receivable: #f0e6ff; --receivable-rgb: 240, 230, 255;
+  --pos: #c4a3ff;
+  --neb-1: rgba(196, 163, 255, 0.15);
+  --neb-2: rgba(255, 158, 196, 0.09);
+}
+.theme-obsidian {
+  --bg-0: #000000; --bg-1: #070708; --bg-2: #0e0e10;
+  --ink-100: #f5f6f8;
+  --ink-80: rgba(245, 246, 248, 0.78);
+  --ink-60: rgba(245, 246, 248, 0.55);
+  --ink-40: rgba(245, 246, 248, 0.36);
+  --ink-20: rgba(245, 246, 248, 0.18);
+  --ice-blue: #e8eaed; --accent: #e8eaed; --accent-2: #b8bcc4;
+  --accent-rgb: 232, 234, 237;
+  --liquid: #e8eaed;     --liquid-rgb: 232, 234, 237;
+  --investment: #b8bcc4; --investment-rgb: 184, 188, 196;
+  --fixed: #9aa0aa;      --fixed-rgb: 154, 160, 170;
+  --receivable: #f5f6f8; --receivable-rgb: 245, 246, 248;
+  --pos: #e8eaed;
+  --neb-1: rgba(232, 234, 237, 0.08);
+  --neb-2: rgba(184, 188, 196, 0.05);
+}

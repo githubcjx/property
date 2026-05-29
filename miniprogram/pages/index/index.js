@@ -43,6 +43,7 @@ Page({
 
     wobbleMap: {},
     reduceMotion: false,
+    theme: 'aurora',
 
     // 工具 · 分析中心面板
     toolsVisible: false,
@@ -56,6 +57,7 @@ Page({
       statusBarHeight: sysInfo.statusBarHeight || 20,
       hideAmount: app.globalData.hideAmount,
       reduceMotion: app.globalData.reduceMotion,
+      theme: app.globalData.theme,
       expandedMap: stored,
     })
   },
@@ -64,6 +66,7 @@ Page({
     this.setData({
       hideAmount: app.globalData.hideAmount,
       reduceMotion: app.globalData.reduceMotion,
+      theme: app.globalData.theme,
     })
     this.refresh()
   },

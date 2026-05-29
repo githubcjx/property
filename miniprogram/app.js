@@ -1,11 +1,14 @@
 // TODO: 替换为你的云开发环境 ID（云开发控制台获取）
 const CLOUD_ENV_ID = 'cloud1-d9g5kur3sa2da3193'
 
+const { DEFAULT_THEME } = require('./utils/theme.js')
+
 App({
   globalData: {
     hideAmount: wx.getStorageSync('pref_hide_amount') === true,
     cloudReady: false,
     reduceMotion: wx.getStorageSync('pref_reduce_motion') === true,
+    theme: wx.getStorageSync('pref_theme') || DEFAULT_THEME,
   },
 
   onLaunch() {
@@ -40,5 +43,11 @@ App({
     this.globalData.reduceMotion = next
     wx.setStorageSync('pref_reduce_motion', next)
     return next
+  },
+
+  setTheme(key) {
+    this.globalData.theme = key
+    wx.setStorageSync('pref_theme', key)
+    return key
   },
 })

@@ -1,0 +1,55 @@
+<view class="canvas-bg theme-{{theme}}" wx:if="{{!reduceMotion}}"></view>
+
+<view class="page {{reduceMotion ? 'no-motion' : ''}} theme-{{theme}}">
+  <!-- 透明导航栏 -->
+  <view class="navbar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onBack">
+      <view class="ic ic-xs ic-back"></view>
+    </view>
+    <text class="nav-title">主题</text>
+    <view class="nav-spacer"></view>
+  </view>
+
+  <!-- 实时预览 -->
+  <view class="preview entry-up">
+    <view class="hero glass">
+      <view class="hero-halo"></view>
+      <text class="hero-eyebrow">YOUR NET WORTH · 此刻</text>
+      <view class="hero-amount num"><text class="cur">¥</text>645,200</view>
+      <view class="hero-delta">↑ +¥31,905 · +5.2%</view>
+    </view>
+
+    <view class="cat glass">
+      <view class="cat-orb cat-tint-liquid"><view class="ic ic-sm ic-glyph-liquid"></view></view>
+      <text class="cat-name">流动资金</text>
+      <text class="cat-amt num">¥85,000</text>
+    </view>
+    <view class="cat glass">
+      <view class="cat-orb cat-tint-investment"><view class="ic ic-sm ic-glyph-investment"></view></view>
+      <text class="cat-name">投资</text>
+      <text class="cat-amt num">¥120,000</text>
+    </view>
+  </view>
+
+  <!-- 色卡 -->
+  <text class="picker-title">选择风格</text>
+  <view class="swatches">
+    <view
+      wx:for="{{themes}}"
+      wx:key="key"
+      class="swatch {{item.key === theme ? 'active' : ''}}"
+      style="background: linear-gradient(140deg, {{item.dots[0]}}22, {{item.dots[2]}});"
+      data-key="{{item.key}}"
+      bindtap="onPick"
+    >
+      <view class="sw-dots">
+        <view class="sw-dot" style="background: {{item.dots[0]}};"></view>
+        <view class="sw-dot" style="background: {{item.dots[1]}};"></view>
+        <view class="sw-dot" style="background: {{item.dots[2]}};"></view>
+      </view>
+      <text class="sw-name">{{item.name}}</text>
+    </view>
+  </view>
+
+  <view class="hint">所有主题共用深色玻璃质感，仅切换强调色与背景色调 · 点选即时生效</view>
+</view>

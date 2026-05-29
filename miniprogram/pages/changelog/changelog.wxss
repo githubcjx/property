@@ -36,7 +36,7 @@
   top: -40rpx; left: 50%;
   transform: translateX(-50%);
   width: 560rpx; height: 560rpx;
-  background: radial-gradient(circle, rgba(167, 211, 255, 0.16), transparent 70%);
+  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.16), transparent 70%);
   filter: blur(56rpx);
   pointer-events: none;
   z-index: 0;
@@ -91,9 +91,9 @@
 }
 .rel-badge-hi {
   color: #0a0d12;
-  background: linear-gradient(135deg, var(--ice-blue), rgba(167, 211, 255, 0.55));
+  background: linear-gradient(135deg, var(--ice-blue), rgba(var(--accent-rgb), 0.55));
   border-color: transparent;
-  box-shadow: 0 8rpx 24rpx rgba(167, 211, 255, 0.35);
+  box-shadow: 0 8rpx 24rpx rgba(var(--accent-rgb), 0.35);
 }
 .rel-meta {
   flex: 1;
@@ -138,7 +138,7 @@
   border-radius: 50%;
   margin-top: 12rpx;
   background: var(--ice-blue);
-  box-shadow: 0 0 12rpx rgba(167, 211, 255, 0.6);
+  box-shadow: 0 0 12rpx rgba(var(--accent-rgb), 0.6);
   flex-shrink: 0;
 }
 .cl-text {
