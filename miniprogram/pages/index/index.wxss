@@ -629,6 +629,8 @@
 .chip-lav::after   { background: radial-gradient(circle, rgba(var(--investment-rgb), 0.38), transparent 70%); }
 .chip-gold  { background: rgba(243, 223, 163, 0.16); border-color: rgba(243, 223, 163, 0.32); }
 .chip-gold::after  { background: radial-gradient(circle, rgba(243, 223, 163, 0.34), transparent 70%); }
+.chip-teal  { background: rgba(var(--fixed-rgb), 0.16); border-color: rgba(var(--fixed-rgb), 0.32); }
+.chip-teal::after  { background: radial-gradient(circle, rgba(var(--fixed-rgb), 0.38), transparent 70%); }
 .tool-label {
   font-size: 24rpx;
   color: var(--ink-80);

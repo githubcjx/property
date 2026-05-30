@@ -1,0 +1,172 @@
+<view class="canvas-bg theme-{{theme}}" wx:if="{{!reduceMotion}}"></view>
+
+<view class="page {{reduceMotion ? 'no-motion' : ''}} theme-{{theme}}">
+  <!-- 透明导航栏 -->
+  <view class="navbar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onBack">
+      <view class="ic ic-xs ic-back"></view>
+    </view>
+    <text class="nav-title">资产洞察</text>
+  </view>
+
+  <!-- 空态 -->
+  <block wx:if="{{!loading && !hasData}}">
+    <view class="empty-stage">
+      <view class="empty-orb"><view class="ic ic-lg ic-chart"></view></view>
+      <view class="empty-title">还没有账户数据</view>
+      <view class="empty-desc">回到首页添加账户、记录余额，即可查看资产构成与变动</view>
+    </view>
+  </block>
+
+  <block wx:if="{{hasData}}">
+    <!-- 分段切换 -->
+    <view class="seg">
+      <view class="seg-item {{tab === 'alloc' ? 'on' : ''}} tap" data-tab="alloc" bindtap="onTab">资产配置</view>
+      <view class="seg-item {{tab === 'change' ? 'on' : ''}} tap" data-tab="change" bindtap="onTab">变动归因</view>
+    </view>
+
+    <scroll-view scroll-y class="scroll" enable-flex>
+
+      <!-- ============ 资产配置 ============ -->
+      <block wx:if="{{tab === 'alloc' && alloc}}">
+        <!-- 环图卡 -->
+        <view class="card entry-up">
+          <view class="donut-wrap">
+            <view class="donut" style="background: {{alloc.conicGradient}};"></view>
+            <view class="donut-hole">
+              <text class="donut-k">总资产</text>
+              <text class="donut-v num">{{alloc.totals.assets}}</text>
+            </view>
+          </view>
+
+          <view class="legend">
+            <view class="legend-row" wx:for="{{alloc.assetCategories}}" wx:key="id">
+              <view class="legend-dot cat-bg-{{item.colorClass}}"></view>
+              <text class="legend-name">{{item.name}}</text>
+              <text class="legend-pct cat-{{item.colorClass}}">{{item.pctText}}%</text>
+              <text class="legend-amt num">{{item.amountText}}</text>
+            </view>
+          </view>
+
+          <view class="totals-foot">
+            <view class="tf-item">
+              <text class="tf-v num">{{alloc.totals.netWorth}}</text>
+              <text class="tf-k">净资产</text>
+            </view>
+            <view class="tf-divider"></view>
+            <view class="tf-item">
+              <text class="tf-v num cat-debt">{{alloc.totals.debt}}</text>
+              <text class="tf-k">总负债</text>
+            </view>
+            <view class="tf-divider"></view>
+            <view class="tf-item">
+              <text class="tf-v num">{{alloc.accountCount}}</text>
+              <text class="tf-k">账户数</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 关键比率 -->
+        <view class="sec-title"><text class="sec-name">关键比率</text><text class="sec-sub">占总资产</text></view>
+        <view class="card entry-up">
+          <view class="ratio-row" wx:for="{{alloc.ratios}}" wx:key="key">
+            <view class="ratio-head">
+              <text class="ratio-name">{{item.name}}</text>
+              <text class="ratio-pct {{item.isDebt ? 'is-debt' : ''}}">{{item.pctText}}%</text>
+            </view>
+            <view class="ratio-track">
+              <view class="ratio-fill {{item.isDebt ? 'fill-debt' : ''}}" style="width: {{item.barPct}}%;"></view>
+            </view>
+            <text class="ratio-desc">{{item.desc}}</text>
+          </view>
+        </view>
+
+        <!-- 集中度 -->
+        <block wx:if="{{alloc.concentration}}">
+          <view class="sec-title"><text class="sec-name">集中度</text></view>
+          <view class="card entry-up conc">
+            <view class="conc-icon cat-{{alloc.concentration.colorClass}}">
+              <view class="ic ic-sm ic-{{alloc.concentration.icon}}"></view>
+            </view>
+            <view class="conc-body">
+              <text class="conc-name">{{alloc.concentration.name}}</text>
+              <text class="conc-sub">最大单一资产 · {{alloc.concentration.amountText}}</text>
+            </view>
+            <text class="conc-pct num cat-{{alloc.concentration.colorClass}}">{{alloc.concentration.pctText}}%</text>
+          </view>
+        </block>
+
+        <view class="note-line">仅供构成参考 · 数据全部来自你自己的账户，不含任何外部估算</view>
+      </block>
+
+      <!-- ============ 变动归因 ============ -->
+      <block wx:if="{{tab === 'change'}}">
+        <!-- 周期切换 -->
+        <view class="period">
+          <view
+            wx:for="{{periods}}"
+            wx:key="key"
+            class="period-item {{periodKey === item.key ? 'on' : ''}} tap"
+            data-key="{{item.key}}"
+            bindtap="onPeriod"
+          >{{item.label}}</view>
+        </view>
+
+        <block wx:if="{{change}}">
+          <!-- Hero · 净资产变化 -->
+          <view class="card change-hero entry-up">
+            <text class="ch-eyebrow">{{change.periodLabel}} 净资产变化</text>
+            <view class="ch-amount {{change.totalDir}}">{{change.totalDeltaText}}</view>
+            <view class="ch-meta">
+              <text class="ch-pct {{change.totalDir}}">{{change.totalDeltaPctText}}</text>
+              <text class="ch-flow num">{{change.baselineText}} → {{change.currentText}}</text>
+            </view>
+            <view class="ch-split" wx:if="{{change.hasMovement}}">
+              <view class="split-item"><text class="split-k">增加</text><text class="split-v pos num">{{change.gainText}}</text></view>
+              <view class="split-item"><text class="split-k">减少</text><text class="split-v neg num">{{change.lossText}}</text></view>
+            </view>
+          </view>
+
+          <!-- 归因明细 -->
+          <block wx:if="{{change.hasMovement}}">
+            <view class="sec-title"><text class="sec-name">谁让净资产变化</text><text class="sec-sub">点击看账户</text></view>
+            <view class="contrib-list">
+              <view
+                wx:for="{{change.contributors}}"
+                wx:key="accountId"
+                class="contrib tap"
+                hover-class="contrib-hover"
+                data-id="{{item.accountId}}"
+                bindtap="onContribTap"
+              >
+                <view class="contrib-icon cat-{{item.colorClass}}">
+                  <view class="ic ic-sm ic-{{item.icon}}"></view>
+                </view>
+                <view class="contrib-body">
+                  <view class="contrib-line">
+                    <text class="contrib-name">{{item.name}}</text>
+                    <text wx:if="{{item.isNew}}" class="contrib-badge">新增</text>
+                  </view>
+                  <view class="contrib-track">
+                    <view class="contrib-fill fill-{{item.dir}}" style="width: {{item.barPct}}%;"></view>
+                  </view>
+                </view>
+                <text class="contrib-amt num {{item.dir}}">{{item.contribText}}</text>
+              </view>
+            </view>
+          </block>
+
+          <!-- 无变动空态 -->
+          <view wx:else class="empty-inline">
+            <text>{{change.periodLabel}}内净资产没有变化</text>
+            <text class="empty-inline-sub">更新账户余额后，这里会显示是哪些账户带来的涨跌</text>
+          </view>
+
+          <view class="note-line">变化 = 各账户期末余额 − 期初快照；负债下降计为正贡献。期初取该时点前最后一次记录。</view>
+        </block>
+      </block>
+
+      <view class="bottom-spacer"></view>
+    </scroll-view>
+  </block>
+</view>
