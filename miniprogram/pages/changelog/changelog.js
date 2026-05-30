@@ -2,17 +2,26 @@ const app = getApp()
 
 Page({
   data: {
-    version: 'V1.5',
+    version: 'V1.6',
     statusBarHeight: 20,
     reduceMotion: false,
     theme: 'aurora',
     // 版本由提交记录归并而来,自新到旧排列
     releases: [
       {
+        version: 'V1.6',
+        date: '2026-05',
+        title: '资产洞察',
+        highlight: true,
+        items: [
+          '新增「资产洞察」：环形图看清流动 / 投资 / 固定 / 负债的资产构成与占比，及最大单一资产集中度',
+          '「变动归因」：按本月 / 近 30 天 / 今年，拆解净资产涨跌分别由哪些账户贡献',
+        ],
+      },
+      {
         version: 'V1.5',
         date: '2026-05',
         title: '同龄对标 & 工具中心',
-        highlight: true,
         items: [
           '新增「同龄对标」：按年龄段看你的净资产处在什么位置',
           '趋势 / 体检 / 里程碑 / 同龄对标 四个分析工具，收进首页单一「工具」入口',
