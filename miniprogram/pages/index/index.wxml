@@ -167,10 +167,14 @@
           <view class="tool-chip chip-ice"><view class="ic ic-sm ic-chart"></view></view>
           <text class="tool-label">净值趋势</text>
         </view>
+<!-- 「同龄对标」入口暂时下线:对照分布(benchmark.js AGE_BUCKETS)目前为占位示意数据,
+     非权威真实数据,放出会让用户误以为是精确统计结论。待接入真实/可校准数据后再恢复本入口。
         <view class="tool-cell tap" hover-class="tool-cell-hover" data-url="/pages/peer-benchmark/peer-benchmark" bindtap="onToolTap">
           <view class="tool-chip chip-lav"><view class="ic ic-sm ic-peers"></view></view>
           <text class="tool-label">同龄对标</text>
         </view>
+-->
+
         <view class="tool-cell tap" hover-class="tool-cell-hover" data-url="/pages/milestones/milestones" bindtap="onToolTap">
           <view class="tool-chip chip-gold"><view class="ic ic-sm ic-trophy"></view></view>
           <text class="tool-label">里程碑</text>
