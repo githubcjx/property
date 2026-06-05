@@ -1,9 +1,9 @@
 const app = getApp()
-const { THEMES } = require('../../utils/theme.js')
+const { THEME_GROUPS } = require('../../utils/theme.js')
 
 Page({
   data: {
-    themes: THEMES,
+    groups: THEME_GROUPS,
     theme: 'aurora',
     reduceMotion: false,
     statusBarHeight: 20,

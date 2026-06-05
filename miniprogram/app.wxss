@@ -422,6 +422,111 @@ button.btn-reset::after { display: none; }
    无需 class。所有白色玻璃叠加在深色底上继续有效，只切换强调色 / 类别色 / 星云色。
    --debt / --neg 在所有主题保持红色（财务「负向」语义）。
    ============================================================ */
+
+/* —— 人民币纸币色卡系列（按面值 1/5/10/20/50/100）—— */
+/* 1 元 · 不焦绿（标准色 #566C44，深色化后取明亮橄榄绿为强调） */
+.theme-yuan1 {
+  --bg-0: #040705; --bg-1: #070d09; --bg-2: #0c150f;
+  --ink-100: #f1f8ec;
+  --ink-80: rgba(241, 248, 236, 0.78);
+  --ink-60: rgba(241, 248, 236, 0.55);
+  --ink-40: rgba(241, 248, 236, 0.36);
+  --ink-20: rgba(241, 248, 236, 0.18);
+  --ice-blue: #8fb96b; --accent: #8fb96b; --accent-2: #c9c88a;
+  --accent-rgb: 143, 185, 107;
+  --liquid: #8fb96b;     --liquid-rgb: 143, 185, 107;
+  --investment: #c9c88a; --investment-rgb: 201, 200, 138;
+  --fixed: #b6d88f;      --fixed-rgb: 182, 216, 143;
+  --receivable: #e2eccb; --receivable-rgb: 226, 236, 203;
+  --neb-1: rgba(143, 185, 107, 0.14);
+  --neb-2: rgba(201, 200, 138, 0.08);
+}
+/* 5 元 · 绝绝紫（标准色 #6C4D7E） */
+.theme-yuan5 {
+  --bg-0: #09060f; --bg-1: #0e0a16; --bg-2: #161021;
+  --ink-100: #f4eefb;
+  --ink-80: rgba(244, 238, 251, 0.78);
+  --ink-60: rgba(244, 238, 251, 0.55);
+  --ink-40: rgba(244, 238, 251, 0.36);
+  --ink-20: rgba(244, 238, 251, 0.18);
+  --ice-blue: #c4a0db; --accent: #c4a0db; --accent-2: #f2c79b;
+  --accent-rgb: 196, 160, 219;
+  --liquid: #c4a0db;     --liquid-rgb: 196, 160, 219;
+  --investment: #f2c79b; --investment-rgb: 242, 199, 155;
+  --fixed: #a9d1d9;      --fixed-rgb: 169, 209, 217;
+  --receivable: #efe3f6; --receivable-rgb: 239, 227, 246;
+  --neb-1: rgba(196, 160, 219, 0.15);
+  --neb-2: rgba(242, 199, 155, 0.09);
+}
+/* 10 元 · 不摆蓝（标准色 #325969） */
+.theme-yuan10 {
+  --bg-0: #04070a; --bg-1: #070d12; --bg-2: #0c1620;
+  --ink-100: #ecf3f8;
+  --ink-80: rgba(236, 243, 248, 0.78);
+  --ink-60: rgba(236, 243, 248, 0.55);
+  --ink-40: rgba(236, 243, 248, 0.36);
+  --ink-20: rgba(236, 243, 248, 0.18);
+  --ice-blue: #6fa6c4; --accent: #6fa6c4; --accent-2: #f0c9ae;
+  --accent-rgb: 111, 166, 196;
+  --liquid: #6fa6c4;     --liquid-rgb: 111, 166, 196;
+  --investment: #f0c9ae; --investment-rgb: 240, 201, 174;
+  --fixed: #9bb89a;      --fixed-rgb: 155, 184, 154;
+  --receivable: #ddc7dc; --receivable-rgb: 221, 199, 220;
+  --neb-1: rgba(111, 166, 196, 0.15);
+  --neb-2: rgba(240, 201, 174, 0.09);
+}
+/* 20 元 · 糖太棕（标准色 #856441） */
+.theme-yuan20 {
+  --bg-0: #080603; --bg-1: #0e0a05; --bg-2: #15100a;
+  --ink-100: #f9f1e8;
+  --ink-80: rgba(249, 241, 232, 0.78);
+  --ink-60: rgba(249, 241, 232, 0.55);
+  --ink-40: rgba(249, 241, 232, 0.36);
+  --ink-20: rgba(249, 241, 232, 0.18);
+  --ice-blue: #d9a86a; --accent: #d9a86a; --accent-2: #e8b98c;
+  --accent-rgb: 217, 168, 106;
+  --liquid: #d9a86a;     --liquid-rgb: 217, 168, 106;
+  --investment: #e8b98c; --investment-rgb: 232, 185, 140;
+  --fixed: #9acaae;      --fixed-rgb: 154, 202, 174;
+  --receivable: #edcdb6; --receivable-rgb: 237, 205, 182;
+  --neb-1: rgba(217, 168, 106, 0.14);
+  --neb-2: rgba(232, 185, 140, 0.08);
+}
+/* 50 元 · 放青松（标准色 #518463） */
+.theme-yuan50 {
+  --bg-0: #040806; --bg-1: #070f0b; --bg-2: #0c1813;
+  --ink-100: #eef8f1;
+  --ink-80: rgba(238, 248, 241, 0.78);
+  --ink-60: rgba(238, 248, 241, 0.55);
+  --ink-40: rgba(238, 248, 241, 0.36);
+  --ink-20: rgba(238, 248, 241, 0.18);
+  --ice-blue: #74c495; --accent: #74c495; --accent-2: #9fd9b8;
+  --accent-rgb: 116, 196, 149;
+  --liquid: #74c495;     --liquid-rgb: 116, 196, 149;
+  --investment: #9fd9b8; --investment-rgb: 159, 217, 184;
+  --fixed: #d2c8ac;      --fixed-rgb: 210, 200, 172;
+  --receivable: #cebbd8; --receivable-rgb: 206, 187, 216;
+  --neb-1: rgba(116, 196, 149, 0.14);
+  --neb-2: rgba(159, 217, 184, 0.08);
+}
+/* 100 元 · 发财红（标准色 #CC4968；--debt/--neg 仍保持红色，强调取偏玫的暖红） */
+.theme-yuan100 {
+  --bg-0: #0a0406; --bg-1: #100609; --bg-2: #18090d;
+  --ink-100: #fbecf0;
+  --ink-80: rgba(251, 236, 240, 0.78);
+  --ink-60: rgba(251, 236, 240, 0.55);
+  --ink-40: rgba(251, 236, 240, 0.36);
+  --ink-20: rgba(251, 236, 240, 0.18);
+  --ice-blue: #f06a86; --accent: #f06a86; --accent-2: #f2a07a;
+  --accent-rgb: 240, 106, 134;
+  --liquid: #f06a86;     --liquid-rgb: 240, 106, 134;
+  --investment: #f2a07a; --investment-rgb: 242, 160, 122;
+  --fixed: #d8cca0;      --fixed-rgb: 216, 204, 160;
+  --receivable: #e8b6d6; --receivable-rgb: 232, 182, 214;
+  --neb-1: rgba(240, 106, 134, 0.15);
+  --neb-2: rgba(242, 160, 122, 0.09);
+}
+
 .theme-gilded {
   --bg-0: #0a0805; --bg-1: #0e0b07; --bg-2: #14100a;
   --ink-100: #fbf6ec;

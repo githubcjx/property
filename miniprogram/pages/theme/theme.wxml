@@ -31,23 +31,28 @@
     </view>
   </view>
 
-  <!-- 色卡 -->
-  <text class="picker-title">选择风格</text>
-  <view class="swatches">
-    <view
-      wx:for="{{themes}}"
-      wx:key="key"
-      class="swatch {{item.key === theme ? 'active' : ''}}"
-      style="background: linear-gradient(140deg, {{item.dots[0]}}22, {{item.dots[2]}});"
-      data-key="{{item.key}}"
-      bindtap="onPick"
-    >
-      <view class="sw-dots">
-        <view class="sw-dot" style="background: {{item.dots[0]}};"></view>
-        <view class="sw-dot" style="background: {{item.dots[1]}};"></view>
-        <view class="sw-dot" style="background: {{item.dots[2]}};"></view>
+  <!-- 色卡（按系列分组）-->
+  <view class="series" wx:for="{{groups}}" wx:for-item="group" wx:key="key">
+    <view class="series-head">
+      <text class="picker-title">{{group.name}}</text>
+      <text class="series-desc">{{group.desc}}</text>
+    </view>
+    <view class="swatches">
+      <view
+        wx:for="{{group.themes}}"
+        wx:key="key"
+        class="swatch {{item.key === theme ? 'active' : ''}}"
+        style="background: linear-gradient(140deg, {{item.dots[0]}}22, {{item.dots[2]}});"
+        data-key="{{item.key}}"
+        bindtap="onPick"
+      >
+        <view class="sw-dots">
+          <view class="sw-dot" style="background: {{item.dots[0]}};"></view>
+          <view class="sw-dot" style="background: {{item.dots[1]}};"></view>
+          <view class="sw-dot" style="background: {{item.dots[2]}};"></view>
+        </view>
+        <text class="sw-name">{{item.name}}</text>
       </view>
-      <text class="sw-name">{{item.name}}</text>
     </view>
   </view>
 

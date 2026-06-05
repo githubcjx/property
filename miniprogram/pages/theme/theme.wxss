@@ -104,12 +104,20 @@
 .cat-amt { font-size: 28rpx; font-weight: 600; color: var(--ink-100); }
 
 /* ============ 色卡 ============ */
+.series-head { margin: 36rpx 4rpx 18rpx; }
 .picker-title {
   display: block;
-  margin: 36rpx 4rpx 20rpx;
-  font-size: 24rpx;
-  color: var(--ink-60);
-  letter-spacing: 0.08em;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--ink-80);
+  letter-spacing: 0.04em;
+}
+.series-desc {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 20rpx;
+  line-height: 1.5;
+  color: var(--ink-40);
 }
 .swatches {
   display: grid;
