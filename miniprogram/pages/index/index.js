@@ -4,6 +4,7 @@ const statsSvc = require('../../services/stats.js')
 const { CATEGORIES, isDebtCategory, isIconKey } = require('../../utils/categories.js')
 const { formatYuan } = require('../../utils/format.js')
 const { formatRelative } = require('../../utils/date.js')
+const { APP_VERSION } = require('../../utils/version.js')
 
 const STORAGE_EXPANDED = 'idx_expanded_categories'
 
@@ -21,7 +22,7 @@ function splitAmount(fen) {
 
 Page({
   data: {
-    version: 'V1.5',
+    version: APP_VERSION,
     loading: true,
     hasData: false,
 

@@ -23,7 +23,9 @@ There is **no npm build, lint, or test tooling for the mini program** (`nodeModu
 3. After the owner confirms, merge back into `main` (fast-forward when possible) and push
 4. Do **not** delete feature branches unless explicitly asked — keep them around.
 
-**When a user-facing feature is finished, also update the in-app 更新日志 (changelog) — this is part of "done", not optional.** Edit the `releases` array in `pages/changelog/changelog.js` (newest first): either add a Chinese, user-facing bullet to the current unreleased version's `items`, or, for a new release, prepend a new `{ version, date: 'YYYY-MM', title, items: [...] }` block and bump the page-top `version` field to match. Write entries from the user's perspective (what they can now do), not in terms of files/functions. Skip only for pure refactors/docs/chores with no user-visible change.
+**The displayed version number has a single source of truth: `utils/version.js` (`APP_VERSION`, format `Vx.y.z`).** Home/settings/about/changelog pages all import it — never hardcode a version string in a page again. Bump it there (and only there) for every release; patches/bugfixes increment the `.z` (e.g. `V1.6` → `V1.6.1`). The `version` strings *inside* the changelog `releases` array are historical per-release labels and stay as-is.
+
+**When a user-facing feature is finished, also update the in-app 更新日志 (changelog) — this is part of "done", not optional.** Edit the `releases` array in `pages/changelog/changelog.js` (newest first): either add a Chinese, user-facing bullet to the current unreleased version's `items`, or, for a new release, prepend a new `{ version, date: 'YYYY-MM', title, items: [...] }` block and bump `APP_VERSION` in `utils/version.js` to match. Write entries from the user's perspective (what they can now do), not in terms of files/functions. Skip only for pure refactors/docs/chores with no user-visible change.
 
 Remote: `origin` = https://github.com/githubcjx/property.git. On Windows the editing tools may write CRLF; git's autocrlf normalizes to LF on commit. Write source files as **UTF-8 without BOM** — WeChat's WXSS compiler rejects a leading BOM (`unexpected ` at pos 1).
 

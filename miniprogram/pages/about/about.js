@@ -1,8 +1,9 @@
 const app = getApp()
+const { APP_VERSION } = require('../../utils/version.js')
 
 Page({
   data: {
-    version: 'V1.5',
+    version: APP_VERSION,
     statusBarHeight: 20,
     reduceMotion: false,
     theme: 'aurora',
