@@ -1,14 +1,12 @@
 const cloud = require('./cloud.js')
 const { getCategory, getSubType } = require('../utils/categories.js')
 
-// 拉取当前用户所有未隐藏的账户（按创建时间降序）
+// 拉取当前用户所有未隐藏的账户（按创建时间升序）
+// 分页拉全量：小程序端单次 get 最多 20 条，账户超过 20 个时不能用 limit(200) 一次拉。
 async function listAccounts() {
-  const res = await cloud.accounts()
+  return cloud.getAll(() => cloud.accounts()
     .where({ isHidden: false })
-    .orderBy('createdAt', 'asc')
-    .limit(200)
-    .get()
-  return res.data || []
+    .orderBy('createdAt', 'asc'))
 }
 
 async function getAccount(id) {

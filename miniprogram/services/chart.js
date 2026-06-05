@@ -140,22 +140,15 @@ function snapshotForAccount(txList, nodeTime) {
 async function getChartSeries(rangeKey, opts) {
   const { startDate, endDate, nodes, xLabels, granularity } = buildNodes(rangeKey, opts)
 
-  // 1. 拉所有未隐藏账户
-  const accRes = await cloud.accounts()
-    .where({ isHidden: false })
-    .limit(200)
-    .get()
-  const accounts = accRes.data || []
+  // 1. 拉所有未隐藏账户（分页拉全量：小程序端单次 get 最多 20 条）
+  const accounts = await cloud.getAll(() => cloud.accounts().where({ isHidden: false }))
   const accIdSet = accounts.reduce((s, a) => { s[a._id] = a; return s }, {})
 
   // 2. 拉 endDate 之前所有 transaction（要包含 startDate 之前的，作为基线）
-  // 为了控制返回量，限制 limit 1000；若超出，需要分页（此处简化）
-  const txRes = await cloud.transactions()
+  // 必须分页拉全量：单次 get 最多 20 条，升序截断会丢掉较新的快照、把各节点基线算错。
+  const allTxs = await cloud.getAll(() => cloud.transactions()
     .where({ createdAt: cloud.command().lte(endDate) })
-    .orderBy('createdAt', 'asc')
-    .limit(1000)
-    .get()
-  const allTxs = txRes.data || []
+    .orderBy('createdAt', 'asc'))
 
   // 按 accountId 分组（已升序）
   const txByAcc = {}

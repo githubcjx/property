@@ -2,17 +2,6 @@
 const cloud = require('./cloud.js')
 const { isDebtCategory } = require('../utils/categories.js')
 
-// 与 chart.js 保持一致的日期解析
-function toMs(d) {
-  if (!d) return NaN
-  if (d instanceof Date) return d.getTime()
-  if (typeof d === 'number') return d
-  if (typeof d === 'string') return new Date(d).getTime()
-  if (d.$date) return new Date(d.$date).getTime()
-  const t = new Date(d).getTime()
-  return isNaN(t) ? NaN : t
-}
-
 // 计算最近 N 天的净资产 delta + 百分比
 // 采用 snapshot 语义（同趋势页）：baseline = ∑ 每账户在 T-N 之前最后一条 tx 的 balanceAfter；
 // 这样在窗口内新建账户的初始余额不会被误算成"近 N 天变化"。
@@ -39,27 +28,23 @@ async function getNetWorthDelta(days, accounts) {
   const sinceMs = Date.now() - days * 86400000
   const since = new Date(sinceMs)
 
-  // 拉取 T-N 之前的所有 tx（升序），用来取每个账户在该时刻的余额快照
-  let txs = []
-  try {
-    const res = await cloud.transactions()
-      .where({ createdAt: cloud.command().lte(since) })
-      .orderBy('createdAt', 'asc')
-      .limit(1000)
-      .get()
-    txs = res.data || []
-  } catch (err) {
-    console.warn('[stats] fetch tx error', err)
-    return { delta: 0, deltaPct: 0, baseline: current }
-  }
-
-  // 每个账户取最后一条 tx 的 balanceAfter 作为 T-N 时刻的余额快照
+  // 每个账户取「T-N 之前最新一条」tx 的 balanceAfter 作为 T-N 时刻的余额快照。
+  // 按账户 desc + limit(1)：小程序端单次 get 最多 20 条，不能用「升序 + limit(1000)」
+  // 一次拉全量（会被截成最旧的 20 条，导致基线取到更早的快照、近 N 天变化算错）。
   const snapshotByAcc = {}
-  for (const t of txs) {
-    const ct = toMs(t.createdAt)
-    if (isNaN(ct) || ct > sinceMs) continue
-    snapshotByAcc[t.accountId] = t.balanceAfter || 0
-  }
+  await Promise.all(included.map(async (a) => {
+    try {
+      const res = await cloud.transactions()
+        .where({ accountId: a._id, createdAt: cloud.command().lte(since) })
+        .orderBy('createdAt', 'desc')
+        .limit(1)
+        .get()
+      const t = (res.data || [])[0]
+      if (t) snapshotByAcc[a._id] = t.balanceAfter || 0
+    } catch (err) {
+      console.warn('[stats] fetch snapshot error', a._id, err)
+    }
+  }))
 
   let baseline = 0
   for (const a of included) {

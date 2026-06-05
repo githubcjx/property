@@ -186,8 +186,8 @@ function fmtFutureMonth(monthsFromNow) {
 // ---------- 主入口 ----------
 
 async function evaluate() {
-  const accRes = await cloud.accounts().where({ isHidden: false }).limit(200).get()
-  const accounts = accRes.data || []
+  // 分页拉全量：小程序端单次 get 最多 20 条
+  const accounts = await cloud.getAll(() => cloud.accounts().where({ isHidden: false }))
 
   // 当前净资产：直接取账户余额，权威
   let current = 0
@@ -202,9 +202,8 @@ async function evaluate() {
     return emptyResult(current)
   }
 
-  // 拉所有 tx
-  const txRes = await cloud.transactions().orderBy('createdAt', 'asc').limit(1000).get()
-  const txs = txRes.data || []
+  // 拉所有 tx（分页拉全量：单次 get 最多 20 条，升序截断会丢掉较新的 tx、把时间线算错）
+  const txs = await cloud.getAll(() => cloud.transactions().orderBy('createdAt', 'asc'))
 
   const timeline = buildNetWorthTimeline(accounts, txs)
   // 拼接"现在"这个点，保证最新值参与峰值/增速计算

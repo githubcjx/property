@@ -50,24 +50,24 @@ async function evaluate(accounts, periodKey) {
   const startMs = periodStartMs(key)
   const since = new Date(startMs)
 
-  // 拉「期初时点之前」的全部 tx（升序），每个账户取最后一条 balanceAfter 作为期初快照
-  let txs = []
-  try {
-    const res = await cloud.transactions()
-      .where({ createdAt: cloud.command().lte(since) })
-      .orderBy('createdAt', 'asc')
-      .limit(1000)
-      .get()
-    txs = res.data || []
-  } catch (err) {
-    console.warn('[attribution] fetch tx error', err)
-  }
+  // 期初快照：每个账户单独取「期初时点之前的最新一条」balanceAfter。
+  // 不能用「升序 + limit(1000)」一次拉全量：小程序端 get() 单次最多 20 条
+  // （limit 上限即 20），升序会被截成「最旧的 20 条」，账户多/交易多时期初取错。
+  // 改为按账户 desc + limit(1)，每次只取 1 条，既精确又不触 20 条上限。
   const startByAcc = {}
-  for (const t of txs) {
-    const ct = toMs(t.createdAt)
-    if (isNaN(ct) || ct > startMs) continue
-    startByAcc[t.accountId] = t.balanceAfter || 0
-  }
+  await Promise.all(included.map(async (a) => {
+    try {
+      const res = await cloud.transactions()
+        .where({ accountId: a._id, createdAt: cloud.command().lte(since) })
+        .orderBy('createdAt', 'desc')
+        .limit(1)
+        .get()
+      const t = (res.data || [])[0]
+      if (t) startByAcc[a._id] = t.balanceAfter || 0
+    } catch (err) {
+      console.warn('[attribution] fetch start snapshot error', a._id, err)
+    }
+  }))
 
   let baseline = 0 // 期初净资产
   let current = 0 // 期末（当前）净资产
