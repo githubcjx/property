@@ -9,6 +9,7 @@
     "pages/theme/theme",
     "pages/changelog/changelog",
     "pages/health/health",
+    "pages/report/report",
     "pages/insights/insights",
     "pages/milestones/milestones",
     "pages/peer-benchmark/peer-benchmark"

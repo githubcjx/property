@@ -1,0 +1,76 @@
+<!-- 离屏画布：常驻 DOM、移出屏幕，仅用于导出海报图 -->
+<canvas
+  type="2d"
+  id="shareCanvas"
+  class="offscreen-canvas"
+  style="width: {{cw}}px; height: {{ch}}px;"
+></canvas>
+
+<view
+  wx:if="{{visible}}"
+  class="ss-mask {{closing ? 'ss-closing' : ''}}"
+  catchtap="onClose"
+  catchtouchmove="onNoop"
+>
+  <view class="ss-sheet {{closing ? 'ss-out' : 'ss-in'}}" catchtap="onNoop">
+    <view class="ss-grip"></view>
+    <view class="ss-head">
+      <text class="ss-title">晒成绩</text>
+      <text class="ss-sub">默认替你打码 · 只晒分数与等级</text>
+    </view>
+
+    <!-- 卡片预览（与导出海报一致） -->
+    <view class="ss-card status-{{card.status}}">
+      <text class="c-brand">{{card.brand}}</text>
+      <text class="c-title">{{card.title}}</text>
+      <view class="c-row">
+        <view class="c-score">{{card.score}}<text class="c-unit">{{card.scoreUnit}}</text></view>
+      </view>
+      <text wx:if="{{card.subline}}" class="c-subline">{{card.subline}}</text>
+      <view class="c-chips">
+        <text wx:for="{{card.chips}}" wx:key="text" class="c-chip tone-{{item.tone}}">{{item.text}}</text>
+      </view>
+      <view class="c-net">
+        <text class="c-net-k">我的净资产</text>
+        <text class="c-net-v {{masked ? 'masked' : ''}}">{{netText}}</text>
+      </view>
+
+      <view class="c-foot">
+        <view class="c-foot-l">
+          <text class="c-tagline">{{card.tagline}}</text>
+          <text wx:if="{{card.qr && !qrBroken}}" class="c-recall">长按 / 扫码打开「净值本」</text>
+          <text wx:elif="{{card.recallText}}" class="c-recall">{{card.recallText}}</text>
+        </view>
+        <image
+          wx:if="{{card.qr && !qrBroken}}"
+          class="c-qr"
+          src="{{card.qr}}"
+          mode="aspectFit"
+          binderror="onQrError"
+        ></image>
+      </view>
+    </view>
+
+    <!-- 金额打码开关 -->
+    <view class="ss-toggle">
+      <view class="t-label">
+        <text class="t-main">金额打码</text>
+        <text class="t-desc">隐藏卡片里的真实净资产数字</text>
+      </view>
+      <view class="t-switch {{masked ? 'on' : ''}}" catchtap="onToggleMask">
+        <view class="t-knob"></view>
+      </view>
+    </view>
+
+    <!-- 动作 -->
+    <view class="ss-actions">
+      <button class="ss-act friend" open-type="share" hover-class="none" bindtap="onTapFriend">
+        <view class="ic ic-sm ic-send"></view><text class="a-t">发给朋友</text>
+      </button>
+      <view class="ss-act poster" hover-class="ss-act-hover" catchtap="onSavePoster">
+        <view class="ic ic-sm ic-download"></view><text class="a-t">保存海报</text>
+      </view>
+    </view>
+    <text class="ss-tip">想发朋友圈？「保存海报」后手动发圈，或点右上角 ••• → 分享到朋友圈</text>
+  </view>
+</view>

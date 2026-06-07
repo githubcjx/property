@@ -132,6 +132,15 @@
         </view>
       </view>
 
+      <!-- 晒一晒 -->
+      <block wx:if="{{shareCard}}">
+        <view class="share-cta tap" hover-class="share-cta-hover" bindtap="onShareTap">
+          <view class="ic ic-sm ic-share-2"></view>
+          <text class="share-cta-text">晒一晒我的体检成绩</text>
+        </view>
+        <view class="share-cta-hint">分享默认隐藏所有金额，只晒分数与等级</view>
+      </block>
+
       <view class="foot-line tap" hover-class="foot-line-hover" bindtap="onSourceTap">
         指标参考 · 家庭财务指标 / 央行 2019 城镇家庭资产负债调查
       </view>
@@ -139,6 +148,14 @@
       <view class="bottom-spacer"></view>
     </scroll-view>
   </block>
+
+  <!-- 分享面板 -->
+  <share-sheet
+    visible="{{shareVisible}}"
+    card="{{shareCard}}"
+    bind:posterready="onPosterReady"
+    bind:close="onShareClose"
+  ></share-sheet>
 
   <!-- ============ 底部上滑面板 ============ -->
   <view

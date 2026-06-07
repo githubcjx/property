@@ -1,0 +1,118 @@
+<view class="canvas-bg theme-{{theme}}" wx:if="{{!reduceMotion}}"></view>
+
+<view class="page {{reduceMotion ? 'no-motion' : ''}} theme-{{theme}}">
+  <!-- 透明导航栏 -->
+  <view class="navbar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onBack">
+      <view class="ic ic-xs ic-back"></view>
+    </view>
+    <text class="nav-title">净值小结</text>
+  </view>
+
+  <view wx:if="{{isDemo}}" class="demo-flag">示例数据 · 仅供预览</view>
+
+  <!-- 加载态：轨道环绕 spinner -->
+  <view wx:if="{{loading}}" class="loading-orbit">
+    <view class="orbit-spinner">
+      <view class="orbit o1"></view>
+      <view class="orbit o2"></view>
+      <view class="orbit o3"></view>
+    </view>
+    <view class="loading-text">正在生成本月小结</view>
+  </view>
+
+  <view wx:elif="{{empty}}" class="state-hint">还没有账户数据，先去首页添加账户吧</view>
+
+  <scroll-view wx:else scroll-y class="scroll" enable-flex>
+
+    <!-- Hero · 本月净值变化 -->
+    <view class="hero glass entry-up">
+      <text class="hero-period">{{periodLabel}}</text>
+      <text class="hero-lab">本月净资产变化</text>
+
+      <block wx:if="{{coverage !== 'insufficient'}}">
+        <view class="hero-big">
+          <text class="hero-pct pct-{{pctClass}}">{{pctText}}</text>
+          <text class="hero-cmp">较上月</text>
+        </view>
+        <view class="hero-sub">
+          <text>净增 <text class="hero-amt num">{{heroDeltaText}}</text></text>
+          <view class="hero-eye tap" hover-class="nav-btn-hover" catchtap="onToggleEye">
+            <view class="ic ic-xs {{hideAmount ? 'ic-eye-off' : 'ic-eye'}}"></view>
+          </view>
+        </view>
+      </block>
+      <view wx:else class="cov-note">本月数据较少，下月起即可看到完整的净值变化</view>
+
+      <view wx:if="{{spark.length}}" class="spark">
+        <view wx:for="{{spark}}" wx:key="index" class="spark-bar" style="height: {{item}}%;"></view>
+      </view>
+    </view>
+
+    <!-- 谁在推动 -->
+    <block wx:if="{{movers.length}}">
+      <view class="sec-title entry-up d1">
+        <text class="sec-name">谁在推动 · 本月净值归因</text>
+      </view>
+      <view class="movers">
+        <view wx:for="{{movers}}" wx:key="name" class="mover glass entry-up d{{index + 2}}">
+          <view class="mover-ico chip-{{item.cat}}"><view class="ic ic-sm {{item.iconKey}}"></view></view>
+          <view class="mover-mid">
+            <view class="mover-name">
+              <text>{{item.name}}</text>
+              <text wx:if="{{item.best}}" class="mover-best">主要推手</text>
+            </view>
+            <view class="mover-bar"><view class="mover-bar-fill fill-{{item.cat}}" style="width: {{item.sharePct}}%;"></view></view>
+          </view>
+          <view class="mover-right">
+            <text class="mover-dir">↑ {{item.sharePct}}%</text>
+            <text class="mover-amt num">{{item.amtText}}</text>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <!-- 你的坚持 -->
+    <view class="sec-title entry-up"><text class="sec-name">你的坚持</text></view>
+    <view class="tiles">
+      <view class="tile glass"><text class="tile-v num tv-records">{{records}}</text><text class="tile-k">本月记录</text></view>
+      <view class="tile glass"><text class="tile-v num tv-accounts">{{accountsUpdated}}</text><text class="tile-k">更新账户</text></view>
+      <view class="tile glass"><text class="tile-v num tv-days">{{totalDays}}</text><text class="tile-k">累计天数</text></view>
+    </view>
+
+    <!-- 本月财务体检 -->
+    <view class="sec-title entry-up"><text class="sec-name">本月财务体检</text></view>
+    <view class="hrow glass entry-up">
+      <text class="hrow-score {{health.score > 80 ? 'stage-high' : (health.score >= 60 ? 'stage-mid' : 'stage-low')}}">{{health.score}}</text>
+      <text class="hrow-k">健康分 · {{health.status === 'good' ? '良好' : (health.status === 'warn' ? '关注' : '需改善')}}</text>
+      <text wx:if="{{health.delta > 0}}" class="hrow-d">↑ {{health.delta}} 分</text>
+      <text wx:elif="{{health.delta < 0}}" class="hrow-d down">↓ {{health.delta}} 分</text>
+      <text wx:else class="hrow-d flat">持平</text>
+    </view>
+
+    <!-- 本月关键词 -->
+    <view class="sec-title entry-up"><text class="sec-name">本月关键词</text></view>
+    <view class="kw glass entry-up">
+      <text class="kw-l">— 你这个月是 —</text>
+      <text class="kw-v">{{keyword.word}}</text>
+      <text class="kw-d">{{keyword.why}}</text>
+    </view>
+
+    <!-- 晒一晒 -->
+    <view class="share-cta tap" hover-class="share-cta-hover" bindtap="onShareTap">
+      <view class="ic ic-sm ic-share-2"></view>
+      <text class="share-cta-text">晒一晒我的{{periodLabel}}小结</text>
+    </view>
+    <view class="share-cta-hint">分享默认隐藏所有金额，只晒涨幅与关键词</view>
+
+    <view class="bottom-spacer"></view>
+  </scroll-view>
+
+  <!-- 分享面板 -->
+  <share-sheet
+    visible="{{shareVisible}}"
+    card="{{shareCard}}"
+    bind:posterready="onPosterReady"
+    bind:close="onShareClose"
+  ></share-sheet>
+</view>

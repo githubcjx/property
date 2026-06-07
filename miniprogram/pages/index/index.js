@@ -8,6 +8,18 @@ const { APP_VERSION } = require('../../utils/version.js')
 
 const STORAGE_EXPANDED = 'idx_expanded_categories'
 
+// ⚠️ 预览开关：true = 强制显示月报横幅（用演示数据），方便看效果。
+//    发版前置 false，并改为真实窗口判断：①每月前 3 天 ②上月有可比数据 ③本月未手动关闭。
+const REPORT_BANNER_PREVIEW = true
+
+const STORAGE_BANNER_DISMISS = 'report_banner_dismissed_month'  // 值为 'YYYY-M'
+
+// 当前月份键（用于按月判断横幅是否已被关闭）
+function currentMonthKey() {
+  const d = new Date()
+  return d.getFullYear() + '-' + (d.getMonth() + 1)
+}
+
 function splitAmount(fen) {
   const yuan = Math.round(fen) / 100
   const abs = Math.abs(yuan)
@@ -49,6 +61,10 @@ Page({
     // 工具 · 分析中心面板
     toolsVisible: false,
     toolsClosing: false,
+
+    // 月报横幅
+    monthlyBannerVisible: false,
+    monthlyBanner: null,
   },
 
   onLoad() {
@@ -72,6 +88,37 @@ Page({
     this.refresh()
   },
 
+  // 月报横幅：内容用真实计算（本月净值环比）
+  // TODO（发版前）：把 REPORT_BANNER_PREVIEW 改为真实窗口判断（每月前 3 天 + 有可比数据 + 本月未关闭）
+  updateMonthlyBanner(accounts) {
+    const dismissedMonth = wx.getStorageSync(STORAGE_BANNER_DISMISS)
+    if (!REPORT_BANNER_PREVIEW || !accounts || !accounts.length || dismissedMonth === currentMonthKey()) {
+      this.setData({ monthlyBannerVisible: false })
+      return
+    }
+    const now = new Date()
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime()
+    const days = Math.max(1, Math.floor((Date.now() - monthStart) / 86400000))
+    this.setData({
+      monthlyBannerVisible: true,
+      monthlyBanner: { periodLabel: (now.getMonth() + 1) + ' 月', pctText: '' },
+    })
+    statsSvc.getNetWorthDelta(days, accounts).then(({ deltaPct }) => {
+      const pct = deltaPct || 0
+      this.setData({ 'monthlyBanner.pctText': (pct > 0 ? '+' : '') + pct.toFixed(1) + '%' })
+    }).catch(() => {})
+  },
+
+  onOpenReport() {
+    wx.navigateTo({ url: '/pages/report/report' })
+  },
+
+  onDismissReportBanner() {
+    // 按月持久化：本月关闭后，重开也不再显示，直到下个月（记录过期）
+    wx.setStorageSync(STORAGE_BANNER_DISMISS, currentMonthKey())
+    this.setData({ monthlyBannerVisible: false })
+  },
+
   // 定义本方法即可激活右上角「...」菜单里的「发送给朋友」
   // 显式指定 imageUrl：否则微信会截取当前页面作分享缩略图，导致净资产数字被带进分享卡片
   onShareAppMessage() {
@@ -82,11 +129,21 @@ Page({
     }
   },
 
+  // 定义本方法即可激活右上角菜单里的「分享到朋友圈」
+  onShareTimeline() {
+    return {
+      title: '净值本 · 看清你的净资产',
+      query: '',
+      imageUrl: '/assets/logo.png',
+    }
+  },
+
   async refresh() {
     this.setData({ loading: true })
     try {
       const accounts = await accountSvc.listAccounts()
       this.buildGroups(accounts)
+      this.updateMonthlyBanner(accounts)
       statsSvc.getNetWorthDelta(30, accounts).then(({ delta, deltaPct }) => {
         this.applyDelta(delta, deltaPct)
       }).catch(() => {})

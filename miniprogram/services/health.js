@@ -12,6 +12,7 @@
 //
 // 金额单位：分（fen）。
 
+const cloud = require('./cloud.js')
 const { isDebtCategory } = require('../utils/categories.js')
 
 // ---------- 阈值 / 央行 2019 均值常量 ----------
@@ -363,8 +364,42 @@ function buildAdvice(metrics, raw) {
   return list.slice(0, 4)
 }
 
+// 历史健康分（不存储、按需重算）
+// 健康分是账户余额的纯函数，因此「过去某时点的分」= 用该时点的余额快照重算即可，无需另存一张分数表。
+// 口径与 stats.js / attribution.js 一致（CLAUDE.md 不变量 5）：
+//   每个账户取 dateMs 之前最近一条 tx 的 balanceAfter 作为当时余额；该时点之前无记录 → 当时尚不存在（按 0 计入，对求和无影响）。
+//   逐账户 orderBy desc + limit(1) 取，不能一次性 get 全量（端上单次最多 20 条，会取错快照——V1.6.1 修复的同类坑）。
+// 返回与 evaluate() 相同的结构；若该时点之前完全没有任何记录（无可比历史）→ 返回 null，调用方据此隐藏环比，绝不脑补。
+async function evaluateAt(accounts, dateMs) {
+  if (!accounts || accounts.length === 0) return null
+  const since = new Date(dateMs)
+  const cmd = cloud.command()
+
+  let anySnapshot = false
+  const pseudoAccounts = await Promise.all(accounts.map(async (a) => {
+    if (a.includeInChart === false) return a  // evaluate() 内部会跳过，无需查
+    let bal = null
+    try {
+      const res = await cloud.transactions()
+        .where({ accountId: a._id, createdAt: cmd.lte(since) })
+        .orderBy('createdAt', 'desc')
+        .limit(1)
+        .get()
+      const t = (res.data || [])[0]
+      if (t) { bal = t.balanceAfter || 0; anySnapshot = true }
+    } catch (err) {
+      console.warn('[health] evaluateAt snapshot error', a._id, err)
+    }
+    return Object.assign({}, a, { balance: bal == null ? 0 : bal })
+  }))
+
+  if (!anySnapshot) return null   // 该时点之前无任何记录 → 无可比历史
+  return evaluate(pseudoAccounts)
+}
+
 module.exports = {
   evaluate,
+  evaluateAt,
   PBOC_2019,
   TH,
 }

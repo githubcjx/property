@@ -71,6 +71,16 @@
     </block>
 
     <block wx:if="{{hasData}}">
+      <!-- 月报横幅（月初窗口期；当前为预览强制显示） -->
+      <view wx:if="{{monthlyBannerVisible}}" class="mreport-banner entry-up" bindtap="onOpenReport">
+        <view class="mrb-ico"><view class="ic ic-sm ic-report"></view></view>
+        <view class="mrb-txt">
+          <view class="mrb-title">你的{{monthlyBanner.periodLabel}}净值小结</view>
+          <view class="mrb-sub"><text wx:if="{{monthlyBanner.pctText}}" class="mrb-pct">本月 {{monthlyBanner.pctText}} · </text>看看是谁在推动 →</view>
+        </view>
+        <view class="mrb-x" catchtap="onDismissReportBanner"><view class="ic ic-xs ic-close"></view></view>
+      </view>
+
       <view class="groups">
         <view
           wx:for="{{groups}}"
@@ -154,6 +164,14 @@
         <text class="sheet-title">工具<text class="sheet-sub">分析中心</text></text>
         <view class="sheet-close tap" hover-class="btn-hover" catchtap="onCloseTools">
           <view class="ic ic-xs ic-close"></view>
+        </view>
+      </view>
+
+      <view class="tool-group-label">本月回顾</view>
+      <view class="tool-grid">
+        <view class="tool-cell tap" hover-class="tool-cell-hover" data-url="/pages/report/report" bindtap="onToolTap">
+          <view class="tool-chip chip-report"><view class="ic ic-sm ic-report"></view></view>
+          <text class="tool-label">月度小结</text>
         </view>
       </view>
 

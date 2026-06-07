@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>月报入口 · 原型</title>
+<style>
+  :root {
+    --bg-0:#050507; --glass-1:rgba(255,255,255,0.05); --glass-2:rgba(255,255,255,0.08);
+    --hairline:rgba(255,255,255,0.08); --hairline-hi:rgba(255,255,255,0.16);
+    --ink-100:#f5f8ff; --ink-80:rgba(245,248,255,0.78); --ink-60:rgba(245,248,255,0.55); --ink-40:rgba(245,248,255,0.36);
+    --ice-blue:#a7d3ff; --investment:#c8b5ff; --fixed:#b7e8f0; --good:#9ee6c1; --warn:#f6d68a; --debt:#ffb3b3;
+    --report:#ffcf8a; --report-rgb:255,207,138; --accent-rgb:167,211,255;
+  }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; padding:0; }
+  body { min-height:100vh; background:#0a0b10; color:var(--ink-100);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",system-ui,sans-serif; font-size:14px; line-height:1.4;
+    display:flex; flex-wrap:wrap; gap:28px; justify-content:center; align-items:flex-start; padding:28px 14px 80px; }
+
+  /* inline svg icons: 颜色随父级 currentColor，尺寸由容器控制 */
+  .i { display:inline-flex; align-items:center; justify-content:center; }
+  .i svg { width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; display:block; }
+
+  .phone { position:relative; width:340px; height:730px; border-radius:44px;
+    background:radial-gradient(120% 70% at 12% 0%, rgba(167,211,255,0.13), transparent 55%),
+               radial-gradient(120% 70% at 95% 10%, rgba(255,207,138,0.10), transparent 55%), #08090c;
+    border:1px solid var(--hairline-hi); box-shadow:0 40px 90px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06);
+    overflow:hidden; display:flex; flex-direction:column; }
+  .statusbar { height:44px; flex:0 0 44px; display:flex; align-items:center; justify-content:space-between; padding:0 22px; font-size:13px; color:var(--ink-80); font-weight:600; }
+  .capsule { display:flex; align-items:center; border:1px solid var(--hairline-hi); border-radius:16px; height:28px; background:var(--glass-1); overflow:hidden; }
+  .capsule .dots { padding:0 11px; font-size:16px; color:var(--ink-80); } .capsule .sep { width:1px; height:16px; background:var(--hairline-hi);} .capsule .o { padding:0 10px; font-size:14px; color:var(--ink-60);}
+
+  .screen { flex:1; overflow-y:auto; padding:4px 16px 24px; position:relative; }
+  .screen::-webkit-scrollbar { width:0; }
+
+  .topbar { display:flex; align-items:center; padding:6px 4px 12px; }
+  .topbar .app { font-size:18px; font-weight:800; }
+  .topbar .sp { flex:1; }
+  .topbar .ico { width:32px; height:32px; border-radius:10px; background:var(--glass-1); display:flex; align-items:center; justify-content:center; margin-left:8px; cursor:pointer; color:var(--ink-80); }
+  .topbar .ico .i { width:16px; height:16px; }
+
+  /* hero */
+  .hero { border-radius:22px; padding:20px 18px; background:var(--glass-1); border:1px solid var(--hairline); }
+  .hero .lab { font-size:12px; color:var(--ink-60); }
+  .hero .nv { font-size:38px; font-weight:800; letter-spacing:-1px; margin-top:6px; }
+  .hero .dl { font-size:13px; color:var(--good); margin-top:8px; font-weight:600; }
+
+  /* ===== ① 月报横幅（窗口期） ===== */
+  .mbanner { margin-top:14px; border-radius:20px; padding:16px 14px 16px 16px; position:relative; overflow:hidden;
+    display:flex; align-items:center; gap:13px; cursor:pointer;
+    background:radial-gradient(130% 120% at 0% 0%, rgba(var(--report-rgb),0.22), transparent 60%),
+              linear-gradient(180deg, rgba(var(--report-rgb),0.16), rgba(var(--report-rgb),0.06));
+    border:1px solid rgba(var(--report-rgb),0.42); box-shadow:0 10px 30px rgba(var(--report-rgb),0.12);
+    animation:glowpulse 2.6s ease-in-out infinite; }
+  @keyframes glowpulse { 0%,100%{ box-shadow:0 10px 30px rgba(var(--report-rgb),0.10);} 50%{ box-shadow:0 12px 40px rgba(var(--report-rgb),0.22);} }
+  .mbanner.hidden { display:none; }
+  .mbanner .mi { width:46px; height:46px; flex:0 0 46px; border-radius:14px; display:flex; align-items:center; justify-content:center; color:var(--report);
+    background:linear-gradient(160deg, rgba(var(--report-rgb),0.4), rgba(var(--report-rgb),0.12)); }
+  .mbanner .mi .i { width:24px; height:24px; }
+  .mbanner .mtxt { flex:1; min-width:0; }
+  .mbanner .mt { font-size:15px; font-weight:800; }
+  .mbanner .ms { font-size:12px; color:var(--ink-80); margin-top:3px; }
+  .mbanner .ms b { color:var(--good); }
+  .mbanner .mgo { font-size:12px; color:var(--report); font-weight:700; flex:0 0 auto; }
+  .mbanner .mx { position:absolute; top:8px; right:10px; width:22px; height:22px; color:var(--ink-40); padding:4px; cursor:pointer; }
+  .mbanner .newdot { position:absolute; top:12px; left:48px; width:8px; height:8px; border-radius:50%; background:var(--report); box-shadow:0 0 8px var(--report); }
+
+  /* category rows */
+  .cgroup { margin-top:18px; }
+  .cglabel { font-size:12px; color:var(--ink-60); margin:0 4px 10px; }
+  .crow { display:flex; align-items:center; gap:12px; padding:13px 14px; border-radius:16px; background:var(--glass-1); border:1px solid var(--hairline); margin-bottom:10px; }
+  .crow .ci { width:34px; height:34px; flex:0 0 34px; border-radius:11px; display:flex; align-items:center; justify-content:center; }
+  .crow .ci .i { width:18px; height:18px; }
+  .ci.liq{background:rgba(167,211,255,0.18); color:var(--ice-blue);} .ci.inv{background:rgba(200,181,255,0.18); color:var(--investment);} .ci.fix{background:rgba(183,232,240,0.18); color:var(--fixed);}
+  .crow .cn { flex:1; font-size:14px; font-weight:600; }
+  .crow .cv { font-size:14px; color:var(--ink-80); letter-spacing:1px; }
+
+  /* ===== ② tools FAB ===== */
+  .fab { position:absolute; left:20px; bottom:24px; display:flex; flex-direction:column; align-items:center; gap:5px; cursor:pointer; z-index:5; }
+  .fab .fc { width:54px; height:54px; border-radius:18px; background:var(--glass-2); border:1px solid var(--hairline-hi); display:flex; align-items:center; justify-content:center; position:relative; color:var(--ink-80); }
+  .fab .fc .i { width:22px; height:22px; }
+  .fab .fl { font-size:11px; color:var(--ink-60); }
+  .fab .fdot { position:absolute; top:8px; right:8px; width:9px; height:9px; border-radius:50%; background:var(--report); box-shadow:0 0 8px var(--report); }
+
+  /* tools panel */
+  .tmask { position:absolute; inset:0; background:rgba(0,0,0,0.55); backdrop-filter:blur(4px); opacity:0; pointer-events:none; transition:opacity .28s ease; z-index:20; }
+  .tmask.show { opacity:1; pointer-events:auto; }
+  .tsheet { position:absolute; left:0; right:0; bottom:0; z-index:21; background:linear-gradient(180deg,#14161d,#0c0d12);
+    border-top-left-radius:28px; border-top-right-radius:28px; border-top:1px solid var(--hairline-hi); padding:12px 20px 28px;
+    transform:translateY(102%); transition:transform .34s cubic-bezier(0.25,1,0.5,1); }
+  .tsheet.show { transform:translateY(0); }
+  .thandle { width:40px; height:4px; border-radius:4px; background:var(--hairline-hi); margin:4px auto 14px; }
+  .thead { display:flex; align-items:baseline; margin-bottom:16px; }
+  .thead .tt { font-size:18px; font-weight:800; } .thead .ts { font-size:12px; color:var(--ink-60); margin-left:8px; }
+  .tgl { font-size:12px; color:var(--ink-60); margin:0 2px 12px; }
+  .tgrid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px 8px; }
+  .tcell { display:flex; flex-direction:column; align-items:center; gap:8px; cursor:pointer; position:relative; }
+  .tchip { width:50px; height:50px; border-radius:16px; display:flex; align-items:center; justify-content:center; }
+  .tchip .i { width:22px; height:22px; }
+  .chip-mint{background:rgba(158,230,193,0.16); color:var(--good);} .chip-ice{background:rgba(167,211,255,0.16); color:var(--ice-blue);} .chip-teal{background:rgba(183,232,240,0.16); color:var(--fixed);} .chip-gold{background:rgba(246,214,138,0.16); color:var(--warn);}
+  .chip-report{ background:linear-gradient(160deg, rgba(var(--report-rgb),0.34), rgba(var(--report-rgb),0.12)); border:1px solid rgba(var(--report-rgb),0.4); color:var(--report); }
+  .tcell .tlb { font-size:11px; color:var(--ink-80); }
+  .tcell .cnew { position:absolute; top:-3px; right:8px; font-size:8px; font-weight:800; color:#1a1407; background:var(--report); border-radius:6px; padding:1px 5px; }
+
+  .toast { position:absolute; left:50%; top:42%; transform:translate(-50%,-50%) scale(0.9); background:rgba(20,22,28,0.96); border:1px solid var(--hairline-hi); padding:14px 20px; border-radius:14px; z-index:40; text-align:center; opacity:0; pointer-events:none; transition:all .2s ease; max-width:80%; }
+  .toast.show { opacity:1; transform:translate(-50%,-50%) scale(1); }
+  .toast .tt{font-size:13px; color:var(--ink-80);}
+
+  /* notes */
+  .notes { width:360px; max-width:92vw; color:var(--ink-80); }
+  .notes h2 { font-size:17px; margin:0 0 4px; color:#fff; } .notes .lead { font-size:12px; color:var(--ink-60); margin-bottom:16px; }
+  .demo { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+  .demo button { font-size:12px; padding:8px 12px; border-radius:10px; border:1px solid var(--hairline-hi); background:var(--glass-1); color:var(--ink-100); cursor:pointer; }
+  .demo button:active { transform:scale(0.96); }
+  .step { background:var(--glass-1); border:1px solid var(--hairline); border-radius:14px; padding:13px 15px; margin-bottom:11px; }
+  .step .h { font-size:13px; font-weight:700; color:#fff; }
+  .step .h .n { display:inline-flex; width:20px; height:20px; border-radius:50%; background:rgba(255,207,138,0.22); color:var(--report); font-size:11px; font-weight:700; align-items:center; justify-content:center; margin-right:8px; }
+  .step p { margin:7px 0 0; font-size:12px; color:var(--ink-60); line-height:1.6; }
+  .step code { background:rgba(255,255,255,0.08); padding:1px 6px; border-radius:5px; font-size:11px; color:var(--report); }
+  .step b.g { color:var(--good); }
+</style>
+</head>
+<body>
+
+  <div class="phone">
+    <div class="statusbar"><span>9:41</span><div class="capsule"><span class="dots">•••</span><span class="sep"></span><span class="o">⊙</span></div></div>
+
+    <div class="screen">
+      <div class="topbar">
+        <span class="app">净值本</span><span class="sp"></span>
+        <div class="ico"><span class="i"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+        <div class="ico"><span class="i"><svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r="1.2"/><circle cx="17.5" cy="10.5" r="1.2"/><circle cx="8.5" cy="7.5" r="1.2"/><circle cx="6.5" cy="12.5" r="1.2"/><path d="M12 2a10 10 0 0 0 0 20c1.1 0 2-.9 2-2 0-.55-.2-1-.5-1.4-.3-.4-.5-.85-.5-1.35a1.5 1.5 0 0 1 1.5-1.5H17a5 5 0 0 0 5-5c0-4.42-4.48-8-10-8z"/></svg></span></div>
+      </div>
+
+      <!-- hero -->
+      <div class="hero">
+        <div class="lab">我的净资产 (CNY)</div>
+        <div class="nv">¥ ****</div>
+        <div class="dl">近 30 天 +4.2%</div>
+      </div>
+
+      <!-- ① 月报横幅（窗口期才出现） -->
+      <div class="mbanner" id="banner" onclick="enterReport()">
+        <div class="newdot"></div>
+        <div class="mi"><span class="i"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="17" x2="8" y2="13"/><line x1="12" y1="17" x2="12" y2="11"/><line x1="16" y1="17" x2="16" y2="15"/></svg></span></div>
+        <div class="mtxt">
+          <div class="mt">你的 5 月净值小结</div>
+          <div class="ms">本月净值 <b>+4.2%</b> · 看看是谁在推动 →</div>
+        </div>
+        <div class="mgo">查看</div>
+        <div class="mx" onclick="dismissBanner(event)"><span class="i"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></div>
+      </div>
+
+      <!-- category groups (示意：真实分类 + 打码金额) -->
+      <div class="cgroup">
+        <div class="cglabel">流动资金</div>
+        <div class="crow"><div class="ci liq"><span class="i"><svg viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg></span></div><div class="cn">工资卡</div><div class="cv">¥ ****</div></div>
+      </div>
+      <div class="cgroup">
+        <div class="cglabel">投资</div>
+        <div class="crow"><div class="ci inv"><span class="i"><svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span></div><div class="cn">指数基金</div><div class="cv">¥ ****</div></div>
+      </div>
+      <div class="cgroup">
+        <div class="cglabel">固定资产</div>
+        <div class="crow"><div class="ci fix"><span class="i"><svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/><path d="M9 21V14h6v7"/></svg></span></div><div class="cn">自住房</div><div class="cv">¥ ****</div></div>
+      </div>
+      <div style="height:70px"></div>
+    </div>
+
+    <!-- ② 工具入口 FAB（窗口期带红点） -->
+    <div class="fab" onclick="openTools()">
+      <div class="fc"><span class="i"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><div class="fdot" id="fabdot"></div></div>
+      <div class="fl">工具</div>
+    </div>
+
+    <!-- 工具面板 -->
+    <div class="tmask" id="tmask" onclick="closeTools()"></div>
+    <div class="tsheet" id="tsheet">
+      <div class="thandle"></div>
+      <div class="thead"><span class="tt">工具</span><span class="ts">分析中心</span></div>
+
+      <div class="tgl">本月回顾</div>
+      <div class="tgrid" style="margin-bottom:18px">
+        <div class="tcell" onclick="enterReport()">
+          <div class="tchip chip-report"><span class="i"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="17" x2="8" y2="13"/><line x1="12" y1="17" x2="12" y2="11"/><line x1="16" y1="17" x2="16" y2="15"/></svg></span></div>
+          <div class="tlb">月度小结</div>
+          <div class="cnew" id="cellnew">NEW</div>
+        </div>
+      </div>
+
+      <div class="tgl">洞察与成长</div>
+      <div class="tgrid">
+        <div class="tcell" onclick="ttoast('财务体检')"><div class="tchip chip-mint"><span class="i"><svg viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/></svg></span></div><div class="tlb">财务体检</div></div>
+        <div class="tcell" onclick="ttoast('净值趋势')"><div class="tchip chip-ice"><span class="i"><svg viewBox="0 0 24 24"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg></span></div><div class="tlb">净值趋势</div></div>
+        <div class="tcell" onclick="ttoast('资产洞察')"><div class="tchip chip-teal"><span class="i"><svg viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg></span></div><div class="tlb">资产洞察</div></div>
+        <div class="tcell" onclick="ttoast('里程碑')"><div class="tchip chip-gold"><span class="i"><svg viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg></span></div><div class="tlb">里程碑</div></div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"><div class="tt" id="tt"></div></div>
+  </div>
+
+  <!-- NOTES -->
+  <div class="notes">
+    <h2>月报入口设计</h2>
+    <p class="lead">两处入口：首页横幅（高曝光）+ 工具面板（常驻可达）。图标全部 SVG。</p>
+
+    <div class="demo">
+      <button onclick="toggleWindow()">切换：月初窗口期（前 3 天）开 / 关</button>
+    </div>
+
+    <div class="step">
+      <div class="h"><span class="n">1</span>首页横幅（窗口期 · 高曝光）</div>
+      <p>每月<b class="g">前 3 天</b>，净值卡下方浮出会发光的月报横幅，带一个<b class="g">可计算的真实涨幅</b>（来自 <code>stats.js</code>）勾点击。右上 ✕ 可关；过了窗口或关掉后自动收起。试「切换窗口期」👈</p>
+    </div>
+    <div class="step">
+      <div class="h"><span class="n">2</span>工具面板「月度小结」（常驻可达）</div>
+      <p>新增「本月回顾」分组 + <code>月度小结</code> 入口，融进现有「工具 · 分析中心」。窗口期带 <code>NEW</code> 角标、工具按钮带红点；平时也能进，并可翻历史月报。点左下「工具」👈</p>
+    </div>
+
+    <div class="step" style="border-color:rgba(158,230,193,0.3)">
+      <div class="h" style="color:var(--good)">出现条件（数据诚实）</div>
+      <p>横幅 / 红点仅在 <b class="g">①月初前 3 天 ②上月有可比数据（<code>stats</code>/<code>evaluateAt</code> 能算出）③本月未手动关闭</b> 时出现。横幅涨幅一律取真实计算值；新用户首月无可比数据 → 不出横幅，不编造。</p>
+    </div>
+    <div class="step">
+      <div class="h">已按你的决定调整</div>
+      <p>· 窗口期 7 天 → <b class="g">3 天</b><br>· 去掉「月初提醒推送」入口<br>· 所有图标 emoji → <b class="g">SVG</b>（真机用项目 <code>.ic-*</code> 体系，已补 <code>ic-send</code>/<code>ic-download</code>/<code>ic-share-2</code>/<code>ic-report</code>）</p>
+    </div>
+  </div>
+
+<script>
+  var inWindow = true, bannerDismissed = false;
+  function applyWindow(){
+    document.getElementById('banner').classList.toggle('hidden', !inWindow || bannerDismissed);
+    document.getElementById('fabdot').style.display = inWindow ? 'block' : 'none';
+    document.getElementById('cellnew').style.display = inWindow ? 'block' : 'none';
+  }
+  function toggleWindow(){ inWindow = !inWindow; bannerDismissed = false; applyWindow(); }
+  function dismissBanner(e){ e.stopPropagation(); bannerDismissed = true; applyWindow(); toast('本月不再提示'); }
+
+  function openTools(){ document.getElementById('tmask').classList.add('show'); document.getElementById('tsheet').classList.add('show'); }
+  function closeTools(){ document.getElementById('tmask').classList.remove('show'); document.getElementById('tsheet').classList.remove('show'); }
+  function enterReport(){ closeTools(); toast('进入「5 月净值小结」'); }
+  function ttoast(n){ closeTools(); toast('进入「'+n+'」'); }
+
+  function toast(txt){ var t=document.getElementById('toast'); document.getElementById('tt').textContent=txt; t.classList.add('show'); setTimeout(function(){t.classList.remove('show')},1400); }
+
+  applyWindow();
+</script>
+</body>
+</html>

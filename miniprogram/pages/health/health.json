@@ -1,5 +1,8 @@
 {
   "navigationStyle": "custom",
   "backgroundColor": "#050507",
-  "backgroundTextStyle": "dark"
+  "backgroundTextStyle": "dark",
+  "usingComponents": {
+    "share-sheet": "/components/share-sheet/share-sheet"
+  }
 }

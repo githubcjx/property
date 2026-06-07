@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>月度净值小结 · 原型</title>
+<style>
+  :root {
+    --bg-0: #050507;
+    --glass-1: rgba(255,255,255,0.05);
+    --glass-2: rgba(255,255,255,0.08);
+    --hairline: rgba(255,255,255,0.08);
+    --hairline-hi: rgba(255,255,255,0.16);
+    --ink-100: #f5f8ff;
+    --ink-80: rgba(245,248,255,0.78);
+    --ink-60: rgba(245,248,255,0.55);
+    --ink-40: rgba(245,248,255,0.36);
+    --ice-blue: #a7d3ff;
+    --investment: #c8b5ff;
+    --good: #9ee6c1;
+    --warn: #f6d68a;
+    --debt: #ffb3b3;
+    --accent-rgb: 167,211,255;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    min-height: 100vh; background: #0a0b10; color: var(--ink-100);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", system-ui, sans-serif;
+    font-size: 14px; line-height: 1.4;
+    display: flex; flex-wrap: wrap; gap: 28px; justify-content: center; align-items: flex-start;
+    padding: 28px 14px 80px;
+  }
+
+  /* ===== Phone ===== */
+  .phone {
+    position: relative; width: 340px; height: 730px; border-radius: 44px;
+    background:
+      radial-gradient(120% 70% at 15% 0%, rgba(158,230,193,0.14), transparent 55%),
+      radial-gradient(120% 70% at 95% 12%, rgba(200,181,255,0.10), transparent 55%),
+      #08090c;
+    border: 1px solid var(--hairline-hi);
+    box-shadow: 0 40px 90px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06);
+    overflow: hidden; display: flex; flex-direction: column;
+  }
+  .statusbar { height: 44px; flex: 0 0 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 22px; font-size: 13px; color: var(--ink-80); font-weight: 600; }
+  .capsule { display: flex; align-items: center; border: 1px solid var(--hairline-hi); border-radius: 16px; height: 28px; background: var(--glass-1); overflow: hidden; }
+  .capsule .dots { padding: 0 11px; font-size: 16px; color: var(--ink-80); cursor: pointer; }
+  .capsule .sep { width: 1px; height: 16px; background: var(--hairline-hi); }
+  .capsule .o { padding: 0 10px; font-size: 14px; color: var(--ink-60); }
+
+  .nav { padding: 4px 20px 6px; display: flex; align-items: center; gap: 10px; }
+  .nav .back { font-size: 22px; color: var(--ink-60); }
+  .nav .title { font-size: 16px; font-weight: 700; }
+  .nav .mtag { margin-left: auto; font-size: 12px; color: var(--ink-60); border: 1px solid var(--hairline); border-radius: 10px; padding: 3px 10px; }
+
+  .screen { flex: 1; overflow-y: auto; padding: 6px 16px 24px; }
+  .screen::-webkit-scrollbar { width: 0; }
+
+  .sec { margin-top: 18px; }
+  .sec-h { font-size: 12px; color: var(--ink-60); margin: 0 4px 10px; letter-spacing: 0.5px; }
+
+  /* Hero */
+  .hero { position: relative; overflow: hidden; border-radius: 22px; padding: 20px 18px 16px;
+    background: radial-gradient(120% 90% at 85% 0%, rgba(158,230,193,0.16), transparent 60%), var(--glass-1);
+    border: 1px solid var(--hairline); }
+  .hero .lab { font-size: 12px; color: var(--ink-60); }
+  .hero .big { display: flex; align-items: baseline; gap: 8px; margin-top: 6px; }
+  .hero .pct { font-size: 46px; font-weight: 800; letter-spacing: -1px; line-height: 1;
+    background: linear-gradient(180deg,#fff,var(--good)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .hero .pcts { font-size: 14px; color: var(--good); font-weight: 700; }
+  .hero .sub { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 13px; color: var(--ink-60); }
+  .hero .amt { color: var(--ink-80); font-weight: 600; letter-spacing: 1px; }
+  .hero .eye { margin-left: auto; width: 30px; height: 30px; border-radius: 9px; background: var(--glass-2); display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; }
+  /* sparkline */
+  .spark { margin-top: 14px; height: 46px; display: flex; align-items: flex-end; gap: 4px; }
+  .spark i { flex: 1; background: linear-gradient(180deg, rgba(158,230,193,0.7), rgba(158,230,193,0.12)); border-radius: 3px 3px 0 0; }
+
+  /* movers */
+  .mover { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-radius: 16px; background: var(--glass-1); border: 1px solid var(--hairline); margin-bottom: 10px; }
+  .mover .ico { width: 34px; height: 34px; border-radius: 11px; flex: 0 0 34px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .ico.inv { background: rgba(200,181,255,0.18); }
+  .ico.liq { background: rgba(167,211,255,0.18); }
+  .ico.debt { background: rgba(255,179,179,0.16); }
+  .mover .mid { flex: 1; min-width: 0; }
+  .mover .mname { font-size: 14px; font-weight: 600; }
+  .mover .mbar { height: 5px; border-radius: 3px; background: rgba(255,255,255,0.08); margin-top: 7px; overflow: hidden; }
+  .mover .mbar i { display: block; height: 100%; border-radius: 3px; }
+  .bar-up i { background: var(--good); }
+  .bar-liq i { background: var(--ice-blue); }
+  .mover .mright { text-align: right; flex: 0 0 auto; }
+  .mover .mdir { font-size: 12px; font-weight: 700; }
+  .mdir.up { color: var(--good); }
+  .mover .mamt { font-size: 12px; color: var(--ink-40); margin-top: 4px; letter-spacing: 1px; }
+  .mtag-best { font-size: 10px; color: var(--good); border: 1px solid rgba(158,230,193,0.4); border-radius: 7px; padding: 1px 6px; margin-left: 6px; }
+
+  /* persistence tiles */
+  .tiles { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .tile { background: var(--glass-1); border: 1px solid var(--hairline); border-radius: 16px; padding: 14px 8px; text-align: center; }
+  .tile .tv { font-size: 22px; font-weight: 800; }
+  .tile .tk { font-size: 11px; color: var(--ink-60); margin-top: 4px; }
+
+  /* health delta */
+  .hrow { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 16px; background: var(--glass-1); border: 1px solid var(--hairline); }
+  .hrow .hs { font-size: 26px; font-weight: 800; color: var(--good); }
+  .hrow .hk { font-size: 13px; color: var(--ink-80); }
+  .hrow .hd { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--good); }
+
+  /* keyword */
+  .kw { border-radius: 20px; padding: 20px 18px; text-align: center;
+    background: radial-gradient(120% 120% at 50% 0%, rgba(200,181,255,0.18), transparent 70%), var(--glass-1);
+    border: 1px solid var(--hairline-hi); }
+  .kw .kl { font-size: 12px; color: var(--ink-60); }
+  .kw .kv { font-size: 26px; font-weight: 800; margin-top: 8px;
+    background: linear-gradient(90deg,#c8b5ff,#a7d3ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .kw .kd { font-size: 12px; color: var(--ink-60); margin-top: 8px; line-height: 1.6; }
+
+  /* share cta */
+  .share-cta { margin: 22px 2px 6px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: linear-gradient(180deg, rgba(var(--accent-rgb),0.22), rgba(var(--accent-rgb),0.10));
+    border: 1px solid rgba(var(--accent-rgb),0.4); color: #eaf4ff; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .share-cta:active { transform: scale(0.97); }
+  .cta-hint { text-align: center; font-size: 11px; color: var(--ink-40); margin-top: 9px; }
+
+  /* ===== share sheet (reuse) ===== */
+  .mask { position: absolute; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); opacity: 0; pointer-events: none; transition: opacity .28s ease; z-index: 20; }
+  .mask.show { opacity: 1; pointer-events: auto; }
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 21;
+    background: linear-gradient(180deg,#14161d,#0c0d12); border-top-left-radius: 26px; border-top-right-radius: 26px;
+    border-top: 1px solid var(--hairline-hi); padding: 10px 18px 20px; transform: translateY(102%);
+    transition: transform .34s cubic-bezier(0.25,1,0.5,1); box-shadow: 0 -20px 60px rgba(0,0,0,0.5); }
+  .sheet.show { transform: translateY(0); }
+  .grip { width: 40px; height: 4px; border-radius: 4px; background: var(--hairline-hi); margin: 4px auto 14px; }
+  .sheet h3 { margin: 0 2px 2px; font-size: 16px; font-weight: 800; }
+  .sheet .ssub { margin: 0 2px 14px; font-size: 12px; color: var(--ink-60); }
+
+  .card { border-radius: 20px; padding: 18px 18px 14px; position: relative; overflow: hidden;
+    background: radial-gradient(120% 90% at 80% 0%, rgba(158,230,193,0.18), transparent 60%), radial-gradient(110% 80% at 0% 100%, rgba(167,211,255,0.14), transparent 55%), #0e1014;
+    border: 1px solid var(--hairline-hi); }
+  .card .cbrand { font-size: 11px; color: var(--ink-60); }
+  .card .ctitle { font-size: 15px; font-weight: 700; margin-top: 2px; }
+  .card .cbig { font-size: 44px; font-weight: 800; letter-spacing: -1px; margin-top: 10px; line-height: 1;
+    background: linear-gradient(180deg,#fff,var(--good)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .card .cchips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 14px; }
+  .cchip { font-size: 11px; padding: 4px 9px; border-radius: 9px; background: rgba(255,255,255,0.07); border: 1px solid var(--hairline); color: var(--ink-80); }
+  .card .cfoot { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--hairline); }
+  .card .cnet { font-size: 12px; color: var(--ink-60); }
+  .card .cnet b { display: block; font-size: 14px; color: var(--ink-100); font-weight: 700; letter-spacing: 1px; margin-top: 3px; }
+  .card .cnet b.masked { letter-spacing: 3px; color: var(--ink-80); }
+  .card .ctag { font-size: 11px; color: var(--ice-blue); font-weight: 600; margin-top: 8px; }
+  .card .cqr { width: 58px; height: 58px; border-radius: 9px; background: #fff; display: flex; align-items: center; justify-content: center; color: #111; font-size: 8px; text-align: center;
+    background-image: linear-gradient(45deg,#111 25%,transparent 25%,transparent 75%,#111 75%), linear-gradient(45deg,#111 25%,transparent 25%,transparent 75%,#111 75%);
+    background-size: 11px 11px; background-position: 0 0, 5.5px 5.5px; }
+
+  .trow { display: flex; align-items: center; justify-content: space-between; margin: 14px 2px 2px; padding: 12px 14px; border-radius: 14px; background: var(--glass-1); border: 1px solid var(--hairline); }
+  .trow .tl { font-size: 13px; font-weight: 600; }
+  .trow .tl small { display: block; font-size: 11px; color: var(--ink-60); font-weight: 400; margin-top: 2px; }
+  .switch { width: 46px; height: 27px; border-radius: 16px; background: rgba(255,255,255,0.12); position: relative; cursor: pointer; transition: background .22s ease; flex: 0 0 46px; }
+  .switch.on { background: var(--good); }
+  .switch .knob { position: absolute; top: 3px; left: 3px; width: 21px; height: 21px; border-radius: 50%; background: #fff; transition: transform .22s cubic-bezier(0.34,1.56,0.64,1); }
+  .switch.on .knob { transform: translateX(19px); }
+
+  .acts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+  .act { height: 50px; border-radius: 15px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; font-size: 14px; font-weight: 700; border: 1px solid var(--hairline-hi); }
+  .act:active { transform: scale(0.96); }
+  .act.friend { background: linear-gradient(180deg, rgba(158,230,193,0.22), rgba(158,230,193,0.08)); color: #d5f6e6; border-color: rgba(158,230,193,0.4); }
+  .act.poster { background: var(--glass-2); color: var(--ink-100); }
+
+  .toast { position: absolute; left: 50%; top: 44%; transform: translate(-50%,-50%) scale(0.9); background: rgba(20,22,28,0.96); border: 1px solid var(--hairline-hi); padding: 14px 20px; border-radius: 14px; z-index: 40; text-align: center; opacity: 0; pointer-events: none; transition: all .2s ease; }
+  .toast.show { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  .toast .ti { font-size: 26px; } .toast .tt { font-size: 12px; margin-top: 5px; color: var(--ink-80); }
+
+  /* notes */
+  .notes { width: 350px; max-width: 92vw; color: var(--ink-80); }
+  .notes h2 { font-size: 17px; margin: 0 0 4px; color: #fff; }
+  .notes .lead { font-size: 12px; color: var(--ink-60); margin-bottom: 18px; }
+  .step { background: var(--glass-1); border: 1px solid var(--hairline); border-radius: 14px; padding: 13px 15px; margin-bottom: 11px; }
+  .step .h { font-size: 13px; font-weight: 700; color: #fff; }
+  .step .h .n { display: inline-flex; width: 20px; height: 20px; border-radius: 50%; background: rgba(167,211,255,0.18); color: var(--ice-blue); font-size: 11px; font-weight: 700; align-items: center; justify-content: center; margin-right: 8px; }
+  .step p { margin: 7px 0 0; font-size: 12px; color: var(--ink-60); line-height: 1.6; }
+  .step code { background: rgba(255,255,255,0.08); padding: 1px 6px; border-radius: 5px; font-size: 11px; color: var(--ice-blue); }
+  .step b.g { color: var(--good); }
+</style>
+</head>
+<body>
+
+  <!-- ===== PHONE ===== -->
+  <div class="phone">
+    <div class="statusbar">
+      <span>9:41</span>
+      <div class="capsule"><span class="dots" onclick="alert('右上角菜单：发送给朋友 / 分享到朋友圈')">•••</span><span class="sep"></span><span class="o">⊙</span></div>
+    </div>
+    <div class="nav">
+      <span class="back">‹</span>
+      <span class="title">净值小结</span>
+      <span class="mtag">2026 年 5 月 ▾</span>
+    </div>
+
+    <div class="screen">
+      <!-- Hero -->
+      <div class="hero">
+        <div class="lab">本月净资产变化</div>
+        <div class="big"><span class="pct">+4.2%</span><span class="pcts">较上月</span></div>
+        <div class="sub">
+          <span>净增 <span class="amt" id="heroAmt">¥ ****</span></span>
+          <span class="eye" id="eye" onclick="togglePageMask()">🙈</span>
+        </div>
+        <div class="spark">
+          <i style="height:42%"></i><i style="height:48%"></i><i style="height:40%"></i><i style="height:55%"></i>
+          <i style="height:60%"></i><i style="height:52%"></i><i style="height:68%"></i><i style="height:64%"></i>
+          <i style="height:75%"></i><i style="height:80%"></i><i style="height:78%"></i><i style="height:92%"></i>
+        </div>
+      </div>
+
+      <!-- Movers -->
+      <div class="sec">
+        <div class="sec-h">谁在推动 · 本月净值变化归因</div>
+        <div class="mover">
+          <div class="ico inv">📈</div>
+          <div class="mid">
+            <div class="mname">投资 · 基金<span class="mtag-best">主要推手</span></div>
+            <div class="mbar bar-up"><i style="width:78%"></i></div>
+          </div>
+          <div class="mright"><div class="mdir up">↑ 62%</div><div class="mamt page-amt">¥ ****</div></div>
+        </div>
+        <div class="mover">
+          <div class="ico liq">💰</div>
+          <div class="mid">
+            <div class="mname">流动 · 工资到账</div>
+            <div class="mbar bar-liq"><i style="width:44%"></i></div>
+          </div>
+          <div class="mright"><div class="mdir up">↑ 28%</div><div class="mamt page-amt">¥ ****</div></div>
+        </div>
+        <div class="mover">
+          <div class="ico debt">💳</div>
+          <div class="mid">
+            <div class="mname">负债 · 信用卡减少</div>
+            <div class="mbar bar-up"><i style="width:18%"></i></div>
+          </div>
+          <div class="mright"><div class="mdir up">↑ 10%</div><div class="mamt page-amt">¥ ****</div></div>
+        </div>
+      </div>
+
+      <!-- Persistence -->
+      <div class="sec">
+        <div class="sec-h">你的坚持</div>
+        <div class="tiles">
+          <div class="tile"><div class="tv">8</div><div class="tk">本月记录</div></div>
+          <div class="tile"><div class="tv">5</div><div class="tk">更新账户</div></div>
+          <div class="tile"><div class="tv">287</div><div class="tk">累计天数</div></div>
+        </div>
+      </div>
+
+      <!-- Health delta -->
+      <div class="sec">
+        <div class="sec-h">本月财务体检</div>
+        <div class="hrow">
+          <div class="hs">82</div>
+          <div class="hk">健康分 · 良好</div>
+          <div class="hd">↑ 3 分</div>
+        </div>
+      </div>
+
+      <!-- Keyword -->
+      <div class="sec">
+        <div class="sec-h">本月关键词</div>
+        <div class="kw">
+          <div class="kl">— 你这个月是 —</div>
+          <div class="kv">稳步进取型</div>
+          <div class="kd">投资在净值增长里贡献最大，<br>同时负债在持续下降，攻守兼备。</div>
+        </div>
+      </div>
+
+      <!-- share -->
+      <div class="share-cta" onclick="openSheet()"><span>🎉</span><span>晒一晒我的 5 月小结</span></div>
+      <div class="cta-hint">分享默认隐藏所有金额，只晒涨幅与关键词</div>
+      <div style="height:14px"></div>
+    </div>
+
+    <!-- share sheet -->
+    <div class="mask" id="mask" onclick="closeSheet()"></div>
+    <div class="sheet" id="sheet">
+      <div class="grip"></div>
+      <h3>晒成绩</h3>
+      <p class="ssub">先确认要分享的内容 —— 默认替你打码</p>
+      <div class="card">
+        <div class="cbrand">净值本 · 5 月小结</div>
+        <div class="ctitle">我的本月净值</div>
+        <div class="cbig">+4.2%</div>
+        <div class="cchips">
+          <span class="cchip">稳步进取型</span>
+          <span class="cchip">投资是主要推手</span>
+          <span class="cchip">体检分 ↑3</span>
+          <span class="cchip">已记录 287 天</span>
+        </div>
+        <div class="cfoot">
+          <div>
+            <div class="cnet">我的净资产<b class="masked" id="cardNet">¥ ******</b></div>
+            <div class="ctag">看清，比赚得多更重要。</div>
+          </div>
+          <div class="cqr">扫码<br>看自己</div>
+        </div>
+      </div>
+      <div class="trow">
+        <div class="tl">金额打码<small>隐藏卡片里的真实净资产数字</small></div>
+        <div class="switch on" id="switch" onclick="toggleCardMask()"><div class="knob"></div></div>
+      </div>
+      <div class="acts">
+        <div class="act friend" onclick="act('👥','已唤起「发给朋友」')">👥 发给朋友</div>
+        <div class="act poster" onclick="act('🖼️','海报已存相册')">🖼️ 保存海报</div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"><div class="ti" id="toastI">✓</div><div class="tt" id="toastT"></div></div>
+  </div>
+
+  <!-- ===== NOTES ===== -->
+  <div class="notes">
+    <h2>月度净值小结</h2>
+    <p class="lead">轻量、常态化、可晒。年报是它的「重型 story 版」。</p>
+
+    <div class="step">
+      <div class="h"><span class="n">1</span>定位：复盘，不是账单</div>
+      <p>不记你花了多少，而是复盘<b class="g">净值怎么变的、被谁推动</b>。所有数据来自现成 service：归因 <code>attribution.js</code>、体检 <code>health.js</code>、结构 <code>allocation.js</code>。</p>
+    </div>
+    <div class="step">
+      <div class="h"><span class="n">2</span>何时开放</div>
+      <p>每月<b class="g">头几天自动生成上月小结</b>，搭<code>reminderSend</code> 月初提醒一起推送（复用现成通道）。平时也能从首页「工具」进。</p>
+    </div>
+    <div class="step">
+      <div class="h"><span class="n">3</span>交互：单页 + 结尾分享</div>
+      <p>不做全屏 story（那是年报）。一页滑到底，点「晒一晒」上滑分享面板，<b class="g">复用已做好的 share-sheet 组件</b>。试试右边 👉</p>
+    </div>
+    <div class="step">
+      <div class="h"><span class="n">4</span>隐私：% 露出，金额打码</div>
+      <p>头部涨幅 <code>+4.2%</code> 和关键词可见，绝对金额默认 <code>****</code>。点 Hero 的 🙈 看页面联动；分享卡有独立打码开关。</p>
+    </div>
+    <div class="step">
+      <div class="h"><span class="n">5</span>关键词 = 社交货币</div>
+      <p>「稳步进取型」由真实结构/归因派生（投资贡献最大 + 负债下降），<b class="g">绝不造假</b>。这是刷屏的钩子。</p>
+    </div>
+    <div class="step">
+      <div class="h"><span class="n">6</span>数据不足自适应</div>
+      <p>本月记录太少则降级（只出坚持卡 + 鼓励），不脑补归因。新用户首月不强行复盘。</p>
+    </div>
+  </div>
+
+<script>
+  var pageMasked = true, cardMasked = true;
+  function togglePageMask(){
+    pageMasked = !pageMasked;
+    document.getElementById('eye').textContent = pageMasked ? '🙈' : '👁️';
+    document.getElementById('heroAmt').textContent = pageMasked ? '¥ ****' : '¥52,300';
+    document.querySelectorAll('.page-amt').forEach(function(el,i){
+      el.textContent = pageMasked ? '¥ ****' : ['¥32,400','¥14,600','¥5,300'][i] || '¥ ****';
+    });
+  }
+  function openSheet(){ document.getElementById('mask').classList.add('show'); document.getElementById('sheet').classList.add('show'); }
+  function closeSheet(){ document.getElementById('mask').classList.remove('show'); document.getElementById('sheet').classList.remove('show'); }
+  function toggleCardMask(){
+    cardMasked = !cardMasked;
+    document.getElementById('switch').classList.toggle('on', cardMasked);
+    var n = document.getElementById('cardNet');
+    n.textContent = cardMasked ? '¥ ******' : '¥1,284,500';
+    n.classList.toggle('masked', cardMasked);
+  }
+  function act(icon, txt){ closeSheet(); var t=document.getElementById('toast'); document.getElementById('toastI').textContent=icon; document.getElementById('toastT').textContent=txt; t.classList.add('show'); setTimeout(function(){t.classList.remove('show')},1400); }
+</script>
+</body>
+</html>
