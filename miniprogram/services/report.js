@@ -1,4 +1,5 @@
-// 净值报告 · 月报(单关键词) + 年报(资产人格) 的派生规则与数据编排
+// 净值报告 · 月报(单关键词) 的派生规则与数据编排
+// （年报功能现阶段暂不实现，相关代码已移除）
 //
 // ⚠️ 当前为「演示数据」阶段：USE_DEMO=true 时 buildMonthlyReport() 返回写死的示例数据，
 //    仅供开发预览页面效果。发版前务必：① 把 USE_DEMO 置 false ② 补完真实计算（见各 TODO）。
@@ -20,13 +21,6 @@ const TH = {
   driverDominantPct: 45,  // 单一驱动占比 ≥ 视为「主导」，否则「均衡」
   recordsDiligent: 4,     // 月记录 ≥ 视为「自律」
   healthUp: 5,            // 健康分提升 ≥ 视为「向好」
-  // 年报
-  yearInvestGrowthPct: 40, // A 轴：投资对全年增长贡献 ≥ → 进取
-  yearInvestRatioPct: 30,  // A 轴兜底（无增长时）：年末投资资产占比 ≥ → 进取
-  yearMaxCatPct: 50,       // B 轴：年末最大单一大类占比 ≤ → 多元，否则聚焦
-  yearDebtDropPP: 5,       // 特质·去杠杆：负债率年降 ≥ 个百分点
-  yearHealthUp: 8,         // 特质·体质进阶：健康分年升 ≥
-  yearMonthsRecorded: 8,   // 特质·自律复盘：全年有记录月份 ≥
 }
 
 // ===================== 月报 · 单关键词 =====================
@@ -60,47 +54,6 @@ function deriveMonthlyKeyword(r) {
   if (hd >= TH.healthUp) return { word: '稳中向好', why: `净值基本持平，但财务健康分提升了 ${hd} 分。` }
   if ((r.records || 0) >= TH.recordsDiligent) return { word: '自律复盘', why: `本月你记录了 ${r.records} 次，坚持复盘最难得。` }
   return { word: '波澜不惊', why: '本月净值平稳，没有大起大落。' }
-}
-
-// ===================== 年报 · 资产人格（2 轴 4 型 + 特质标签）=====================
-// 输入 y 需含：coverage / monthsActive / yearGrew / investmentGrowthSharePct / investRatioPct / maxCategorySharePct
-//   及特质输入：hadDrawdownButEndedHigher / mostMonthsUp / allTimeHighInYear / debtDropPP / healthDeltaYear / monthsRecorded / emergencyFundOk
-const PERSONA_DESC = {
-  '多元进取者': '你敢于配置权益，又懂得分散布局，攻守兼备。',
-  '锐意聚焦者': '你重仓你所相信的，集中下注、目标清晰。',
-  '稳健布局者': '你靠稳步积累 + 多元配置，把财富越滚越稳。',
-  '深耕守成者': '你专注于核心资产，一步一个脚印地积累。',
-}
-function deriveAssetPersonality(y) {
-  if (!y || y.coverage === 'insufficient') {
-    return { name: '年度记录新手', desc: '今年的数据还不足以刻画完整的资产人格，明年见。', axes: null, traits: [] }
-  }
-  // A 轴：进取 ↔ 积累
-  const aggressive = y.yearGrew
-    ? (y.investmentGrowthSharePct || 0) >= TH.yearInvestGrowthPct
-    : (y.investRatioPct || 0) >= TH.yearInvestRatioPct
-  // B 轴：多元 ↔ 聚焦
-  const diversified = (y.maxCategorySharePct != null ? y.maxCategorySharePct : 100) <= TH.yearMaxCatPct
-
-  const name = aggressive
-    ? (diversified ? '多元进取者' : '锐意聚焦者')
-    : (diversified ? '稳健布局者' : '深耕守成者')
-
-  const traits = []
-  if (y.hadDrawdownButEndedHigher) traits.push('穿越波动')
-  if (y.mostMonthsUp) traits.push('稳步上行')
-  if (y.allTimeHighInYear) traits.push('再创新高')
-  if ((y.debtDropPP || 0) >= TH.yearDebtDropPP) traits.push('去杠杆能手')
-  if ((y.healthDeltaYear || 0) >= TH.yearHealthUp) traits.push('体质进阶')
-  if ((y.monthsRecorded || 0) >= TH.yearMonthsRecorded) traits.push('自律复盘')
-  if (y.emergencyFundOk) traits.push('现金充裕')
-
-  return {
-    name,
-    desc: PERSONA_DESC[name],
-    axes: { aggressive, diversified },
-    traits: traits.slice(0, 3),
-  }
 }
 
 // ===================== 演示数据（开发预览用，发版前删/关）=====================
@@ -174,29 +127,79 @@ async function snapshotBalances(accounts, dateMs) {
   return { balances, anySnapshot }
 }
 
-// 月内净值走势（n 个节点，归一化为 0-100 柱高）
-async function buildSpark(accounts, startMs, endMs, n) {
+// 月初基线余额：用聚合一次拿到「每账户在月初前最近一条 balanceAfter」，等价于逐账户 orderBy desc limit 1。
+// 准确性保障：①集合权限「仅创建者可读写」→ 聚合也只读本人数据 ②group 后 limit(1000) 防截断
+//            ③sort 双键确定性 ④聚合异常时回退逐账户查询。
+async function getBaselineBalances(included, monthStartMs) {
+  const since = new Date(monthStartMs)
+  try {
+    const map = await cloud.latestBalanceMapBefore(since, included.map(a => a._id))
+    const baseBal = {}
+    let anySnapshot = false
+    for (const a of included) {
+      if (Object.prototype.hasOwnProperty.call(map, a._id)) { baseBal[a._id] = map[a._id]; anySnapshot = true }
+      else baseBal[a._id] = 0
+    }
+    return { baseBal, anySnapshot }
+  } catch (e) {
+    // 回退：逐账户查询（准确，但请求数多）
+    console.warn('[report] 聚合取基线失败，回退逐账户查询', e)
+    const { balances, anySnapshot } = await snapshotBalances(included, monthStartMs)
+    return { baseBal: balances, anySnapshot }
+  }
+}
+
+// 拉取 [startMs, endMs) 区间内全部交易（分页 asc）。endMs 传 null 表示「直到现在」（不设上界）。
+// 供 records / accountsUpdated / spark 回放 / 期末余额回放共用，避免逐节点重复查询。
+// 过去月报需要上界（只统计当月交易），当前月报不设上界（=直到此刻）。
+async function fetchTransactionsInRange(startMs, endMs) {
+  const cmd = cloud.command()
+  const start = new Date(startMs)
+  const where = endMs != null
+    ? { createdAt: cmd.gte(start).and(cmd.lt(new Date(endMs))) }
+    : { createdAt: cmd.gte(start) }
+  const out = []
+  const PAGE = 20
+  let skip = 0
+  for (let i = 0; i < 200; i++) {  // 上限保护
+    let res
+    try {
+      res = await cloud.transactions()
+        .where(where)
+        .field({ accountId: true, balanceAfter: true, createdAt: true })
+        .orderBy('createdAt', 'asc')
+        .skip(skip).limit(PAGE).get()
+    } catch (e) { break }
+    const data = res.data || []
+    for (const t of data) out.push({ accountId: t.accountId, balanceAfter: t.balanceAfter || 0, ms: toMs(t.createdAt) })
+    if (data.length < PAGE) break
+    skip += PAGE
+  }
+  return out
+}
+
+// 区间净值走势：从月初基线出发、本地回放区间交易，在 n 个节点采样（零额外查询）。
+// 末节点用 endBal（当前月 = live 权威，与首页一致；过去月 = 回放到月末的快照）。
+function buildSparkReplay(included, baseBal, endBal, monthTx, startMs, endMs, n) {
   const count = n || 6
-  const curBal = {}
-  accounts.forEach(a => { curBal[a._id] = a.balance || 0 })
+  const incSet = {}
+  const bal = {}
+  included.forEach(a => { incSet[a._id] = true; bal[a._id] = baseBal[a._id] || 0 })
+
   const vals = []
-  for (let i = 0; i < count; i++) {
-    const t = startMs + (endMs - startMs) * i / (count - 1)
-    if (i === count - 1) { vals.push(netWorthOf(accounts, curBal)); continue }
-    const { balances } = await snapshotBalances(accounts, t)
-    vals.push(netWorthOf(accounts, balances))
+  let ti = 0
+  for (let k = 0; k < count; k++) {
+    const t = startMs + (endMs - startMs) * k / (count - 1)
+    while (ti < monthTx.length && monthTx[ti].ms <= t) {
+      const tx = monthTx[ti]
+      if (incSet[tx.accountId]) bal[tx.accountId] = tx.balanceAfter
+      ti++
+    }
+    vals.push(k === count - 1 ? netWorthOf(included, endBal) : netWorthOf(included, bal))
   }
   const min = Math.min.apply(null, vals)
   const max = Math.max.apply(null, vals)
   return vals.map(v => (max === min ? 60 : Math.round(((v - min) / (max - min)) * 70 + 20)))
-}
-
-async function countMonthRecords(monthStartMs) {
-  try {
-    const res = await cloud.transactions()
-      .where({ createdAt: cloud.command().gte(new Date(monthStartMs)) }).count()
-    return res.total || 0
-  } catch (e) { return 0 }
 }
 
 function recordedDays(accounts) {
@@ -215,25 +218,62 @@ function driverTypeOf(a) {
   return isDebtCategory(a.categoryId) ? 'debtReduction' : a.categoryId
 }
 
-// monthDate: 目标月内任一 Date（默认本月）。返回与 getDemoMonthlyReport 同结构。
+// 默认目标月 = 上一个完整月（月度小结总结刚结束的那个月，最有意义）。
+function defaultReportMonth() {
+  const d = new Date()
+  return new Date(d.getFullYear(), d.getMonth() - 1, 1)  // 负月份 JS 自动回退到上一年 12 月
+}
+
+// monthDate: 目标月内任一 Date（默认上一个完整月）。返回与 getDemoMonthlyReport 同结构。
+// 口径（不变量 5）：期初 = 月初前各账户最近一条 balanceAfter；
+//   期末 —— 当前月用 live 余额（权威，与首页一致）；过去月把当月交易回放到月末快照。
 async function buildMonthlyReport(accounts, monthDate) {
-  const ref = monthDate || new Date()
+  const ref = monthDate || defaultReportMonth()
   const monthStartMs = new Date(ref.getFullYear(), ref.getMonth(), 1, 0, 0, 0, 0).getTime()
+  const monthEndMs = new Date(ref.getFullYear(), ref.getMonth() + 1, 1, 0, 0, 0, 0).getTime()
   const nowMs = Date.now()
+  const isCurrentMonth = nowMs >= monthStartMs && nowMs < monthEndMs
+  const periodEndMs = isCurrentMonth ? nowMs : monthEndMs
   const periodLabel = `${ref.getFullYear()} 年 ${ref.getMonth() + 1} 月`
 
   const included = (accounts || []).filter(a => a.includeInChart !== false)
-  const curBal = {}
-  included.forEach(a => { curBal[a._id] = a.balance || 0 })
-  const netWorthFen = netWorthOf(included, curBal)
+  const liveBal = {}
+  included.forEach(a => { liveBal[a._id] = a.balance || 0 })
+  const incSet = {}
+  included.forEach(a => { incSet[a._id] = true })
 
-  const curHealthR = healthSvc.evaluate(accounts)
-  const records = await countMonthRecords(monthStartMs)
-  const accountsUpdated = included.filter(a => toMs(a.updatedAt) >= monthStartMs).length
   const totalDays = recordedDays(accounts)
 
-  // 期初快照（月初）
-  const { balances: baseBal, anySnapshot } = await snapshotBalances(included, monthStartMs)
+  // 区间交易（分页）+ 月初基线（批量）并行，共 ~2 次请求。
+  // 过去月设上界（只取当月交易）；当前月不设上界（=直到此刻）。
+  const [monthTx, base] = await Promise.all([
+    fetchTransactionsInRange(monthStartMs, isCurrentMonth ? null : periodEndMs),
+    getBaselineBalances(included, monthStartMs),
+  ])
+  const baseBal = base.baseBal
+  const anySnapshot = base.anySnapshot
+  const records = monthTx.length
+  const updatedSet = {}
+  for (const t of monthTx) if (incSet[t.accountId]) updatedSet[t.accountId] = true
+  const accountsUpdated = Object.keys(updatedSet).length
+
+  // 期末余额：当前月 = live；过去月 = 月初基线回放当月交易到月末
+  let endBal
+  if (isCurrentMonth) {
+    endBal = liveBal
+  } else {
+    endBal = {}
+    included.forEach(a => { endBal[a._id] = baseBal[a._id] || 0 })
+    for (const tx of monthTx) if (incSet[tx.accountId]) endBal[tx.accountId] = tx.balanceAfter
+  }
+  const netWorthFen = netWorthOf(included, endBal)
+
+  // 期末健康分：当前月直接用 live evaluate；过去月用期末余额伪账户重算
+  const curHealthR = isCurrentMonth
+    ? healthSvc.evaluate(accounts)
+    : healthSvc.evaluate(accounts.map(a => (
+        a.includeInChart === false ? a : Object.assign({}, a, { balance: endBal[a._id] || 0 })
+      )))
 
   // 无可比基线（月初前无任何记录）→ 降级，不脑补涨幅/归因
   if (!anySnapshot || included.length === 0) {
@@ -256,11 +296,11 @@ async function buildMonthlyReport(accounts, monthDate) {
   else if (nwDeltaFen !== 0) nwPct = nwDeltaFen > 0 ? 100 : -100
   nwPct = Math.round(nwPct * 10) / 10
 
-  // 归因：每账户对净值的贡献（负债减少计正）
+  // 归因：每账户对净值的贡献（负债减少计正），用 期末 − 月初
   let totalPos = 0
   const contribs = []
   for (const a of included) {
-    const delta = (curBal[a._id] || 0) - (baseBal[a._id] || 0)
+    const delta = (endBal[a._id] || 0) - (baseBal[a._id] || 0)
     const contri = isDebtCategory(a.categoryId) ? -delta : delta
     if (contri > 0) totalPos += contri
     contribs.push({ a, contri })
@@ -294,14 +334,16 @@ async function buildMonthlyReport(accounts, monthDate) {
     driver = share >= TH.driverDominantPct ? { key: maxK, sharePct: share } : { key: 'balanced', sharePct: share }
   }
 
-  // 健康分环比（用上月末重算，不存储）
+  // 健康分环比：月初基线 vs 期末（均按余额快照重算，不额外查询、不存储）
   let healthDelta = 0
-  const prevHealthR = await healthSvc.evaluateAt(accounts, monthStartMs)
+  const prevHealthR = healthSvc.evaluate(accounts.map(a => (
+    a.includeInChart === false ? a : Object.assign({}, a, { balance: baseBal[a._id] || 0 })
+  )))
   if (prevHealthR && prevHealthR.overall.score != null && curHealthR.overall.score != null) {
     healthDelta = curHealthR.overall.score - prevHealthR.overall.score
   }
 
-  const spark = await buildSpark(included, monthStartMs, nowMs)
+  const spark = buildSparkReplay(included, baseBal, endBal, monthTx, monthStartMs, periodEndMs)
 
   const report = {
     isDemo: false, periodLabel, coverage: 'full',
@@ -319,7 +361,6 @@ async function buildMonthlyReport(accounts, monthDate) {
 module.exports = {
   TH,
   deriveMonthlyKeyword,
-  deriveAssetPersonality,
   getDemoMonthlyReport,
   buildMonthlyReport,
 }

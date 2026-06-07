@@ -8,9 +8,8 @@ const { APP_VERSION } = require('../../utils/version.js')
 
 const STORAGE_EXPANDED = 'idx_expanded_categories'
 
-// ⚠️ 预览开关：true = 强制显示月报横幅（用演示数据），方便看效果。
-//    发版前置 false，并改为真实窗口判断：①每月前 3 天 ②上月有可比数据 ③本月未手动关闭。
-const REPORT_BANNER_PREVIEW = true
+// 月报横幅：每月前 N 天提示回顾「上一个完整月」的小结（本月未手动关闭、且有账户时显示）。
+const BANNER_WINDOW_DAYS = 3
 
 const STORAGE_BANNER_DISMISS = 'report_banner_dismissed_month'  // 值为 'YYYY-M'
 
@@ -88,25 +87,23 @@ Page({
     this.refresh()
   },
 
-  // 月报横幅：内容用真实计算（本月净值环比）
-  // TODO（发版前）：把 REPORT_BANNER_PREVIEW 改为真实窗口判断（每月前 3 天 + 有可比数据 + 本月未关闭）
+  // 月报横幅：月初前 BANNER_WINDOW_DAYS 天展示「上月小结」入口。
+  // 仅做入口，不在首页算百分比（涨幅留到月报页内算），不额外查询。
+  // 显示条件：①有账户 ②处于月初窗口期 ③本月未手动关闭。
   updateMonthlyBanner(accounts) {
+    const now = new Date()
+    const inWindow = now.getDate() <= BANNER_WINDOW_DAYS
     const dismissedMonth = wx.getStorageSync(STORAGE_BANNER_DISMISS)
-    if (!REPORT_BANNER_PREVIEW || !accounts || !accounts.length || dismissedMonth === currentMonthKey()) {
+    if (!accounts || !accounts.length || !inWindow || dismissedMonth === currentMonthKey()) {
       this.setData({ monthlyBannerVisible: false })
       return
     }
-    const now = new Date()
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime()
-    const days = Math.max(1, Math.floor((Date.now() - monthStart) / 86400000))
+    // 上一个完整月（1 月时回退到去年 12 月）
+    const prevMonthNum = now.getMonth() === 0 ? 12 : now.getMonth()
     this.setData({
       monthlyBannerVisible: true,
-      monthlyBanner: { periodLabel: (now.getMonth() + 1) + ' 月', pctText: '' },
+      monthlyBanner: { periodLabel: prevMonthNum + ' 月' },
     })
-    statsSvc.getNetWorthDelta(days, accounts).then(({ deltaPct }) => {
-      const pct = deltaPct || 0
-      this.setData({ 'monthlyBanner.pctText': (pct > 0 ? '+' : '') + pct.toFixed(1) + '%' })
-    }).catch(() => {})
   },
 
   onOpenReport() {

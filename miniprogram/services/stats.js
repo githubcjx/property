@@ -28,23 +28,27 @@ async function getNetWorthDelta(days, accounts) {
   const sinceMs = Date.now() - days * 86400000
   const since = new Date(sinceMs)
 
-  // 每个账户取「T-N 之前最新一条」tx 的 balanceAfter 作为 T-N 时刻的余额快照。
-  // 按账户 desc + limit(1)：小程序端单次 get 最多 20 条，不能用「升序 + limit(1000)」
-  // 一次拉全量（会被截成最旧的 20 条，导致基线取到更早的快照、近 N 天变化算错）。
-  const snapshotByAcc = {}
-  await Promise.all(included.map(async (a) => {
-    try {
-      const res = await cloud.transactions()
-        .where({ accountId: a._id, createdAt: cloud.command().lte(since) })
-        .orderBy('createdAt', 'desc')
-        .limit(1)
-        .get()
-      const t = (res.data || [])[0]
-      if (t) snapshotByAcc[a._id] = t.balanceAfter || 0
-    } catch (err) {
-      console.warn('[stats] fetch snapshot error', a._id, err)
-    }
-  }))
+  // 基线 = 每账户在 T-N 之前最近一条 tx 的 balanceAfter。
+  // cloud.latestBalanceMapBefore：倒序翻页取全部账户基线（通常 1~2 次请求），失败回退逐账户。
+  let snapshotByAcc = {}
+  try {
+    snapshotByAcc = await cloud.latestBalanceMapBefore(since, included.map(a => a._id))
+  } catch (e) {
+    console.warn('[stats] 聚合取基线失败，回退逐账户', e)
+    await Promise.all(included.map(async (a) => {
+      try {
+        const res = await cloud.transactions()
+          .where({ accountId: a._id, createdAt: cloud.command().lte(since) })
+          .orderBy('createdAt', 'desc')
+          .limit(1)
+          .get()
+        const t = (res.data || [])[0]
+        if (t) snapshotByAcc[a._id] = t.balanceAfter || 0
+      } catch (err) {
+        console.warn('[stats] fetch snapshot error', a._id, err)
+      }
+    }))
+  }
 
   let baseline = 0
   for (const a of included) {

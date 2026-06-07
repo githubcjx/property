@@ -118,6 +118,10 @@ Page({
       iconKey: MOVER_ICON[m.cat] || 'ic-cash',
     }))
 
+    const health = r.health
+      ? Object.assign({}, r.health, { deltaAbs: Math.abs(r.health.delta || 0) })
+      : r.health
+
     this.setData({
       isDemo: !!r.isDemo,
       coverage: r.coverage || 'full',
@@ -125,7 +129,7 @@ Page({
       pctText,
       pctClass,
       keyword: r.keyword,
-      health: r.health,
+      health,
       records: r.records,
       accountsUpdated: r.accountsUpdated,
       totalDays: r.totalDays,
@@ -172,11 +176,11 @@ Page({
 
     return {
       brand: '净值本 · 月度小结',
-      title: '我的本月净值',
+      title: '我的月度净值',
       score: (pct > 0 ? '+' : '') + (+pct).toFixed(1),
       scoreUnit: '%',
       status: pct >= reportSvc.TH.monthUpPct ? 'good' : (pct <= reportSvc.TH.monthDownPct ? 'alert' : 'warn'),
-      subline: '本月净值变化',
+      subline: r.periodLabel + ' 净值变化',
       chips: chips.filter(Boolean).slice(0, 4),
       netWorthFen: r.netWorthFen,
       tagline: '看清，比赚得多更重要。',
@@ -185,7 +189,9 @@ Page({
     }
   },
 
-  onBack() { wx.navigateBack() },
+  onBack() {
+    wx.navigateBack({ fail: () => wx.reLaunch({ url: '/pages/index/index' }) })
+  },
 
   // 隐私眼：与全局 hideAmount 联动
   onToggleEye() {
@@ -204,14 +210,14 @@ Page({
 
   onShareAppMessage() {
     return {
-      title: `我的本月净值 ${this.data.pctText}，你的呢？`,
+      title: `我的月度净值 ${this.data.pctText}，你的呢？`,
       path: '/pages/index/index',
       imageUrl: this.data.sharePoster || '/assets/logo.png',
     }
   },
   onShareTimeline() {
     return {
-      title: `我的本月净值 ${this.data.pctText} · 净值本`,
+      title: `我的月度净值 ${this.data.pctText} · 净值本`,
       query: '',
       imageUrl: this.data.sharePoster || '/assets/logo.png',
     }

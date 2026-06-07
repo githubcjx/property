@@ -18,7 +18,7 @@
       <view class="orbit o2"></view>
       <view class="orbit o3"></view>
     </view>
-    <view class="loading-text">正在生成本月小结</view>
+    <view class="loading-text">正在生成月度小结</view>
   </view>
 
   <view wx:elif="{{empty}}" class="state-hint">还没有账户数据，先去首页添加账户吧</view>
@@ -28,12 +28,12 @@
     <!-- Hero · 本月净值变化 -->
     <view class="hero glass entry-up">
       <text class="hero-period">{{periodLabel}}</text>
-      <text class="hero-lab">本月净资产变化</text>
+      <text class="hero-lab">当月净资产变化</text>
 
       <block wx:if="{{coverage !== 'insufficient'}}">
         <view class="hero-big">
           <text class="hero-pct pct-{{pctClass}}">{{pctText}}</text>
-          <text class="hero-cmp">较上月</text>
+          <text class="hero-cmp">较月初</text>
         </view>
         <view class="hero-sub">
           <text>净增 <text class="hero-amt num">{{heroDeltaText}}</text></text>
@@ -42,7 +42,7 @@
           </view>
         </view>
       </block>
-      <view wx:else class="cov-note">本月数据较少，下月起即可看到完整的净值变化</view>
+      <view wx:else class="cov-note">该月之前还没有记录，暂时算不出净值变化；坚持记账，往后每月都能看到</view>
 
       <view wx:if="{{spark.length}}" class="spark">
         <view wx:for="{{spark}}" wx:key="index" class="spark-bar" style="height: {{item}}%;"></view>
@@ -52,7 +52,7 @@
     <!-- 谁在推动 -->
     <block wx:if="{{movers.length}}">
       <view class="sec-title entry-up d1">
-        <text class="sec-name">谁在推动 · 本月净值归因</text>
+        <text class="sec-name">谁在推动 · 当月净值归因</text>
       </view>
       <view class="movers">
         <view wx:for="{{movers}}" wx:key="name" class="mover glass entry-up d{{index + 2}}">
@@ -75,23 +75,23 @@
     <!-- 你的坚持 -->
     <view class="sec-title entry-up"><text class="sec-name">你的坚持</text></view>
     <view class="tiles">
-      <view class="tile glass"><text class="tile-v num tv-records">{{records}}</text><text class="tile-k">本月记录</text></view>
+      <view class="tile glass"><text class="tile-v num tv-records">{{records}}</text><text class="tile-k">当月记录</text></view>
       <view class="tile glass"><text class="tile-v num tv-accounts">{{accountsUpdated}}</text><text class="tile-k">更新账户</text></view>
       <view class="tile glass"><text class="tile-v num tv-days">{{totalDays}}</text><text class="tile-k">累计天数</text></view>
     </view>
 
-    <!-- 本月财务体检 -->
-    <view class="sec-title entry-up"><text class="sec-name">本月财务体检</text></view>
+    <!-- 月末财务体检 -->
+    <view class="sec-title entry-up"><text class="sec-name">月末财务体检</text></view>
     <view class="hrow glass entry-up">
       <text class="hrow-score {{health.score > 80 ? 'stage-high' : (health.score >= 60 ? 'stage-mid' : 'stage-low')}}">{{health.score}}</text>
       <text class="hrow-k">健康分 · {{health.status === 'good' ? '良好' : (health.status === 'warn' ? '关注' : '需改善')}}</text>
       <text wx:if="{{health.delta > 0}}" class="hrow-d">↑ {{health.delta}} 分</text>
-      <text wx:elif="{{health.delta < 0}}" class="hrow-d down">↓ {{health.delta}} 分</text>
+      <text wx:elif="{{health.delta < 0}}" class="hrow-d down">↓ {{health.deltaAbs}} 分</text>
       <text wx:else class="hrow-d flat">持平</text>
     </view>
 
-    <!-- 本月关键词 -->
-    <view class="sec-title entry-up"><text class="sec-name">本月关键词</text></view>
+    <!-- 月度关键词 -->
+    <view class="sec-title entry-up"><text class="sec-name">月度关键词</text></view>
     <view class="kw glass entry-up">
       <text class="kw-l">— 你这个月是 —</text>
       <text class="kw-v">{{keyword.word}}</text>
