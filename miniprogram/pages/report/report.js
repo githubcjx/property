@@ -45,6 +45,8 @@ Page({
     isDemo: false,
     coverage: 'full',
     periodLabel: '',
+    canPrev: false,    // 可翻上一月（无下界，始终可点；服务无基线时显示降级文案）
+    canNext: false,    // 可翻下一月（上界=上一个完整月，到顶置灰）
     pctText: '',
     pctClass: 'up',
     keyword: null,
@@ -61,7 +63,7 @@ Page({
     sharePoster: '',
   },
 
-  onLoad() {
+  onLoad(options) {
     const sysInfo = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
     this.setData({
       statusBarHeight: sysInfo.statusBarHeight || 20,
@@ -69,7 +71,31 @@ Page({
       theme: app.globalData.theme,
       hideAmount: app.globalData.hideAmount,
     })
+    // 目标月：?ym=YYYY-MM；缺省 = 上一个完整月。超过上界（未来月）则夹到上一完整月。
+    const newest = reportSvc.defaultReportMonth()
+    const want = this._parseYm(options && options.ym) || newest
+    this._month = want.getTime() > newest.getTime() ? newest : want
+    this._cache = {}   // monthKey → report，来回翻同月秒开不重查
     this.loadReport()
+  },
+
+  _parseYm(ym) {
+    if (!ym) return null
+    const m = /^(\d{4})-(\d{1,2})$/.exec(ym)
+    if (!m) return null
+    const d = new Date(+m[1], +m[2] - 1, 1)
+    return isNaN(d.getTime()) ? null : d
+  },
+
+  _monthKey(d) { return d.getFullYear() + '-' + (d.getMonth() + 1) },
+
+  // 上界 = 上一个完整月（永不进入进行中的当月）；下界无（始终可往回翻）
+  _updateNav() {
+    const newest = reportSvc.defaultReportMonth()
+    this.setData({
+      canPrev: true,
+      canNext: this._month.getTime() < newest.getTime(),
+    })
   },
 
   async loadReport() {
@@ -80,22 +106,51 @@ Page({
       this.applyReport(r)
       return
     }
+    const key = this._monthKey(this._month)
+    // 缓存命中：秒开，无需 loading / 重新查询
+    if (this._cache[key]) {
+      const r = this._cache[key]
+      this._report = r
+      this.setData({ loading: false, empty: false })
+      this.applyReport(r)
+      this._updateNav()
+      return
+    }
     this.setData({ loading: true })
     try {
-      const accounts = await accountSvc.listAccounts()
+      let accounts = this._accounts
+      if (!accounts) {
+        accounts = await accountSvc.listAccounts()
+        this._accounts = accounts
+      }
       if (!accounts || accounts.length === 0) {
         this.setData({ loading: false, empty: true })
         return
       }
-      const r = await reportSvc.buildMonthlyReport(accounts)
+      const r = await reportSvc.buildMonthlyReport(accounts, this._month)
       this._report = r
+      this._cache[key] = r
       this.setData({ loading: false, empty: false })
       this.applyReport(r)
+      this._updateNav()
     } catch (err) {
       console.error('月报加载失败', err)
       this.setData({ loading: false })
       wx.showToast({ icon: 'none', title: '加载失败：' + (err.errMsg || err.message || '') })
     }
+  },
+
+  // 切月：上一月（始终允许）/ 下一月（到上界则忽略）
+  onPrevMonth() {
+    const d = this._month
+    this._month = new Date(d.getFullYear(), d.getMonth() - 1, 1)
+    this.loadReport()
+  },
+  onNextMonth() {
+    if (!this.data.canNext) return
+    const d = this._month
+    this._month = new Date(d.getFullYear(), d.getMonth() + 1, 1)
+    this.loadReport()
   },
 
   onShow() {

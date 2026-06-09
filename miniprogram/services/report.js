@@ -202,14 +202,17 @@ function buildSparkReplay(included, baseBal, endBal, monthTx, startMs, endMs, n)
   return vals.map(v => (max === min ? 60 : Math.round(((v - min) / (max - min)) * 70 + 20)))
 }
 
-function recordedDays(accounts) {
+// 累计记录天数：从最早账户创建日到 endMs（当月末；缺省到此刻）。
+// 看历史月时口径为「到那个月末」，不再恒显示到今天。
+function recordedDays(accounts, endMs) {
   let earliest = 0
   for (const a of accounts) {
     const t = toMs(a.createdAt)
     if (t > 0 && (earliest === 0 || t < earliest)) earliest = t
   }
   if (!earliest) return 0
-  const days = Math.floor((Date.now() - earliest) / 86400000) + 1
+  const end = endMs || Date.now()
+  const days = Math.floor((end - earliest) / 86400000) + 1
   return days > 0 ? days : 1
 }
 
@@ -242,7 +245,7 @@ async function buildMonthlyReport(accounts, monthDate) {
   const incSet = {}
   included.forEach(a => { incSet[a._id] = true })
 
-  const totalDays = recordedDays(accounts)
+  const totalDays = recordedDays(accounts, periodEndMs)
 
   // 区间交易（分页）+ 月初基线（批量）并行，共 ~2 次请求。
   // 过去月设上界（只取当月交易）；当前月不设上界（=直到此刻）。
@@ -363,4 +366,5 @@ module.exports = {
   deriveMonthlyKeyword,
   getDemoMonthlyReport,
   buildMonthlyReport,
+  defaultReportMonth,
 }

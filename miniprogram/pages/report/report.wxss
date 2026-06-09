@@ -92,11 +92,22 @@
 
 /* ============ Hero ============ */
 .hero { position: relative; padding: 32rpx 30rpx 28rpx; border-radius: 32rpx; margin-bottom: 8rpx; }
-.hero-period {
-  position: absolute; top: 28rpx; right: 30rpx;
-  font-size: 22rpx; color: var(--ink-60);
-  border: 1rpx solid var(--hairline); border-radius: 14rpx; padding: 4rpx 14rpx;
+/* 月份导航：‹ 2026 年 5 月 › */
+.month-nav {
+  display: flex; align-items: center; justify-content: center; gap: 20rpx;
+  margin-bottom: 20rpx;
 }
+.hero-period-text {
+  min-width: 220rpx; text-align: center;
+  font-size: 26rpx; font-weight: 600; color: var(--ink-80); letter-spacing: 0.5rpx;
+}
+.month-arrow {
+  width: 52rpx; height: 52rpx; border-radius: 50%;
+  background: var(--glass-2); border: 1rpx solid var(--hairline);
+  display: flex; align-items: center; justify-content: center;
+}
+.month-arrow-hover { background: var(--glass-3); transform: scale(0.94); }
+.month-arrow.is-disabled { opacity: 0.28; }
 .hero-lab { font-size: 24rpx; color: var(--ink-60); }
 .hero-big { display: flex; align-items: baseline; gap: 14rpx; margin-top: 10rpx; }
 .hero-pct {
