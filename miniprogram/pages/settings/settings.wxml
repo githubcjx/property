@@ -22,6 +22,24 @@
   </view>
 
   <view class="sec-card glass entry-up d1">
+    <view class="row tap" hover-class="row-hover" bindtap="onBaseCurrency">
+      <view class="row-icon"><view class="ic ic-sm ic-coin"></view></view>
+      <view class="row-main">
+        <text class="row-title">本位币</text>
+        <text class="row-sub">所有账户汇总折算到的货币</text>
+      </view>
+      <text class="row-trailing">{{baseCurrencyText}}</text>
+      <view class="row-arrow"><view class="ic ic-xs ic-chevron-right"></view></view>
+    </view>
+    <view class="row tap" hover-class="row-hover" bindtap="onRates">
+      <view class="row-icon"><view class="ic ic-sm ic-exchange"></view></view>
+      <view class="row-main">
+        <text class="row-title">汇率</text>
+        <text class="row-sub">每天早上 8:00 自动更新 · 只读</text>
+      </view>
+      <text class="row-trailing">{{fxDate}}</text>
+      <view class="row-arrow"><view class="ic ic-xs ic-chevron-right"></view></view>
+    </view>
     <view class="row tap" hover-class="row-hover" bindtap="onTheme">
       <view class="row-icon"><view class="ic ic-sm ic-palette"></view></view>
       <view class="row-main">

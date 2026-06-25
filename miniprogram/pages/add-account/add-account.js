@@ -1,7 +1,12 @@
 const app = getApp()
 const accountSvc = require('../../services/account.js')
 const { CATEGORIES, getSubType, getCategory } = require('../../utils/categories.js')
-const { yuanToFen, fenToYuan } = require('../../utils/format.js')
+const { unitToFen, fenToUnit } = require('../../utils/format.js')
+const { CURRENCIES, symbolOf } = require('../../utils/currency.js')
+
+// 币种选择器选项（显示「代码 名称」），index 对齐 CURRENCIES
+const CCY_OPTIONS = CURRENCIES.map(c => c.code + ' ' + c.name)
+const CCY_CODES = CURRENCIES.map(c => c.code)
 
 const CAT_RGB = {
   liquid: '167, 211, 255',
@@ -38,7 +43,11 @@ Page({
       balanceYuan: '',
       includeInChart: true,
       note: '',
+      currency: 'CNY',
     },
+    currencyOptions: CCY_OPTIONS,
+    currencyIndex: 0,
+    currencySymbol: '¥',
 
     editId: '',
     submitting: false,
@@ -76,11 +85,13 @@ Page({
         selectedTintClass: 'cat-tint-' + (cat ? cat.colorClass : 'liquid'),
         selectedSubType: sub || { id: acc.subType, name: acc.name, icon: acc.icon, custom: true },
         customSubName: sub ? '' : acc.name,
+        currencySymbol: symbolOf(acc.currency || 'CNY'),
         form: {
           name: acc.name,
-          balanceYuan: String(fenToYuan(acc.balance || 0)),
+          balanceYuan: String(fenToUnit(acc.balance || 0, acc.currency || 'CNY')),
           includeInChart: acc.includeInChart !== false,
           note: acc.note || '',
+          currency: acc.currency || 'CNY',
         },
       })
       wx.setNavigationBarTitle({ title: '编辑账户' })
@@ -158,6 +169,11 @@ Page({
 
   onNameInput(e)    { this.setData({ 'form.name': e.detail.value }) },
   onBalanceInput(e) { this.setData({ 'form.balanceYuan': e.detail.value }) },
+  onCurrencyChange(e) {
+    const idx = Number(e.detail.value) || 0
+    const code = CCY_CODES[idx] || 'CNY'
+    this.setData({ currencyIndex: idx, 'form.currency': code, currencySymbol: symbolOf(code) })
+  },
   onChartSwitch()   { this.setData({ 'form.includeInChart': !this.data.form.includeInChart }) },
   onNoteInput(e)    { this.setData({ 'form.note': e.detail.value }) },
 
@@ -170,7 +186,7 @@ Page({
       return
     }
 
-    const balanceFen = yuanToFen(form.balanceYuan || 0)
+    const balanceFen = unitToFen(form.balanceYuan || 0, form.currency || 'CNY')
     this.setData({ submitting: true })
 
     try {
@@ -191,6 +207,7 @@ Page({
           includeInChart: form.includeInChart,
           note: form.note || '',
           icon: selectedSubType ? selectedSubType.icon : 'folder',
+          currency: form.currency || 'CNY',
         })
       }
       // success animation overlay

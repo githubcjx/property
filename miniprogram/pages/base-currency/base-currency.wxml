@@ -1,0 +1,33 @@
+<view class="canvas-bg theme-{{theme}}" wx:if="{{!reduceMotion}}"></view>
+
+<view class="page {{reduceMotion ? 'no-motion' : ''}} theme-{{theme}}">
+  <view class="navbar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onBack">
+      <view class="ic ic-xs ic-back"></view>
+    </view>
+    <text class="nav-title">本位币</text>
+    <view class="nav-spacer"></view>
+  </view>
+
+  <view class="bc-hint entry-up">
+    切换本位币会把全部账户与历史净值重新折算到新货币显示，金额口径随之改变。这是个少见的全局操作，且仅改变显示、不改动已记录数据。
+  </view>
+
+  <view class="bc-list entry-up">
+    <view
+      wx:for="{{currencies}}"
+      wx:key="code"
+      class="bc-row {{item.code === current ? 'sel' : ''}}"
+      data-code="{{item.code}}"
+      bindtap="onPick"
+      hover-class="row-hover"
+    >
+      <view class="bc-sym">{{item.symbol}}</view>
+      <view class="bc-info">
+        <text class="bc-code">{{item.code}} {{item.name}}</text>
+        <text class="bc-sub" wx:if="{{item.minorDigits === 0}}">无小数位</text>
+      </view>
+      <text class="bc-check" wx:if="{{item.code === current}}">✓</text>
+    </view>
+  </view>
+</view>

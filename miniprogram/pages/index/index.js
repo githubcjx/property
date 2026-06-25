@@ -2,8 +2,9 @@ const app = getApp()
 const accountSvc = require('../../services/account.js')
 const statsSvc = require('../../services/stats.js')
 const { CATEGORIES, isDebtCategory, isIconKey } = require('../../utils/categories.js')
-const { valueCnyFen } = require('../../utils/networth.js')
-const { formatYuan } = require('../../utils/format.js')
+const { valueCnyFen, cnyToBaseFen, baseCurrency } = require('../../utils/networth.js')
+const { symbolOf } = require('../../utils/currency.js')
+const { formatYuan, formatMoney } = require('../../utils/format.js')
 const { formatRelative } = require('../../utils/date.js')
 const { APP_VERSION } = require('../../utils/version.js')
 
@@ -39,6 +40,7 @@ Page({
     hasData: false,
 
     netWorthRaw: 0,
+    baseSymbol: '¥',
     netSign: '',
     netInt: '0',
     netFrac: '00',
@@ -194,15 +196,21 @@ Page({
 
     const visibleGroups = groups.filter(g => g.accounts.length > 0)
 
+    // 显示口径：分组合计折算到本位币；账户金额按各自原币种展示（原币种为主）
+    const baseCcy = baseCurrency()
+    const baseSym = symbolOf(baseCcy)
+
     // pre-format display strings (WXML can't do floor/format)
     visibleGroups.forEach(g => {
-      g.totalText = (g.isDebt ? '−¥' : '¥') + formatYuan(g.totalFen, {})
+      g.totalText = (g.isDebt ? '−' : '') + formatMoney(cnyToBaseFen(g.totalFen), baseCcy, { symbol: true })
       g.lastUpdatedText = g.lastUpdated ? formatRelative(g.lastUpdated) : ''
       g.accounts = g.accounts.map(a => {
         const ic = a.icon || ''
+        const ccy = a.currency || 'CNY'
         return Object.assign({}, a, {
           icon: isIconKey(ic) ? ic : 'folder',
-          balanceText: (g.isDebt ? '−¥' : '¥') + formatYuan(a.balance || 0, {}),
+          symbol: symbolOf(ccy),
+          balanceText: (g.isDebt ? '−' : '') + formatMoney(a.balance || 0, ccy, { symbol: true }),
         })
       })
     })
@@ -222,18 +230,20 @@ Page({
       }
     })
 
-    const parts = splitAmount(netWorth)
+    const dispNet = cnyToBaseFen(netWorth)   // 净值折算到本位币用于显示
+    const parts = splitAmount(dispNet)
     this.setData({
       groups: visibleGroups,
       composition,
       netWorthRaw: netWorth,
+      baseSymbol: baseSym,
       netSign: parts.sign,
       netInt: parts.int,
       netFrac: parts.frac,
       hasData: accounts.length > 0,
     })
 
-    this.animateNetWorth(netWorth)
+    this.animateNetWorth(dispNet)
   },
 
   animateNetWorth(targetFen) {
@@ -270,9 +280,11 @@ Page({
   },
 
   applyDelta(deltaFen, deltaPct) {
+    const baseCcy = baseCurrency()
+    const dispDelta = cnyToBaseFen(deltaFen)
     const positive = deltaFen >= 0
     const sign = positive ? '+' : '-'
-    const deltaText = sign + '¥' + formatYuan(Math.abs(deltaFen), {})
+    const deltaText = sign + formatMoney(Math.abs(dispDelta), baseCcy, { symbol: true })
     const pctStr = (positive ? '+' : '') + (Math.round(deltaPct * 10) / 10).toFixed(1) + '%'
     this.setData({
       deltaText,

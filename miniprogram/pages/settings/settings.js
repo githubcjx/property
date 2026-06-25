@@ -1,5 +1,6 @@
 const app = getApp()
 const { getTheme } = require('../../utils/theme.js')
+const { getCurrency } = require('../../utils/currency.js')
 const { APP_VERSION } = require('../../utils/version.js')
 
 Page({
@@ -9,6 +10,8 @@ Page({
     reduceMotion: false,
     theme: 'aurora',
     themeName: '',
+    baseCurrencyText: '',
+    fxDate: '',
   },
 
   onLoad() {
@@ -19,6 +22,7 @@ Page({
       theme: app.globalData.theme,
       themeName: getTheme(app.globalData.theme).name,
     })
+    this.syncCurrency()
   },
 
   onShow() {
@@ -27,6 +31,25 @@ Page({
       theme: app.globalData.theme,
       themeName: getTheme(app.globalData.theme).name,
     })
+    this.syncCurrency()
+  },
+
+  syncCurrency() {
+    const code = app.globalData.baseCurrency || 'CNY'
+    const c = getCurrency(code)
+    const meta = app.globalData.fxRatesMeta
+    this.setData({
+      baseCurrencyText: code + ' ' + c.symbol,
+      fxDate: (meta && meta.date) ? ('截至 ' + meta.date) : '每日自动更新',
+    })
+  },
+
+  onBaseCurrency() {
+    wx.navigateTo({ url: '/pages/base-currency/base-currency' })
+  },
+
+  onRates() {
+    wx.navigateTo({ url: '/pages/rates/rates' })
   },
 
   onTheme() {

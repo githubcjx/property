@@ -1,0 +1,37 @@
+<view class="canvas-bg theme-{{theme}}" wx:if="{{!reduceMotion}}"></view>
+
+<view class="page {{reduceMotion ? 'no-motion' : ''}} theme-{{theme}}">
+  <view class="navbar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onBack">
+      <view class="ic ic-xs ic-back"></view>
+    </view>
+    <text class="nav-title">汇率</text>
+    <view class="nav-spacer"></view>
+  </view>
+
+  <view class="rt-hint entry-up">
+    汇率由系统每天早上 8:00 统一自动更新一次，全员共用同一份数据，以节省接口请求、保证口径一致。只读、不可手填、无需手动刷新。下表为「1 外币 = X 人民币」。
+  </view>
+
+  <view class="rt-list entry-up">
+    <view class="rt-row" wx:for="{{rows}}" wx:key="code">
+      <view class="rt-sym">{{item.symbol}}</view>
+      <view class="rt-info">
+        <text class="rt-code">{{item.code}} {{item.name}}</text>
+      </view>
+      <view class="rt-rate">
+        <text class="rt-val num">{{item.rateText}}</text>
+        <text class="rt-unit">1 {{item.code}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="rt-foot entry-up" wx:if="{{hasRates}}">
+    <view class="rt-dot"></view>
+    <text>汇率截至 {{date}} 08:00 · 来源 {{source}}</text>
+  </view>
+  <view class="rt-foot entry-up" wx:else>
+    <text>汇率暂不可用，请稍后再试（联网后每日自动同步）</text>
+  </view>
+  <view class="rt-foot rt-next" wx:if="{{hasRates}}">下次自动更新：次日 08:00</view>
+</view>

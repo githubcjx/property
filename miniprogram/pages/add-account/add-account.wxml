@@ -101,11 +101,27 @@
         <text class="field-hint">建议中性名 · 别写真实银行 / 卡号</text>
       </view>
 
+      <!-- currency: 新建可选；编辑只读（币种创建后不可改） -->
+      <view class="field entry-up d1">
+        <text class="field-label">CURRENCY · 货币</text>
+        <picker wx:if="{{!editId}}" mode="selector" range="{{currencyOptions}}" value="{{currencyIndex}}" bindchange="onCurrencyChange">
+          <view class="field-input-wrap glass" style="display:flex;align-items:center;">
+            <text class="field-input">{{currencyOptions[currencyIndex]}}</text>
+            <text class="field-prefix" style="margin-left:auto;opacity:0.5;">▾</text>
+          </view>
+        </picker>
+        <view wx:else class="field-input-wrap glass" style="display:flex;align-items:center;opacity:0.7;">
+          <text class="field-input">{{form.currency}}</text>
+        </view>
+        <text class="field-hint" wx:if="{{!editId}}">外币账户余额以原币种记录，汇总时按汇率折算为人民币</text>
+        <text class="field-hint" wx:else>货币创建后不可修改</text>
+      </view>
+
       <!-- balance -->
       <view class="field entry-up d2" wx:if="{{!editId}}">
-        <text class="field-label">INITIAL BALANCE · 初始余额（元）</text>
+        <text class="field-label">INITIAL BALANCE · 初始余额</text>
         <view class="field-input-wrap glass field-input-mono">
-          <text class="field-prefix">¥</text>
+          <text class="field-prefix">{{currencySymbol}}</text>
           <input class="field-input mono"
                  type="digit"
                  placeholder="0.00"

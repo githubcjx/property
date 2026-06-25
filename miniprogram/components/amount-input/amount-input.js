@@ -1,4 +1,5 @@
-const { formatYuan, yuanToFen } = require('../../utils/format.js')
+const { unitToFen } = require('../../utils/format.js')
+const { digitsOf } = require('../../utils/currency.js')
 
 // 半屏金额输入面板。两种模式：
 //   mode='set'   修改余额：输入新的目标余额
@@ -17,6 +18,9 @@ Component({
     categoryClass: { type: String, value: 'liquid' },
     categoryRgb: { type: String, value: '167, 211, 255' },
     currentBalanceFen: { type: Number, value: 0 },
+    currentBalanceText: { type: String, value: '' },
+    currency: { type: String, value: 'CNY' },
+    currencySymbol: { type: String, value: '¥' },
     reduceMotion: { type: Boolean, value: false },
   },
   data: {
@@ -54,6 +58,7 @@ Component({
       if (k === 'back') {
         raw = raw.slice(0, -1)
       } else if (k === '.') {
+        if (digitsOf(this.data.currency) === 0) return   // 无小数位币种（如 JPY）不允许小数点
         if (raw.includes('.')) return
         if (raw === '') raw = '0.'
         else raw = raw + '.'
@@ -61,7 +66,8 @@ Component({
         if (raw === '0') {
           raw = k
         } else {
-          if (raw.includes('.') && raw.split('.')[1].length >= 2) return
+          const maxDec = digitsOf(this.data.currency)
+          if (raw.includes('.') && raw.split('.')[1].length >= maxDec) return
           if (raw.replace('.', '').length >= 12) return
           raw = raw + k
         }
@@ -99,7 +105,7 @@ Component({
         wx.showToast({ icon: 'none', title: '金额格式错误' })
         return
       }
-      const fen = yuanToFen(num) * sign
+      const fen = unitToFen(num, this.data.currency) * sign
       if (mode === 'delta' && fen === 0) {
         wx.showToast({ icon: 'none', title: '变动金额不能为 0' })
         return

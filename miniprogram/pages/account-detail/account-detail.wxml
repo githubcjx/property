@@ -37,17 +37,18 @@
 
       <view class="hero-amount cat-{{colorClass}} entry-up d1">
         <block wx:if="{{hideAmount}}">
-          <text class="amt-prefix">¥</text>
+          <text class="amt-prefix">{{balSymbol}}</text>
           <text class="amt-int">••••••</text>
         </block>
         <block wx:else>
           <text class="amt-sign" wx:if="{{isDebt}}">−</text>
           <text class="amt-sign" wx:if="{{!isDebt && balSign}}">{{balSign}}</text>
-          <text class="amt-prefix">¥</text>
+          <text class="amt-prefix">{{balSymbol}}</text>
           <text class="amt-int">{{balInt}}</text>
-          <text class="amt-frac">.{{balFrac}}</text>
+          <text class="amt-frac" wx:if="{{balHasFrac}}">.{{balFrac}}</text>
         </block>
       </view>
+      <text class="hero-approx entry-up d2" wx:if="{{approxText && !hideAmount}}">{{approxText}}</text>
       <text class="hero-updated entry-up d2">current balance · {{updatedText}}</text>
     </view>
 
@@ -137,6 +138,9 @@
   category-class="{{colorClass}}"
   category-rgb="{{burstColor}}"
   current-balance-fen="{{balanceRaw}}"
+  current-balance-text="{{currentBalanceText}}"
+  currency="{{account.currency || 'CNY'}}"
+  currency-symbol="{{balSymbol}}"
   reduce-motion="{{reduceMotion}}"
   bindcancel="onInputCancel"
   bindconfirm="onInputConfirm"

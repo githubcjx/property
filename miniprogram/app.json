@@ -7,6 +7,8 @@
     "pages/about/about",
     "pages/settings/settings",
     "pages/theme/theme",
+    "pages/base-currency/base-currency",
+    "pages/rates/rates",
     "pages/changelog/changelog",
     "pages/health/health",
     "pages/report/report",

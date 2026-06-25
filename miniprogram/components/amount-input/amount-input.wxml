@@ -24,14 +24,14 @@
       </view>
       <view class="ai-acc-meta">
         <text class="ai-acc-name">{{accountName}}</text>
-        <text class="ai-acc-bal">当前余额 <text class="num">{{dp.fenToCNY(currentBalanceFen)}}</text></text>
+        <text class="ai-acc-bal">当前余额 <text class="num">{{currentBalanceText || dp.fenToCNY(currentBalanceFen)}}</text></text>
       </view>
     </view>
 
     <!-- big amount -->
     <view class="ai-amount" style="color: var(--{{categoryClass === 'liquid' ? 'ice-blue' : categoryClass}}); text-shadow: 0 0 48rpx rgba({{categoryRgb}}, 0.5);">
       <text class="ai-amount-sign" wx:if="{{mode === 'delta'}}">{{sign === 1 ? '+' : '−'}}</text>
-      <text class="ai-amount-cny">¥</text>
+      <text class="ai-amount-cny">{{currencySymbol}}</text>
       <text class="ai-amount-num">{{raw || '0'}}</text>
       <text class="ai-amount-caret" style="background: var(--{{categoryClass === 'liquid' ? 'ice-blue' : categoryClass}}); box-shadow: 0 0 12rpx rgba({{categoryRgb}}, 0.7);"></text>
     </view>

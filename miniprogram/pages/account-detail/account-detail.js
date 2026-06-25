@@ -1,21 +1,25 @@
 const app = getApp()
 const accountSvc = require('../../services/account.js')
 const txSvc = require('../../services/transaction.js')
-const { formatYuan, formatDelta } = require('../../utils/format.js')
+const { formatYuan, formatDelta, formatMoney } = require('../../utils/format.js')
 const { formatDateTime } = require('../../utils/date.js')
 const { getCategory, isIconKey } = require('../../utils/categories.js')
+const { symbolOf, digitsOf } = require('../../utils/currency.js')
+const { valueCnyFen, cnyToBaseFen, baseCurrency } = require('../../utils/networth.js')
 
 const SWIPE_THRESHOLD = 30
 
-function splitAmount(fen) {
-  const yuan = Math.round(fen) / 100
-  const abs = Math.abs(yuan)
-  const [int, frac = '00'] = abs.toFixed(2).split('.')
+function splitAmount(fen, ccy) {
+  const digits = digitsOf(ccy || 'CNY')
+  const unit = Math.round(fen) / Math.pow(10, digits)
+  const abs = Math.abs(unit)
+  const [int, frac = ''] = abs.toFixed(digits).split('.')
   const withCommas = int.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
   return {
-    sign: yuan < 0 ? '-' : '',
+    sign: unit < 0 ? '-' : '',
     int: withCommas,
     frac,
+    hasFrac: digits > 0,
   }
 }
 
@@ -37,6 +41,9 @@ Page({
     balSign: '',
     balInt: '0',
     balFrac: '00',
+    balHasFrac: true,
+    balSymbol: '¥',
+    approxText: '',
     balanceRaw: 0,
     updatedText: '',
     noteText: '',
@@ -108,7 +115,13 @@ Page({
     const icon = acc.icon || ''
     const useKey = isIconKey(icon)
     wx.setNavigationBarTitle({ title: acc.name })
-    const parts = splitAmount(acc.balance || 0)
+    const ccy = acc.currency || 'CNY'
+    const parts = splitAmount(acc.balance || 0, ccy)
+    // 外币账户：副显折算到本位币的近似值（≈），原币种为主
+    const base = baseCurrency()
+    const approxText = (ccy !== base)
+      ? '≈ ' + formatMoney(cnyToBaseFen(valueCnyFen(acc)), base, { symbol: true }) + '（' + base + '）'
+      : ''
     this.setData({
       account: acc,
       accountName: acc.name,
@@ -120,9 +133,13 @@ Page({
       categoryTag: cat ? cat.colorClass : '',
       isDebt: cat && cat.id === 'debt',
       balanceRaw: acc.balance || 0,
+      currentBalanceText: formatMoney(acc.balance || 0, ccy, { symbol: true }),
+      balSymbol: symbolOf(ccy),
       balSign: parts.sign,
       balInt: parts.int,
       balFrac: parts.frac,
+      balHasFrac: parts.hasFrac,
+      approxText,
       updatedText: acc.updatedAt ? formatDateTime(acc.updatedAt) + ' 更新' : '刚刚更新',
       noteText: acc.note || '',
       burstColor: cat ? this._rgbForCat(cat.colorClass) : '167, 211, 255',

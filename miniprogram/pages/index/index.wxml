@@ -22,11 +22,11 @@
 
     <view class="hero-amount entry-up d1">
       <block wx:if="{{hideAmount}}">
-        <text class="amt-prefix">¥</text>
+        <text class="amt-prefix">{{baseSymbol}}</text>
         <text class="amt-int">••••••</text>
       </block>
       <block wx:else>
-        <text class="amt-prefix">¥</text>
+        <text class="amt-prefix">{{baseSymbol}}</text>
         <text class="amt-sign" wx:if="{{netSign}}">{{netSign}}</text>
         <text class="amt-int">{{netInt}}</text>
         <text class="amt-frac">.{{netFrac}}</text>
@@ -105,7 +105,7 @@
               </view>
             </view>
             <view class="cat-amount cat-{{item.colorClass}}">
-              <text class="num">{{hideAmount ? '¥ ••••' : item.totalText}}</text>
+              <text class="num">{{hideAmount ? baseSymbol + ' ••••' : item.totalText}}</text>
             </view>
             <view class="chev {{expandedMap[item.categoryId] ? 'chev-open' : ''}}">
               <view class="ic ic-xs ic-chevron-right"></view>
@@ -132,7 +132,7 @@
                   <text wx:if="{{!acc.includeInChart}}" class="acc-badge">未计入</text>
                 </view>
               </view>
-              <text class="acc-amount cat-{{item.colorClass}} num">{{hideAmount ? '¥ ••••' : acc.balanceText}}</text>
+              <text class="acc-amount cat-{{item.colorClass}} num">{{hideAmount ? (acc.symbol || '¥') + ' ••••' : acc.balanceText}}</text>
             </view>
           </view>
         </view>
