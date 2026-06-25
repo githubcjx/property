@@ -35,7 +35,7 @@
       <view class="row-icon"><view class="ic ic-sm ic-exchange"></view></view>
       <view class="row-main">
         <text class="row-title">汇率</text>
-        <text class="row-sub">每天早上 8:00 自动更新 · 只读</text>
+        <text class="row-sub">每天早上 9:00 自动更新 · 只读</text>
       </view>
       <text class="row-trailing">{{fxDate}}</text>
       <view class="row-arrow"><view class="ic ic-xs ic-chevron-right"></view></view>

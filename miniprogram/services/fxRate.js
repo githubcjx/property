@@ -1,6 +1,6 @@
 // 汇率读取（客户端）：读 fxRates 集合最新一条，注入 getApp().globalData，并本地缓存。
 //
-// 汇率由云函数 fxRateSync 每天 08:00 统一写入，客户端只读、不可手填。
+// 汇率由云函数 fxRateSync 每天 09:00 统一写入，客户端只读、不可手填。
 // 这里把「1 外币 = X 人民币」的 rates 表放进 globalData.fxRates，
 // 供 utils/networth.js / utils/currency.js 在折算时取用；失败时回退本地缓存，保证离线/弱网可用。
 

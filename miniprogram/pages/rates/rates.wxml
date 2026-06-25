@@ -10,7 +10,7 @@
   </view>
 
   <view class="rt-hint entry-up">
-    汇率由系统每天早上 8:00 统一自动更新一次，全员共用同一份数据，以节省接口请求、保证口径一致。只读、不可手填、无需手动刷新。下表为「1 外币 = X 人民币」。
+    汇率由系统每天早上 9:00 统一自动更新一次，全员共用同一份数据，以节省接口请求、保证口径一致。只读、不可手填、无需手动刷新。下表为「1 外币 = X 人民币」。
   </view>
 
   <view class="rt-list entry-up">
@@ -28,10 +28,10 @@
 
   <view class="rt-foot entry-up" wx:if="{{hasRates}}">
     <view class="rt-dot"></view>
-    <text>汇率截至 {{date}} 08:00 · 来源 {{source}}</text>
+    <text>汇率截至 {{date}} 09:00 · 来源 {{source}}</text>
   </view>
   <view class="rt-foot entry-up" wx:else>
     <text>汇率暂不可用，请稍后再试（联网后每日自动同步）</text>
   </view>
-  <view class="rt-foot rt-next" wx:if="{{hasRates}}">下次自动更新：次日 08:00</view>
+  <view class="rt-foot rt-next" wx:if="{{hasRates}}">下次自动更新：次日 09:00</view>
 </view>

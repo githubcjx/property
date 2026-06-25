@@ -4,9 +4,9 @@
   },
   "triggers": [
     {
-      "name": "daily-0800-bj",
+      "name": "daily-0900-bj",
       "type": "timer",
-      "config": "0 0 0 * * * *"
+      "config": "0 0 1 * * * *"
     }
   ]
 }
