@@ -120,15 +120,27 @@ Component({
         filePath: p,
         success: () => wx.showToast({ icon: 'success', title: '海报已存相册' }),
         fail: (err) => {
-          if (/auth deny|authorize|permission/i.test(err.errMsg || '')) {
+          const msg = err && err.errMsg || ''
+          if (/auth deny|authorize|permission/i.test(msg)) {
+            // 用户拒绝过相册权限 → 引导去设置开启
             wx.showModal({
               title: '需要相册权限',
               content: '保存海报需要授权访问相册，请在设置中开启。',
               confirmText: '去设置',
               success: (r) => { if (r.confirm) wx.openSetting() },
             })
+          } else if (/privacy|隐私/i.test(msg)) {
+            // 隐私保护指引未声明「相册(写入)」→ 正式版被拦截（体验版可能放行）
+            // 需在「微信公众平台 → 设置 → 服务内容声明 → 用户隐私保护指引」补充并重新发布
+            wx.showModal({
+              title: '保存失败',
+              content: '当前版本暂未开通相册保存权限，请稍后再试或长按图片保存。',
+              showCancel: false,
+            })
           } else {
-            wx.showToast({ icon: 'none', title: '保存失败' })
+            // 兜底：暴露真实 errMsg，便于线上定位（用户主动取消 cancel 也走这里，可静默）
+            if (/cancel/i.test(msg)) return
+            wx.showToast({ icon: 'none', title: '保存失败：' + msg })
           }
         },
       })

@@ -27,7 +27,15 @@
 
     <!-- Hero · 本月净值变化 -->
     <view class="hero glass entry-up">
-      <text class="hero-period">{{periodLabel}}</text>
+      <view class="month-nav">
+        <view class="month-arrow tap" hover-class="month-arrow-hover" catchtap="onPrevMonth">
+          <view class="ic ic-xs ic-back"></view>
+        </view>
+        <text class="hero-period-text">{{periodLabel}}</text>
+        <view class="month-arrow tap {{canNext ? '' : 'is-disabled'}}" hover-class="month-arrow-hover" catchtap="onNextMonth">
+          <view class="ic ic-xs ic-chevron-right"></view>
+        </view>
+      </view>
       <text class="hero-lab">当月净资产变化</text>
 
       <block wx:if="{{coverage !== 'insufficient'}}">
