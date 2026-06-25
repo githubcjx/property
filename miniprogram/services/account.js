@@ -1,5 +1,6 @@
 const cloud = require('./cloud.js')
 const { getCategory, getSubType } = require('../utils/categories.js')
+const { cnySnapshot } = require('../utils/networth.js')
 
 // 拉取当前用户所有未隐藏的账户（按创建时间升序）
 // 分页拉全量：小程序端单次 get 最多 20 条，账户超过 20 个时不能用 limit(200) 一次拉。
@@ -45,17 +46,17 @@ async function addAccount({ categoryId, subType, customName, name, balance, incl
   }
   const res = await cloud.accounts().add({ data: doc })
 
-  // 如果初始余额非 0，写入一条「初始余额」变动记录
+  // 如果初始余额非 0，写入一条「初始余额」变动记录（附人民币快照）
   if (initBalance !== 0) {
     await cloud.transactions().add({
-      data: {
+      data: Object.assign({
         accountId: res._id,
         type: 'set',
         amount: initBalance,
         balanceAfter: initBalance,
         note: '初始余额',
         createdAt: now,
-      },
+      }, cnySnapshot(initBalance, doc.currency)),
     })
   }
   return res._id
@@ -85,14 +86,14 @@ async function setBalance(accountId, newBalance, note, date) {
     data: { balance: target, updatedAt: createdAt },
   })
   await cloud.transactions().add({
-    data: {
+    data: Object.assign({
       accountId,
       type: 'set',
       amount: delta,
       balanceAfter: target,
       note: (note && note.trim()) || '修改余额',
       createdAt,
-    },
+    }, cnySnapshot(target, acc.currency)),
   })
   return { delta, balanceAfter: target }
 }
@@ -109,14 +110,14 @@ async function deltaBalance(accountId, deltaFen, note, date) {
     data: { balance: target, updatedAt: createdAt },
   })
   await cloud.transactions().add({
-    data: {
+    data: Object.assign({
       accountId,
       type: 'delta',
       amount: delta,
       balanceAfter: target,
       note: (note && note.trim()) || '增减金额',
       createdAt,
-    },
+    }, cnySnapshot(target, acc.currency)),
   })
   return { delta, balanceAfter: target }
 }

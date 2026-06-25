@@ -16,6 +16,11 @@ function transactions() {
   return db().collection('transactions')
 }
 
+// 汇率集合（公共数据，所有用户可读；仅云函数 fxRateSync 写）
+function fxRates() {
+  return db().collection('fxRates')
+}
+
 // 服务端时间（写入字段使用）
 function serverDate(offset) {
   return db().serverDate(offset ? { offset } : undefined)
@@ -100,6 +105,7 @@ module.exports = {
   command,
   accounts,
   transactions,
+  fxRates,
   serverDate,
   getAll,
   latestBalanceMapBefore,

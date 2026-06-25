@@ -10,7 +10,7 @@
 // 未就绪时为 null，此时全员人民币 → 折算恒等，行为与改造前完全一致）。
 
 const { isDebtCategory } = require('./categories.js')
-const { toCny } = require('./currency.js')
+const { toCny, rateToCny } = require('./currency.js')
 
 function currentRates() {
   try {
@@ -49,10 +49,22 @@ function sumNetCnyFen(accounts) {
   return net
 }
 
+// 写入交易时冻结的人民币快照字段：把当时的原币种 balanceAfter 按当时汇率折成人民币存一份。
+// 历史净值重建用它（不随汇率漂移）。CNY 账户 fxRate=1；外币缺汇率时 fxRate=null 表示近似。
+function cnySnapshot(balanceAfterFen, ccy) {
+  const c = ccy || 'CNY'
+  const rates = currentRates()
+  return {
+    balanceAfterCnyFen: toCny(balanceAfterFen || 0, c, rates),
+    fxRate: rateToCny(c, rates),
+  }
+}
+
 module.exports = {
   currentRates,
   isIncluded,
   valueCnyFen,
   netCnyFen,
   sumNetCnyFen,
+  cnySnapshot,
 }

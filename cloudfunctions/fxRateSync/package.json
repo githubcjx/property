@@ -1,0 +1,9 @@
+{
+  "name": "fxRateSync",
+  "version": "1.0.0",
+  "description": "Daily foreign-exchange rate sync into fxRates collection",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

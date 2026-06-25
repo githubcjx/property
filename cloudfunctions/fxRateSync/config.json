@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "openapi": []
+  },
+  "triggers": [
+    {
+      "name": "daily-0800-bj",
+      "type": "timer",
+      "config": "0 0 0 * * * *"
+    }
+  ]
+}

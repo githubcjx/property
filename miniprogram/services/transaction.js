@@ -1,4 +1,5 @@
 const cloud = require('./cloud.js')
+const { cnySnapshot } = require('../utils/networth.js')
 
 async function listByAccount(accountId, limit) {
   const res = await cloud.transactions()
@@ -58,6 +59,8 @@ async function updateTransaction(txId, { amount, note, createdAt } = {}) {
       await cloud.accounts().doc(tx.accountId).update({
         data: { balance: newAccBal, updatedAt: cloud.serverDate() },
       })
+      // 同步刷新该笔的人民币快照（按账户币种 + 当前汇率重算）
+      Object.assign(update, cnySnapshot(update.balanceAfter, accRes.data.currency))
     }
   }
 

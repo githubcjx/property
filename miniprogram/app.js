@@ -2,6 +2,8 @@
 const CLOUD_ENV_ID = 'cloud1-d9g5kur3sa2da3193'
 
 const { DEFAULT_THEME } = require('./utils/theme.js')
+const { DEFAULT_BASE } = require('./utils/currency.js')
+const fxRateSvc = require('./services/fxRate.js')
 
 App({
   globalData: {
@@ -9,6 +11,10 @@ App({
     cloudReady: false,
     reduceMotion: wx.getStorageSync('pref_reduce_motion') === true,
     theme: wx.getStorageSync('pref_theme') || DEFAULT_THEME,
+    // 多货币：本位币（显示镜头，默认人民币）+ 汇率表（由 fxRate.refresh 填充）
+    baseCurrency: wx.getStorageSync('pref_base_ccy') || DEFAULT_BASE,
+    fxRates: null,
+    fxRatesMeta: null,
   },
 
   onLaunch() {
@@ -30,6 +36,8 @@ App({
       traceUser: true,
     })
     this.globalData.cloudReady = true
+    // 异步加载汇率（失败回退本地缓存）；不阻塞启动
+    fxRateSvc.refresh()
   },
 
   toggleHideAmount() {
@@ -49,5 +57,13 @@ App({
     this.globalData.theme = key
     wx.setStorageSync('pref_theme', key)
     return key
+  },
+
+  // 设置本位币（显示镜头）。只改显示口径，不改任何已存数据、不重算历史。
+  setBaseCurrency(code) {
+    const next = code || 'CNY'
+    this.globalData.baseCurrency = next
+    wx.setStorageSync('pref_base_ccy', next)
+    return next
   },
 })
