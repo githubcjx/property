@@ -125,6 +125,8 @@ Page({
         totalDeltaPctText: (r.totalDeltaPct >= 0 ? '+' : '') + r.totalDeltaPct.toFixed(1) + '%',
         gainText: sign(r.gainSum),
         lossText: sign(r.lossSum),
+        fxText: sign(r.fxFen),
+        hasFx: !!r.fxFen,
         contributors,
         hasMovement: r.hasMovement,
       },

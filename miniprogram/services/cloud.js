@@ -49,14 +49,15 @@ async function latestBalanceMapBefore(sinceDate, accountIds) {
   for (let i = 0; i < MAX_PAGES && needCount > 0; i++) {
     const res = await transactions()
       .where({ createdAt: cmd.lte(sinceDate) })
-      .field({ accountId: true, balanceAfter: true, createdAt: true })
+      .field({ accountId: true, balanceAfter: true, balanceAfterCnyFen: true, createdAt: true })
       .orderBy('createdAt', 'desc')
       .skip(skip).limit(PAGE).get()
     const data = (res && res.data) || []
     for (let j = 0; j < data.length; j++) {
       const t = data[j]
       if (need[t.accountId] && !(t.accountId in map)) {
-        map[t.accountId] = t.balanceAfter || 0
+        // 返回人民币快照（历史口径统一为人民币）；老数据回退 balanceAfter
+        map[t.accountId] = (t.balanceAfterCnyFen != null ? t.balanceAfterCnyFen : t.balanceAfter) || 0
         delete need[t.accountId]
         needCount--
         if (needCount === 0) break
@@ -75,7 +76,7 @@ async function latestBalanceMapBefore(sinceDate, accountIds) {
           .where({ accountId: id, createdAt: cmd.lte(sinceDate) })
           .orderBy('createdAt', 'desc').limit(1).get()
         const t = (res.data || [])[0]
-        if (t) map[id] = t.balanceAfter || 0
+        if (t) map[id] = (t.balanceAfterCnyFen != null ? t.balanceAfterCnyFen : t.balanceAfter) || 0
       } catch (e) {}
     }))
   }

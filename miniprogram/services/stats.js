@@ -1,7 +1,7 @@
 // 统计：过去 30 天净资产同比变化
 const cloud = require('./cloud.js')
 const { isDebtCategory } = require('../utils/categories.js')
-const { netCnyFen, isIncluded } = require('../utils/networth.js')
+const { netCnyFen, isIncluded, snapshotCnyFen } = require('../utils/networth.js')
 
 // 计算最近 N 天的净资产 delta + 百分比
 // 采用 snapshot 语义（同趋势页）：baseline = ∑ 每账户在 T-N 之前最后一条 tx 的 balanceAfter；
@@ -42,7 +42,7 @@ async function getNetWorthDelta(days, accounts) {
           .limit(1)
           .get()
         const t = (res.data || [])[0]
-        if (t) snapshotByAcc[a._id] = t.balanceAfter || 0
+        if (t) snapshotByAcc[a._id] = snapshotCnyFen(t)
       } catch (err) {
         console.warn('[stats] fetch snapshot error', a._id, err)
       }

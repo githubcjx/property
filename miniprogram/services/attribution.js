@@ -11,7 +11,8 @@
 
 const cloud = require('./cloud.js')
 const { isDebtCategory } = require('../utils/categories.js')
-const { valueCnyFen } = require('../utils/networth.js')
+const { valueCnyFen, snapshotCnyFen, currentRates } = require('../utils/networth.js')
+const { rateToCny } = require('../utils/currency.js')
 
 // 与 stats.js / milestones.js 一致的日期解析
 function toMs(d) {
@@ -64,19 +65,24 @@ async function evaluate(accounts, periodKey) {
         .limit(1)
         .get()
       const t = (res.data || [])[0]
-      if (t) startByAcc[a._id] = t.balanceAfter || 0
+      // 期初快照保留：人民币值(cny) + 当时汇率(rate) + 原币种余额(native)，
+      // 用于把"纯汇率波动"从"资金流"里拆出来。
+      if (t) startByAcc[a._id] = { cny: snapshotCnyFen(t), rate: t.fxRate, native: t.balanceAfter || 0 }
     } catch (err) {
       console.warn('[attribution] fetch start snapshot error', a._id, err)
     }
   }))
 
+  const rates = currentRates()
   let baseline = 0 // 期初净资产
   let current = 0 // 期末（当前）净资产
+  let fxFen = 0   // 期间纯汇率波动对净值的有向贡献（人民币）
   const contributors = []
   for (const a of included) {
     const isDebt = isDebtCategory(a.categoryId)
-    const hasStart = startByAcc[a._id] != null
-    const startBal = hasStart ? startByAcc[a._id] : 0
+    const start = startByAcc[a._id]
+    const hasStart = start != null
+    const startBal = hasStart ? start.cny : 0
     const endBal = valueCnyFen(a)   // 当前余额，原币种折算到人民币
     const isNew = !hasStart && toMs(a.createdAt) > startMs
 
@@ -86,7 +92,17 @@ async function evaluate(accounts, periodKey) {
     current += endContrib
 
     const contribution = endContrib - startContrib
-    if (contribution === 0) continue
+    // 汇兑损益：期初持仓因汇率变动产生的人民币估值变化 = 原币种期初余额 ×(现汇率 − 期初汇率)。
+    // 只对外币、且两端汇率都已知时计算；这部分是"估值变动"，不是你存取的资金流。
+    let fxComp = 0
+    const ccy = a.currency || 'CNY'
+    const rateNow = rateToCny(ccy, rates)
+    if (hasStart && ccy !== 'CNY' && rateNow != null && start.rate != null) {
+      const raw = start.native * (rateNow - start.rate)
+      fxComp = (isDebt ? -raw : raw)
+      fxFen += fxComp
+    }
+    if (contribution === 0 && fxComp === 0) continue
     contributors.push({
       accountId: a._id,
       name: a.name,
@@ -98,6 +114,8 @@ async function evaluate(accounts, periodKey) {
       endFen: endBal,
       balanceDelta: endBal - startBal,
       contribution, // 对净资产的有向贡献（负债下降为正贡献）
+      fxFen: Math.round(fxComp),       // 其中汇率影响
+      flowFen: Math.round(contribution - fxComp), // 其中资金流（存取/涨跌）
       isNew,
     })
   }
@@ -132,6 +150,7 @@ async function evaluate(accounts, periodKey) {
     contributors,
     gainSum,
     lossSum,
+    fxFen: Math.round(fxFen),   // 期间纯汇率影响（人民币，有向）；无外币时为 0
     hasMovement: contributors.length > 0,
   }
 }

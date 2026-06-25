@@ -76,6 +76,15 @@ function cnySnapshot(balanceAfterFen, ccy) {
   }
 }
 
+// 读取一条交易的「人民币快照值」用于历史重建：
+//   优先用写入时冻结的 balanceAfterCnyFen；老数据/人民币账户没有该字段时回退 balanceAfter
+//   （人民币账户 balanceAfter 本身即人民币，等值）。
+function snapshotCnyFen(tx) {
+  if (!tx) return 0
+  if (tx.balanceAfterCnyFen != null) return tx.balanceAfterCnyFen
+  return tx.balanceAfter || 0
+}
+
 module.exports = {
   currentRates,
   isIncluded,
@@ -85,4 +94,5 @@ module.exports = {
   cnySnapshot,
   baseCurrency,
   cnyToBaseFen,
+  snapshotCnyFen,
 }

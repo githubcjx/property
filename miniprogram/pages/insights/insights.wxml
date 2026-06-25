@@ -125,6 +125,9 @@
               <view class="split-item"><text class="split-k">增加</text><text class="split-v pos num">{{change.gainText}}</text></view>
               <view class="split-item"><text class="split-k">减少</text><text class="split-v neg num">{{change.lossText}}</text></view>
             </view>
+            <view class="ch-split" wx:if="{{change.hasFx}}">
+              <view class="split-item"><text class="split-k">其中汇率影响</text><text class="split-v num">{{change.fxText}}</text></view>
+            </view>
           </view>
 
           <!-- 归因明细 -->

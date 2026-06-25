@@ -12,7 +12,7 @@
 const cloud = require('./cloud.js')
 const healthSvc = require('./health.js')
 const { isDebtCategory } = require('../utils/categories.js')
-const { valueCnyFen } = require('../utils/networth.js')
+const { valueCnyFen, snapshotCnyFen } = require('../utils/networth.js')
 
 // ===================== 可调阈值 =====================
 const TH = {
@@ -121,7 +121,7 @@ async function snapshotBalances(accounts, dateMs) {
         .where({ accountId: a._id, createdAt: cmd.lte(since) })
         .orderBy('createdAt', 'desc').limit(1).get()
       const t = (res.data || [])[0]
-      if (t) { balances[a._id] = t.balanceAfter || 0; anySnapshot = true }
+      if (t) { balances[a._id] = snapshotCnyFen(t); anySnapshot = true }
       else balances[a._id] = 0
     } catch (e) { balances[a._id] = 0 }
   }))
@@ -167,12 +167,13 @@ async function fetchTransactionsInRange(startMs, endMs) {
     try {
       res = await cloud.transactions()
         .where(where)
-        .field({ accountId: true, balanceAfter: true, createdAt: true })
+        .field({ accountId: true, balanceAfter: true, balanceAfterCnyFen: true, createdAt: true })
         .orderBy('createdAt', 'asc')
         .skip(skip).limit(PAGE).get()
     } catch (e) { break }
     const data = res.data || []
-    for (const t of data) out.push({ accountId: t.accountId, balanceAfter: t.balanceAfter || 0, ms: toMs(t.createdAt) })
+    // 历史口径统一为人民币：balanceAfter 存人民币快照（老数据回退）
+    for (const t of data) out.push({ accountId: t.accountId, balanceAfter: snapshotCnyFen(t), ms: toMs(t.createdAt) })
     if (data.length < PAGE) break
     skip += PAGE
   }
@@ -239,7 +240,7 @@ async function buildMonthlyReport(accounts, monthDate) {
 
   const included = (accounts || []).filter(a => a.includeInChart !== false)
   // 余额 map 统一以人民币为口径：当前值按原币种折算到人民币；
-  // 历史快照(baseBal/endBal)取自 balanceAfter（P1 全人民币即等值，外币历史折算见 P3）。
+  // 历史快照(baseBal/endBal)用冻结的人民币快照 balanceAfterCnyFen（老数据回退 balanceAfter）。
   const liveBal = {}
   included.forEach(a => { liveBal[a._id] = valueCnyFen(a) })
   const incSet = {}

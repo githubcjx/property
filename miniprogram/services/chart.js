@@ -1,5 +1,6 @@
 const cloud = require('./cloud.js')
 const { CATEGORIES } = require('../utils/categories.js')
+const { snapshotCnyFen, valueCnyFen } = require('../utils/networth.js')
 
 // ============== 时间节点策略 ==============
 
@@ -131,7 +132,7 @@ function snapshotForAccount(txList, nodeTime) {
   for (const t of txList) {
     const ct = toMs(t.createdAt)
     if (isNaN(ct)) continue            // 日期解析失败的 tx 直接跳过，不再误判
-    if (ct <= nodeTime) last = t.balanceAfter || 0
+    if (ct <= nodeTime) last = snapshotCnyFen(t)   // 历史口径统一为人民币
     else break
   }
   return last   // null 表示该节点之前没有任何快照
@@ -180,7 +181,7 @@ async function getChartSeries(rangeKey, opts) {
       // 关键防御 1：当前节点直接取账户余额，保证图表最右点和首页一致
       // 这能修复"已添加但 tx 缺失/解析失败"的账户在最近月份显示为 0 的问题
       if (isCurrent) {
-        bal = a.balance || 0
+        bal = valueCnyFen(a)   // 当前节点取账户余额并折算到人民币，与历史口径一致
       } else if (bal === null) {
         bal = 0
       }

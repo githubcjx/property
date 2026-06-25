@@ -16,7 +16,7 @@
 
 const cloud = require('./cloud.js')
 const { isDebtCategory } = require('../utils/categories.js')
-const { netCnyFen, isIncluded } = require('../utils/networth.js')
+const { netCnyFen, isIncluded, snapshotCnyFen } = require('../utils/networth.js')
 
 // 7 档（单位：分；1 元 = 100 分）
 const MILESTONES_FEN = [
@@ -61,7 +61,8 @@ function buildNetWorthTimeline(accounts, allTxs) {
     const ms = toMs(t.createdAt)
     if (isNaN(ms)) continue
     if (!txByAcc[t.accountId]) txByAcc[t.accountId] = []
-    txByAcc[t.accountId].push({ ms, balanceAfter: t.balanceAfter || 0 })
+    // 历史口径统一为人民币：用冻结的人民币快照（老数据回退 balanceAfter）
+    txByAcc[t.accountId].push({ ms, balanceAfter: snapshotCnyFen(t) })
     allTimes.push(ms)
   }
   for (const k in txByAcc) txByAcc[k].sort((a, b) => a.ms - b.ms)
