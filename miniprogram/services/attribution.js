@@ -11,6 +11,7 @@
 
 const cloud = require('./cloud.js')
 const { isDebtCategory } = require('../utils/categories.js')
+const { valueCnyFen } = require('../utils/networth.js')
 
 // 与 stats.js / milestones.js 一致的日期解析
 function toMs(d) {
@@ -76,7 +77,7 @@ async function evaluate(accounts, periodKey) {
     const isDebt = isDebtCategory(a.categoryId)
     const hasStart = startByAcc[a._id] != null
     const startBal = hasStart ? startByAcc[a._id] : 0
-    const endBal = a.balance || 0
+    const endBal = valueCnyFen(a)   // 当前余额，原币种折算到人民币
     const isNew = !hasStart && toMs(a.createdAt) > startMs
 
     const startContrib = isDebt ? -startBal : startBal

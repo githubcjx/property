@@ -14,6 +14,7 @@
 
 const cloud = require('./cloud.js')
 const { isDebtCategory } = require('../utils/categories.js')
+const { valueCnyFen, isIncluded } = require('../utils/networth.js')
 
 // ---------- 阈值 / 央行 2019 均值常量 ----------
 
@@ -32,11 +33,13 @@ const PBOC_2019 = {
 
 // ---------- 工具函数 ----------
 
+// 下列汇总均按原币种折算到人民币（valueCnyFen）后相加。
+
 function sumByCategory(accounts, categoryId) {
   let s = 0
   for (const a of accounts) {
-    if (a.includeInChart === false) continue
-    if (a.categoryId === categoryId) s += (a.balance || 0)
+    if (!isIncluded(a)) continue
+    if (a.categoryId === categoryId) s += valueCnyFen(a)
   }
   return s
 }
@@ -44,9 +47,9 @@ function sumByCategory(accounts, categoryId) {
 function sumAssets(accounts) {
   let s = 0
   for (const a of accounts) {
-    if (a.includeInChart === false) continue
+    if (!isIncluded(a)) continue
     if (isDebtCategory(a.categoryId)) continue
-    s += (a.balance || 0)
+    s += valueCnyFen(a)
   }
   return s
 }
@@ -54,8 +57,8 @@ function sumAssets(accounts) {
 function sumLiabilities(accounts) {
   let s = 0
   for (const a of accounts) {
-    if (a.includeInChart === false) continue
-    if (isDebtCategory(a.categoryId)) s += (a.balance || 0)
+    if (!isIncluded(a)) continue
+    if (isDebtCategory(a.categoryId)) s += valueCnyFen(a)
   }
   return s
 }

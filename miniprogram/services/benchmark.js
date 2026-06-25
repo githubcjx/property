@@ -8,7 +8,7 @@
 //
 // 单位约定：dist 表内为「元」，便于阅读；账户净资产传入为「分」，evaluate 内部转换。
 
-const { isDebtCategory } = require('../utils/categories.js')
+const { sumNetCnyFen } = require('../utils/networth.js')
 
 // ---------- 分位含义 ----------
 // p{N} = 该年龄段中「有 N% 的人净资产低于此值」的门槛。
@@ -63,16 +63,9 @@ function ageFromBirthYear(birthYear) {
   return age
 }
 
-// 净资产（分）：仅含 includeInChart 的账户，负债取负
+// 净资产（人民币分）：仅含 includeInChart 的账户，负债取负，原币种折算到人民币
 function netWorthFenOf(accounts) {
-  let net = 0
-  for (const a of accounts || []) {
-    if (a.includeInChart === false) continue
-    const v = a.balance || 0
-    if (isDebtCategory(a.categoryId)) net -= v
-    else net += v
-  }
-  return net
+  return sumNetCnyFen(accounts)
 }
 
 // 净资产（元）在分位表内插值出百分位（0–99.9）

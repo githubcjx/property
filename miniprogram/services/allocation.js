@@ -7,6 +7,7 @@
 // 单位：全程「分」。文案/遮蔽交由页面用 utils/format.js 在 UI 边界处理。
 
 const { CATEGORIES, isDebtCategory } = require('../utils/categories.js')
+const { valueCnyFen } = require('../utils/networth.js')
 
 // 资产大类展示顺序（负债单列，不在此列）
 const ASSET_ORDER = ['liquid', 'investment', 'fixed', 'receivable']
@@ -23,16 +24,18 @@ function evaluate(accounts) {
   let assets = 0
   let debt = 0
   let topAccount = null // 最大单一资产账户
+  let topBal = 0        // 其折算到人民币后的金额（用于跨币种比较）
   for (const a of included) {
-    const bal = a.balance || 0
+    const bal = valueCnyFen(a)   // 原币种折算到人民币
     const cid = a.categoryId
     sumByCat[cid] = (sumByCat[cid] || 0) + bal
     if (isDebtCategory(cid)) {
       debt += bal
     } else {
       assets += bal
-      if (bal > 0 && (!topAccount || bal > (topAccount.balance || 0))) {
+      if (bal > 0 && (!topAccount || bal > topBal)) {
         topAccount = a
+        topBal = bal
       }
     }
   }
@@ -82,8 +85,8 @@ function evaluate(accounts) {
       name: topAccount.name,
       colorClass: topAccount.categoryId,
       icon: topAccount.icon || 'folder',
-      amount: topAccount.balance || 0,
-      pct: ((topAccount.balance || 0) / assets) * 100,
+      amount: topBal,
+      pct: (topBal / assets) * 100,
     }
   }
 

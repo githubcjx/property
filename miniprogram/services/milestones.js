@@ -16,6 +16,7 @@
 
 const cloud = require('./cloud.js')
 const { isDebtCategory } = require('../utils/categories.js')
+const { netCnyFen, isIncluded } = require('../utils/networth.js')
 
 // 7 档（单位：分；1 元 = 100 分）
 const MILESTONES_FEN = [
@@ -189,13 +190,11 @@ async function evaluate() {
   // 分页拉全量：小程序端单次 get 最多 20 条
   const accounts = await cloud.getAll(() => cloud.accounts().where({ isHidden: false }))
 
-  // 当前净资产：直接取账户余额，权威
+  // 当前净资产：直接取账户余额（原币种折算到人民币），权威
   let current = 0
   for (const a of accounts) {
-    if (a.includeInChart === false) continue
-    const v = a.balance || 0
-    if (isDebtCategory(a.categoryId)) current -= v
-    else current += v
+    if (!isIncluded(a)) continue
+    current += netCnyFen(a)
   }
 
   if (accounts.length === 0) {

@@ -1,6 +1,7 @@
 // 统计：过去 30 天净资产同比变化
 const cloud = require('./cloud.js')
 const { isDebtCategory } = require('../utils/categories.js')
+const { netCnyFen, isIncluded } = require('../utils/networth.js')
 
 // 计算最近 N 天的净资产 delta + 百分比
 // 采用 snapshot 语义（同趋势页）：baseline = ∑ 每账户在 T-N 之前最后一条 tx 的 balanceAfter；
@@ -11,15 +12,13 @@ async function getNetWorthDelta(days, accounts) {
     return { delta: 0, deltaPct: 0, baseline: 0 }
   }
 
-  // 当前净资产（仅含 includeInChart 的账户）
+  // 当前净资产（仅含 includeInChart 的账户，按原币种折算到人民币）
   let current = 0
   const included = []
   for (const a of accounts) {
-    if (a.includeInChart === false) continue
+    if (!isIncluded(a)) continue
     included.push(a)
-    const v = a.balance || 0
-    if (isDebtCategory(a.categoryId)) current -= v
-    else current += v
+    current += netCnyFen(a)
   }
   if (included.length === 0) {
     return { delta: 0, deltaPct: 0, baseline: 0 }

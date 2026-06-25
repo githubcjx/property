@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>多货币 / 汇率设置入口 · 原型</title>
+<style>
+  :root {
+    --bg-0:#050507; --glass-1:rgba(255,255,255,0.05); --glass-2:rgba(255,255,255,0.08);
+    --hairline:rgba(255,255,255,0.08); --hairline-hi:rgba(255,255,255,0.16);
+    --ink-100:#f5f8ff; --ink-80:rgba(245,248,255,0.78); --ink-60:rgba(245,248,255,0.55); --ink-40:rgba(245,248,255,0.36);
+    --ice-blue:#a7d3ff; --investment:#c8b5ff; --fixed:#b7e8f0; --good:#9ee6c1; --warn:#f6d68a; --debt:#ffb3b3;
+    --accent:#a7d3ff; --accent-rgb:167,211,255; --fx:#8fd6c4; --fx-rgb:143,214,196;
+  }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; padding:0; }
+  body { min-height:100vh; background:#0a0b10; color:var(--ink-100);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",system-ui,sans-serif; font-size:14px; line-height:1.4;
+    display:flex; flex-wrap:wrap; gap:30px; justify-content:center; align-items:flex-start; padding:28px 14px 80px; }
+
+  .i { display:inline-flex; align-items:center; justify-content:center; }
+  .i svg { width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; display:block; }
+
+  .phone { position:relative; width:340px; height:730px; border-radius:44px;
+    background:radial-gradient(120% 70% at 12% 0%, rgba(167,211,255,0.13), transparent 55%),
+               radial-gradient(120% 70% at 95% 10%, rgba(143,214,196,0.10), transparent 55%), #08090c;
+    border:1px solid var(--hairline-hi); box-shadow:0 40px 90px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06);
+    overflow:hidden; display:flex; flex-direction:column; }
+  .statusbar { height:44px; flex:0 0 44px; display:flex; align-items:center; justify-content:space-between; padding:0 22px; font-size:13px; color:var(--ink-80); font-weight:600; }
+  .capsule { display:flex; align-items:center; border:1px solid var(--hairline-hi); border-radius:16px; height:28px; background:var(--glass-1); overflow:hidden; }
+  .capsule .dots { padding:0 11px; font-size:16px; color:var(--ink-80); } .capsule .sep { width:1px; height:16px; background:var(--hairline-hi);} .capsule .o { padding:0 10px; font-size:14px; color:var(--ink-60);}
+
+  .screen { flex:1; overflow-y:auto; position:relative; }
+  .screen::-webkit-scrollbar { width:0; }
+
+  /* 顶部导航 */
+  .nav { display:flex; align-items:center; padding:6px 16px 12px; gap:10px; }
+  .nav .back { width:32px; height:32px; border-radius:10px; background:var(--glass-1); display:flex; align-items:center; justify-content:center; color:var(--ink-80); cursor:pointer; flex:0 0 32px; }
+  .nav .back .i { width:17px; height:17px; }
+  .nav .title { font-size:18px; font-weight:800; }
+  .nav .app { font-size:18px; font-weight:800; }
+  .nav .sp { flex:1; }
+  .nav .ico { width:32px; height:32px; border-radius:10px; background:var(--glass-1); display:flex; align-items:center; justify-content:center; color:var(--ink-80); cursor:pointer; }
+  .nav .ico .i { width:16px; height:16px; }
+
+  .body { padding:0 16px 28px; }
+
+  /* 页面切换 */
+  .view { display:none; flex-direction:column; height:100%; }
+  .view.active { display:flex; }
+
+  /* hero */
+  .hero { border-radius:22px; padding:20px 18px; background:var(--glass-1); border:1px solid var(--hairline); }
+  .hero .lab { font-size:12px; color:var(--ink-60); display:flex; align-items:center; gap:6px; }
+  .hero .lab .ccy { color:var(--accent); font-weight:700; }
+  .hero .nv { font-size:36px; font-weight:800; letter-spacing:-1px; margin-top:6px; }
+  .hero .dl { font-size:13px; color:var(--good); margin-top:8px; font-weight:600; }
+
+  /* category rows */
+  .cgroup { margin-top:16px; }
+  .cglabel { font-size:12px; color:var(--ink-60); margin:0 4px 10px; }
+  .crow { display:flex; align-items:center; gap:12px; padding:13px 14px; border-radius:16px; background:var(--glass-1); border:1px solid var(--hairline); margin-bottom:10px; cursor:pointer; }
+  .crow .ci { width:34px; height:34px; flex:0 0 34px; border-radius:11px; display:flex; align-items:center; justify-content:center; }
+  .crow .ci .i { width:18px; height:18px; }
+  .ci.liq{background:rgba(167,211,255,0.18); color:var(--ice-blue);} .ci.inv{background:rgba(200,181,255,0.18); color:var(--investment);} .ci.fix{background:rgba(183,232,240,0.18); color:var(--fixed);}
+  .crow .cn { flex:1; font-size:14px; font-weight:600; }
+  .crow .cn .sub { font-size:11px; color:var(--ink-60); font-weight:500; margin-top:2px; }
+  .crow .cv { font-size:14px; color:var(--ink-80); text-align:right; }
+  .crow .cv .approx { font-size:11px; color:var(--ink-40); margin-top:2px; }
+  .badge-fx { display:inline-block; font-size:9px; font-weight:800; color:var(--fx); background:rgba(var(--fx-rgb),0.16); border:1px solid rgba(var(--fx-rgb),0.4); border-radius:6px; padding:1px 5px; margin-left:6px; vertical-align:middle; letter-spacing:.3px; }
+
+  /* 设置页列表 */
+  .seclabel { font-size:12px; color:var(--ink-60); margin:18px 4px 10px; }
+  .list { border-radius:16px; background:var(--glass-1); border:1px solid var(--hairline); overflow:hidden; }
+  .li { display:flex; align-items:center; gap:12px; padding:14px 14px; cursor:pointer; border-bottom:1px solid var(--hairline); }
+  .li:last-child { border-bottom:none; }
+  .li .lic { width:30px; height:30px; flex:0 0 30px; border-radius:9px; background:var(--glass-2); display:flex; align-items:center; justify-content:center; color:var(--ink-80); }
+  .li .lic .i { width:16px; height:16px; }
+  .li .lt { flex:1; font-size:14px; font-weight:600; }
+  .li .lt .ld { font-size:11px; color:var(--ink-60); font-weight:500; margin-top:2px; }
+  .li .rv { font-size:13px; color:var(--ink-60); }
+  .li .rv b { color:var(--accent); font-weight:700; }
+  .li .chev { width:16px; height:16px; color:var(--ink-40); flex:0 0 16px; }
+  .li .sw { width:42px; height:25px; border-radius:13px; background:var(--glass-2); position:relative; flex:0 0 42px; border:1px solid var(--hairline-hi); }
+  .li .sw.on { background:rgba(var(--accent-rgb),0.5); }
+  .li .sw::after { content:""; position:absolute; top:2px; left:2px; width:19px; height:19px; border-radius:50%; background:#fff; transition:left .2s ease; }
+  .li .sw.on::after { left:19px; }
+
+  /* 币种选择行 */
+  .ccyrow { display:flex; align-items:center; gap:13px; padding:14px 14px; cursor:pointer; border-bottom:1px solid var(--hairline); }
+  .ccyrow:last-child { border-bottom:none; }
+  .ccyrow .flag { width:34px; height:34px; flex:0 0 34px; border-radius:50%; background:var(--glass-2); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:800; color:var(--ink-80); border:1px solid var(--hairline-hi); }
+  .ccyrow .cinfo { flex:1; }
+  .ccyrow .cinfo .code { font-size:14px; font-weight:700; }
+  .ccyrow .cinfo .name { font-size:12px; color:var(--ink-60); margin-top:1px; }
+  .ccyrow .rate { font-size:12px; color:var(--ink-60); text-align:right; }
+  .ccyrow .rate b { color:var(--ink-100); font-weight:700; }
+  .ccyrow .check { width:20px; height:20px; color:var(--good); flex:0 0 20px; opacity:0; }
+  .ccyrow.sel .check { opacity:1; }
+  .ccyrow.sel { background:rgba(var(--accent-rgb),0.06); }
+
+  /* 提示条 */
+  .hint { display:flex; gap:9px; padding:12px 13px; border-radius:13px; margin:4px 0 14px;
+    background:rgba(246,214,138,0.08); border:1px solid rgba(246,214,138,0.28); }
+  .hint .hi { color:var(--warn); width:17px; height:17px; flex:0 0 17px; margin-top:1px; }
+  .hint .ht { font-size:11.5px; color:var(--ink-80); line-height:1.55; }
+  .hint.fx { background:rgba(var(--fx-rgb),0.08); border-color:rgba(var(--fx-rgb),0.3); }
+  .hint.fx .hi { color:var(--fx); }
+
+  .source { display:flex; align-items:center; gap:8px; justify-content:center; margin-top:14px; font-size:11px; color:var(--ink-40); }
+  .source .dot { width:6px; height:6px; border-radius:50%; background:var(--good); box-shadow:0 0 6px var(--good); }
+  .refresh { display:flex; align-items:center; justify-content:center; gap:7px; margin-top:14px; padding:11px; border-radius:13px;
+    background:var(--glass-1); border:1px solid var(--hairline-hi); color:var(--ink-80); font-size:13px; font-weight:600; cursor:pointer; }
+  .refresh .i { width:15px; height:15px; }
+
+  /* 账户详情 */
+  .acchero { border-radius:22px; padding:22px 18px; background:var(--glass-1); border:1px solid var(--hairline); text-align:center; }
+  .acchero .an { font-size:13px; color:var(--ink-60); }
+  .acchero .anative { font-size:34px; font-weight:800; letter-spacing:-1px; margin-top:8px; }
+  .acchero .aapprox { font-size:14px; color:var(--ink-60); margin-top:6px; }
+  .acchero .achips { display:flex; gap:8px; justify-content:center; margin-top:14px; }
+  .acchero .chip { font-size:11px; padding:5px 11px; border-radius:10px; background:var(--glass-2); border:1px solid var(--hairline); color:var(--ink-80); }
+  .acchero .chip b { color:var(--fx); }
+
+  /* 添加账户 字段 */
+  .field { border-radius:14px; background:var(--glass-1); border:1px solid var(--hairline); padding:14px; margin-bottom:12px; }
+  .field .fl { font-size:12px; color:var(--ink-60); margin-bottom:8px; }
+  .field .fv { display:flex; align-items:center; gap:10px; font-size:15px; font-weight:600; cursor:pointer; }
+  .field .fv .flag { width:26px; height:26px; flex:0 0 26px; border-radius:50%; background:var(--glass-2); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; border:1px solid var(--hairline-hi); color:var(--ink-80); }
+  .field .fv .sp { flex:1; }
+  .field .fv .chev { width:16px; height:16px; color:var(--ink-40); }
+  .field .amt { display:flex; align-items:baseline; gap:6px; }
+  .field .amt .sym { font-size:24px; font-weight:800; color:var(--ink-60); }
+  .field .amt .num { font-size:30px; font-weight:800; letter-spacing:-0.5px; }
+  .field .amt .cur { font-size:12px; color:var(--ink-40); margin-left:auto; align-self:center; }
+
+  /* 底部弹层（币种选择 sheet） */
+  .tmask { position:absolute; inset:0; background:rgba(0,0,0,0.55); backdrop-filter:blur(4px); opacity:0; pointer-events:none; transition:opacity .28s ease; z-index:20; }
+  .tmask.show { opacity:1; pointer-events:auto; }
+  .tsheet { position:absolute; left:0; right:0; bottom:0; z-index:21; background:linear-gradient(180deg,#14161d,#0c0d12);
+    border-top-left-radius:28px; border-top-right-radius:28px; border-top:1px solid var(--hairline-hi); padding:12px 18px 24px; max-height:80%; overflow-y:auto;
+    transform:translateY(102%); transition:transform .34s cubic-bezier(0.25,1,0.5,1); }
+  .tsheet::-webkit-scrollbar{width:0;}
+  .tsheet.show { transform:translateY(0); }
+  .thandle { width:40px; height:4px; border-radius:4px; background:var(--hairline-hi); margin:4px auto 14px; }
+  .thead { font-size:16px; font-weight:800; margin-bottom:6px; }
+  .tsub { font-size:11.5px; color:var(--ink-60); margin-bottom:12px; }
+
+  /* 二次确认弹窗 */
+  .dmask { position:absolute; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; padding:28px; opacity:0; pointer-events:none; transition:opacity .22s ease; z-index:30; }
+  .dmask.show { opacity:1; pointer-events:auto; }
+  .dialog { width:100%; background:linear-gradient(180deg,#15171f,#0d0e13); border:1px solid var(--hairline-hi); border-radius:20px; padding:20px 18px 16px; transform:scale(0.94); transition:transform .22s ease; }
+  .dmask.show .dialog { transform:scale(1); }
+  .dialog .dt { font-size:16px; font-weight:800; text-align:center; }
+  .dialog .dp { font-size:12.5px; color:var(--ink-80); line-height:1.6; margin:10px 2px 0; text-align:center; }
+  .dialog .dp b { color:var(--accent); }
+  .dialog .drow { display:flex; gap:10px; margin-top:18px; }
+  .dialog .db { flex:1; text-align:center; padding:12px; border-radius:13px; font-size:14px; font-weight:700; cursor:pointer; }
+  .dialog .db.ghost { background:var(--glass-1); border:1px solid var(--hairline-hi); color:var(--ink-80); }
+  .dialog .db.primary { background:rgba(var(--accent-rgb),0.85); color:#06121f; }
+
+  .toast { position:absolute; left:50%; top:42%; transform:translate(-50%,-50%) scale(0.9); background:rgba(20,22,28,0.96); border:1px solid var(--hairline-hi); padding:14px 20px; border-radius:14px; z-index:40; text-align:center; opacity:0; pointer-events:none; transition:all .2s ease; max-width:80%; }
+  .toast.show { opacity:1; transform:translate(-50%,-50%) scale(1); }
+  .toast .tt{font-size:13px; color:var(--ink-80);}
+
+  /* notes */
+  .notes { width:380px; max-width:92vw; color:var(--ink-80); }
+  .notes h2 { font-size:18px; margin:0 0 4px; color:#fff; } .notes .lead { font-size:12px; color:var(--ink-60); margin-bottom:16px; }
+  .jump { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
+  .jump button { font-size:12px; padding:8px 12px; border-radius:10px; border:1px solid var(--hairline-hi); background:var(--glass-1); color:var(--ink-100); cursor:pointer; }
+  .jump button:active { transform:scale(0.96); }
+  .jump button.on { border-color:rgba(var(--accent-rgb),0.6); background:rgba(var(--accent-rgb),0.12); color:#fff; }
+  .step { background:var(--glass-1); border:1px solid var(--hairline); border-radius:14px; padding:13px 15px; margin-bottom:11px; }
+  .step .h { font-size:13px; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px; }
+  .step .h .n { display:inline-flex; width:20px; height:20px; border-radius:50%; background:rgba(167,211,255,0.22); color:var(--accent); font-size:11px; font-weight:700; align-items:center; justify-content:center; }
+  .step p { margin:7px 0 0; font-size:12px; color:var(--ink-60); line-height:1.6; }
+  .step code { background:rgba(255,255,255,0.08); padding:1px 6px; border-radius:5px; font-size:11px; color:var(--accent); }
+  .step b.g { color:var(--good); } .step b.f { color:var(--fx); }
+</style>
+</head>
+<body>
+
+  <div class="phone">
+    <div class="statusbar"><span>9:41</span><div class="capsule"><span class="dots">•••</span><span class="sep"></span><span class="o">⊙</span></div></div>
+
+    <!-- ============ 首页 ============ -->
+    <div class="view active" id="v-home">
+      <div class="nav">
+        <span class="app">净值本</span><span class="sp"></span>
+        <div class="ico" onclick="go('settings')"><span class="i"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span></div>
+      </div>
+      <div class="body">
+        <div class="hero">
+          <div class="lab">我的净资产 · 本位币 <span class="ccy">CNY ¥</span></div>
+          <div class="nv">¥ 1,286,540</div>
+          <div class="dl">近 30 天 +4.2%（含汇率影响 +¥1,240）</div>
+        </div>
+
+        <div class="cgroup">
+          <div class="cglabel">流动资金</div>
+          <div class="crow">
+            <div class="ci liq"><span class="i"><svg viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg></span></div>
+            <div class="cn">工资卡</div>
+            <div class="cv">¥ 86,200</div>
+          </div>
+          <div class="crow" onclick="go('accdetail')">
+            <div class="ci liq"><span class="i"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span></div>
+            <div class="cn">美元储蓄 <span class="badge-fx">USD</span><div class="sub">汇丰 · 美元账户</div></div>
+            <div class="cv">$ 12,500.00<div class="approx">≈ ¥ 89,750</div></div>
+          </div>
+        </div>
+        <div class="cgroup">
+          <div class="cglabel">投资</div>
+          <div class="crow">
+            <div class="ci inv"><span class="i"><svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span></div>
+            <div class="cn">港股账户 <span class="badge-fx">HKD</span></div>
+            <div class="cv">HK$ 64,000<div class="approx">≈ ¥ 58,560</div></div>
+          </div>
+        </div>
+        <div style="height:20px"></div>
+      </div>
+    </div>
+
+    <!-- ============ 设置页 ============ -->
+    <div class="view" id="v-settings">
+      <div class="nav">
+        <div class="back" onclick="go('home')"><span class="i"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></span></div>
+        <span class="title">设置</span>
+      </div>
+      <div class="body">
+        <div class="seclabel">货币与汇率</div>
+        <div class="list">
+          <!-- 入口①：本位币 -->
+          <div class="li" onclick="go('basepicker')">
+            <div class="lic"><span class="i"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M9 9h4.5a2 2 0 0 1 0 4H9m0 0h6"/></svg></span></div>
+            <div class="lt">本位币<div class="ld">所有账户汇总折算到的货币</div></div>
+            <div class="rv"><b>CNY ¥</b></div>
+            <span class="chev i"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span>
+          </div>
+          <!-- 入口②：汇率查看 -->
+          <div class="li" onclick="go('rates')">
+            <div class="lic"><span class="i"><svg viewBox="0 0 24 24"><path d="M3 7h13l-3-3M21 17H8l3 3"/></svg></span></div>
+            <div class="lt">汇率<div class="ld">每日自动更新 · 来源 open.er-api.com</div></div>
+            <div class="rv">截至 06-25</div>
+            <span class="chev i"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span>
+          </div>
+        </div>
+
+        <div class="seclabel">通用</div>
+        <div class="list">
+          <div class="li">
+            <div class="lic"><span class="i"><svg viewBox="0 0 24 24"><path d="M17.94 17.94A10 10 0 0 1 12 20C5 20 1 12 1 12a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9 9 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg></span></div>
+            <div class="lt">隐藏金额</div>
+            <div class="sw"></div>
+          </div>
+          <div class="li">
+            <div class="lic"><span class="i"><svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r="1.5"/><circle cx="17.5" cy="10.5" r="1.5"/><circle cx="8.5" cy="7.5" r="1.5"/><circle cx="6.5" cy="12.5" r="1.5"/><path d="M12 2a10 10 0 0 0 0 20c1.1 0 2-.9 2-2 0-.55-.2-1-.5-1.4-.3-.4-.5-.85-.5-1.35a1.5 1.5 0 0 1 1.5-1.5H17a5 5 0 0 0 5-5c0-4.42-4.48-8-10-8z"/></svg></span></div>
+            <div class="lt">主题</div>
+            <div class="rv">极光冰蓝</div>
+            <span class="chev i"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 本位币选择 ============ -->
+    <div class="view" id="v-basepicker">
+      <div class="nav">
+        <div class="back" onclick="go('settings')"><span class="i"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></span></div>
+        <span class="title">本位币</span>
+      </div>
+      <div class="body">
+        <div class="hint">
+          <span class="hi i"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>
+          <span class="ht">切换本位币会把<b>全部账户与历史净值</b>重新折算到新货币展示，金额口径随之改变。这是个少见的全局操作。</span>
+        </div>
+        <div class="list" id="baselist">
+          <div class="ccyrow sel" onclick="pickBase(this,'CNY','¥')">
+            <div class="flag">¥</div><div class="cinfo"><div class="code">CNY 人民币</div><div class="name">Chinese Yuan</div></div>
+            <span class="check i"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+          </div>
+          <div class="ccyrow" onclick="pickBase(this,'USD','$')">
+            <div class="flag">$</div><div class="cinfo"><div class="code">USD 美元</div><div class="name">US Dollar</div></div>
+            <span class="check i"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+          </div>
+          <div class="ccyrow" onclick="pickBase(this,'HKD','HK$')">
+            <div class="flag">HK</div><div class="cinfo"><div class="code">HKD 港币</div><div class="name">Hong Kong Dollar</div></div>
+            <span class="check i"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+          </div>
+          <div class="ccyrow" onclick="pickBase(this,'EUR','€')">
+            <div class="flag">€</div><div class="cinfo"><div class="code">EUR 欧元</div><div class="name">Euro</div></div>
+            <span class="check i"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+          </div>
+          <div class="ccyrow" onclick="pickBase(this,'JPY','¥')">
+            <div class="flag">JP</div><div class="cinfo"><div class="code">JPY 日元</div><div class="name">Japanese Yen · 无小数位</div></div>
+            <span class="check i"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 汇率查看 ============ -->
+    <div class="view" id="v-rates">
+      <div class="nav">
+        <div class="back" onclick="go('settings')"><span class="i"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></span></div>
+        <span class="title">汇率</span>
+      </div>
+      <div class="body">
+        <div class="hint fx">
+          <span class="hi i"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+          <span class="ht">汇率由系统<b class="f">每天早上 8:00 统一自动更新一次</b>，全员共用同一份数据，以节省接口请求、保证口径一致。<b class="f">只读、不可手填、无需手动刷新</b>。以下为「1 外币 = X 人民币」。</span>
+        </div>
+        <div class="list">
+          <div class="ccyrow"><div class="flag">$</div><div class="cinfo"><div class="code">USD 美元</div></div><div class="rate"><b>7.1800</b><br>1 USD</div></div>
+          <div class="ccyrow"><div class="flag">HK</div><div class="cinfo"><div class="code">HKD 港币</div></div><div class="rate"><b>0.9150</b><br>1 HKD</div></div>
+          <div class="ccyrow"><div class="flag">€</div><div class="cinfo"><div class="code">EUR 欧元</div></div><div class="rate"><b>7.7400</b><br>1 EUR</div></div>
+          <div class="ccyrow"><div class="flag">£</div><div class="cinfo"><div class="code">GBP 英镑</div></div><div class="rate"><b>9.1200</b><br>1 GBP</div></div>
+          <div class="ccyrow"><div class="flag">JP</div><div class="cinfo"><div class="code">JPY 日元</div></div><div class="rate"><b>0.04550</b><br>1 JPY</div></div>
+        </div>
+        <div class="source"><span class="dot"></span>汇率截至 2026-06-25 08:00 · 来源 open.er-api.com</div>
+        <div class="source" style="margin-top:7px">下次自动更新：明日 08:00</div>
+      </div>
+    </div>
+
+    <!-- ============ 账户详情 ============ -->
+    <div class="view" id="v-accdetail">
+      <div class="nav">
+        <div class="back" onclick="go('home')"><span class="i"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></span></div>
+        <span class="title">账户详情</span>
+      </div>
+      <div class="body">
+        <div class="acchero">
+          <div class="an">美元储蓄 · 汇丰 <span class="badge-fx">USD</span></div>
+          <div class="anative">$ 12,500.00</div>
+          <div class="aapprox">≈ ¥ 89,750（本位币 CNY）</div>
+          <div class="achips">
+            <span class="chip">汇率 7.1800</span>
+            <span class="chip">本月汇率影响 <b>+¥ 312</b></span>
+          </div>
+        </div>
+        <div class="hint fx" style="margin-top:16px">
+          <span class="hi i"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
+          <span class="ht">账户余额始终以<b class="f">原币种（USD）</b>记录与录入；汇总到首页时按当日汇率折算成本位币。<b class="f">汇率波动</b>带来的净值变化会在「净值变动归因」里单独列出，不会算成你的存取款。</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 添加账户 ============ -->
+    <div class="view" id="v-addacc">
+      <div class="nav">
+        <div class="back" onclick="go('home')"><span class="i"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></span></div>
+        <span class="title">添加账户</span>
+      </div>
+      <div class="body">
+        <div class="field">
+          <div class="fl">账户名称</div>
+          <div class="fv" style="cursor:default">美元储蓄</div>
+        </div>
+        <!-- 入口③：账户级币种选择 -->
+        <div class="field" style="border-color:rgba(143,214,196,0.4)">
+          <div class="fl">货币</div>
+          <div class="fv" onclick="openSheet()">
+            <span class="flag" id="acflag">$</span>
+            <span id="accode">USD 美元</span>
+            <span class="sp"></span>
+            <span class="chev i"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+          </div>
+        </div>
+        <div class="field">
+          <div class="fl">当前余额</div>
+          <div class="amt"><span class="sym" id="acsym">$</span><span class="num">12,500.00</span><span class="cur" id="accur">USD · 2 位小数</span></div>
+        </div>
+        <div class="hint" style="margin-top:4px">
+          <span class="hi i"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>
+          <span class="ht">货币<b>创建后不可修改</b>（改币种等于换一个账户）。余额按所选币种的小数位录入：JPY 等为 0 位小数。</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 币种选择 sheet（添加账户用） -->
+    <div class="tmask" id="tmask" onclick="closeSheet()"></div>
+    <div class="tsheet" id="tsheet">
+      <div class="thandle"></div>
+      <div class="thead">选择货币</div>
+      <div class="tsub">账户以原币种记录；汇总时按汇率折算到本位币。</div>
+      <div class="list">
+        <div class="ccyrow sel" onclick="pickAcc(this,'CNY','¥','CNY 人民币','CNY · 2 位小数')"><div class="flag">¥</div><div class="cinfo"><div class="code">CNY 人民币</div></div><span class="check i"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></div>
+        <div class="ccyrow" onclick="pickAcc(this,'USD','$','USD 美元','USD · 2 位小数')"><div class="flag">$</div><div class="cinfo"><div class="code">USD 美元</div></div><span class="check i"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></div>
+        <div class="ccyrow" onclick="pickAcc(this,'HKD','HK$','HKD 港币','HKD · 2 位小数')"><div class="flag">HK</div><div class="cinfo"><div class="code">HKD 港币</div></div><span class="check i"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></div>
+        <div class="ccyrow" onclick="pickAcc(this,'EUR','€','EUR 欧元','EUR · 2 位小数')"><div class="flag">€</div><div class="cinfo"><div class="code">EUR 欧元</div></div><span class="check i"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></div>
+        <div class="ccyrow" onclick="pickAcc(this,'JPY','¥','JPY 日元','JPY · 0 位小数')"><div class="flag">JP</div><div class="cinfo"><div class="code">JPY 日元</div></div><span class="check i"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></div>
+      </div>
+      <div style="height:8px"></div>
+    </div>
+
+    <!-- 本位币切换二次确认 -->
+    <div class="dmask" id="dmask" onclick="if(event.target===this)cancelBase()">
+      <div class="dialog">
+        <div class="dt">切换本位币？</div>
+        <div class="dp">汇总与历史净值将改为以 <b id="dcode">USD 美元</b> 显示。<br>这只是<b>切换显示单位</b>，不会改动你已记录的任何余额；历史按当前汇率折算展示。</div>
+        <div class="drow">
+          <div class="db ghost" onclick="cancelBase()">取消</div>
+          <div class="db primary" onclick="confirmBase()">切换</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"><div class="tt" id="tt"></div></div>
+  </div>
+
+  <!-- ============ NOTES ============ -->
+  <div class="notes">
+    <h2>多货币 · 汇率设置入口</h2>
+    <p class="lead">点下面按钮在手机里切换各入口；或直接点手机内的卡片/箭头跳转。</p>
+
+    <div class="jump" id="jump">
+      <button data-v="home" class="on" onclick="go('home')">首页</button>
+      <button data-v="settings" onclick="go('settings')">设置</button>
+      <button data-v="basepicker" onclick="go('basepicker')">① 本位币选择</button>
+      <button data-v="rates" onclick="go('rates')">② 汇率查看</button>
+      <button data-v="addacc" onclick="go('addacc')">③ 账户币种</button>
+      <button data-v="accdetail" onclick="go('accdetail')">账户详情</button>
+    </div>
+
+    <div class="step">
+      <div class="h"><span class="n">1</span>设置 → 本位币（全局 · 显示镜头）</div>
+      <p>默认 <code>CNY ¥</code>，写进 <code>app.globalData.baseCurrency</code>（仿 theme）。切换<b class="g">只换显示单位、不改任何已存数据、不重算历史</b>——内部永远先用人民币算净值，渲染时再按<b class="g">当前汇率</b>折成所选货币。带<b class="g">二次确认</b>弹窗。</p>
+    </div>
+    <div class="step">
+      <div class="h"><span class="n">2</span>设置 → 汇率（只读查看）</div>
+      <p>展示 <code>fxRates</code> 集合最新一条，云函数 <code>fxRateSync</code> <b class="g">每天早上 8:00 统一抓一次</b>真实中间价（全员共用，省接口请求）。<b class="g">不可手填、无需手动刷新</b>。底部明示「截至时间 · 来源 · 下次更新」，符合数据诚实。</p>
+    </div>
+    <div class="step">
+      <div class="h"><span class="n">3</span>添加账户 → 货币（账户级）</div>
+      <p>每个账户选自己的币种，余额以<b class="g">原币种</b>录入、按该币种小数位（JPY=0 位）。<b>创建后不可改</b>。这是「原币种存储、汇总折算」模型的录入端。</p>
+    </div>
+    <div class="step" style="border-color:rgba(143,214,196,0.3)">
+      <div class="h" style="color:var(--fx)">展示端：首页 / 账户详情</div>
+      <p>外币账户卡显示<b class="f">原币种 + ≈本位币</b>；账户详情主显原币种、副显折算值。汇率波动产生的净值变化在归因里<b class="f">单列「汇率影响」</b>，不混进存取款——这是和 Kubera / 专业记账一致、也是你定的数据诚实要求。</p>
+    </div>
+    <div class="step">
+      <div class="h">入口总览</div>
+      <p>设置「本位币」「汇率」两项 · 添加账户「货币」字段 · 首页与账户详情的折算展示。<b>设置类入口共 3 个</b>（①②③），其余为展示。</p>
+    </div>
+  </div>
+
+<script>
+  var stack = ['home'];
+  function show(v){
+    document.querySelectorAll('.view').forEach(function(e){ e.classList.remove('active'); });
+    var el = document.getElementById('v-'+v);
+    if(el){ el.classList.add('active'); el.querySelector('.screen, .body'); }
+    var sc = el; if(sc){ sc.scrollTop = 0; }
+    document.querySelectorAll('#jump button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-v')===v); });
+  }
+  function go(v){ show(v); }
+
+  // sheet
+  function openSheet(){ document.getElementById('tmask').classList.add('show'); document.getElementById('tsheet').classList.add('show'); }
+  function closeSheet(){ document.getElementById('tmask').classList.remove('show'); document.getElementById('tsheet').classList.remove('show'); }
+  function pickAcc(row,code,sym,label,cur){
+    document.querySelectorAll('#tsheet .ccyrow').forEach(function(r){ r.classList.remove('sel'); });
+    row.classList.add('sel');
+    document.getElementById('acflag').textContent = sym;
+    document.getElementById('accode').textContent = label;
+    document.getElementById('acsym').textContent = sym;
+    document.getElementById('accur').textContent = cur;
+    closeSheet(); toast('账户货币：'+label);
+  }
+
+  // 本位币切换：当前选中项不弹窗；切到别的币种走二次确认
+  var pendingRow=null, pendingCode='', pendingLabel='';
+  function pickBase(row,code,sym){
+    if(row.classList.contains('sel')) return;            // 点的就是当前本位币，无操作
+    pendingRow=row; pendingCode=code;
+    pendingLabel=row.querySelector('.code').textContent;
+    document.getElementById('dcode').textContent=pendingLabel;
+    document.getElementById('dmask').classList.add('show');
+  }
+  function cancelBase(){ document.getElementById('dmask').classList.remove('show'); pendingRow=null; }
+  function confirmBase(){
+    document.querySelectorAll('#baselist .ccyrow').forEach(function(r){ r.classList.remove('sel'); });
+    if(pendingRow) pendingRow.classList.add('sel');
+    document.getElementById('dmask').classList.remove('show');
+    toast('显示已切换为 '+pendingCode+'（按当前汇率折算）');
+    pendingRow=null;
+  }
+
+  function toast(txt){ var t=document.getElementById('toast'); document.getElementById('tt').textContent=txt; t.classList.add('show'); setTimeout(function(){t.classList.remove('show')},1500); }
+</script>
+</body>
+</html>

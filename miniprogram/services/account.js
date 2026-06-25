@@ -15,7 +15,7 @@ async function getAccount(id) {
 }
 
 // 创建账户。balance 单位：分。返回 _id。
-async function addAccount({ categoryId, subType, customName, name, balance, includeInChart, note, icon }) {
+async function addAccount({ categoryId, subType, customName, name, balance, includeInChart, note, icon, currency }) {
   const cat = getCategory(categoryId)
   if (!cat) throw new Error('未知大类: ' + categoryId)
   const st = getSubType(categoryId, subType)
@@ -33,6 +33,8 @@ async function addAccount({ categoryId, subType, customName, name, balance, incl
     subType: subType || 'other',
     name: finalName,
     balance: initBalance,
+    // 账户币种，原币种存储；缺省人民币。创建后不可改（改币种=换账户）。
+    currency: currency || 'CNY',
     includeInChart: includeInChart !== false,
     note: note || '',
     icon: finalIcon,

@@ -12,6 +12,7 @@
 const cloud = require('./cloud.js')
 const healthSvc = require('./health.js')
 const { isDebtCategory } = require('../utils/categories.js')
+const { valueCnyFen } = require('../utils/networth.js')
 
 // ===================== 可调阈值 =====================
 const TH = {
@@ -237,8 +238,10 @@ async function buildMonthlyReport(accounts, monthDate) {
   const periodLabel = `${ref.getFullYear()} 年 ${ref.getMonth() + 1} 月`
 
   const included = (accounts || []).filter(a => a.includeInChart !== false)
+  // 余额 map 统一以人民币为口径：当前值按原币种折算到人民币；
+  // 历史快照(baseBal/endBal)取自 balanceAfter（P1 全人民币即等值，外币历史折算见 P3）。
   const liveBal = {}
-  included.forEach(a => { liveBal[a._id] = a.balance || 0 })
+  included.forEach(a => { liveBal[a._id] = valueCnyFen(a) })
   const incSet = {}
   included.forEach(a => { incSet[a._id] = true })
 
@@ -272,7 +275,8 @@ async function buildMonthlyReport(accounts, monthDate) {
   const curHealthR = isCurrentMonth
     ? healthSvc.evaluate(accounts)
     : healthSvc.evaluate(accounts.map(a => (
-        a.includeInChart === false ? a : Object.assign({}, a, { balance: endBal[a._id] || 0 })
+        // 伪账户余额已是人民币口径，标 currency:'CNY' 避免 health 再次折算
+        a.includeInChart === false ? a : Object.assign({}, a, { balance: endBal[a._id] || 0, currency: 'CNY' })
       )))
 
   // 无可比基线（月初前无任何记录）→ 降级，不脑补涨幅/归因
@@ -337,7 +341,7 @@ async function buildMonthlyReport(accounts, monthDate) {
   // 健康分环比：月初基线 vs 期末（均按余额快照重算，不额外查询、不存储）
   let healthDelta = 0
   const prevHealthR = healthSvc.evaluate(accounts.map(a => (
-    a.includeInChart === false ? a : Object.assign({}, a, { balance: baseBal[a._id] || 0 })
+    a.includeInChart === false ? a : Object.assign({}, a, { balance: baseBal[a._id] || 0, currency: 'CNY' })
   )))
   if (prevHealthR && prevHealthR.overall.score != null && curHealthR.overall.score != null) {
     healthDelta = curHealthR.overall.score - prevHealthR.overall.score

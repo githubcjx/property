@@ -2,6 +2,7 @@ const app = getApp()
 const accountSvc = require('../../services/account.js')
 const statsSvc = require('../../services/stats.js')
 const { CATEGORIES, isDebtCategory, isIconKey } = require('../../utils/categories.js')
+const { valueCnyFen } = require('../../utils/networth.js')
 const { formatYuan } = require('../../utils/format.js')
 const { formatRelative } = require('../../utils/date.js')
 const { APP_VERSION } = require('../../utils/version.js')
@@ -174,7 +175,8 @@ Page({
       const g = map[acc.categoryId]
       if (!g) continue
       g.accounts.push(acc)
-      g.totalFen += (acc.balance || 0)
+      const vCny = valueCnyFen(acc)   // 原币种折算到人民币
+      g.totalFen += vCny
       const upd = acc.updatedAt || acc.createdAt
       const updMs = upd ? (upd instanceof Date ? upd.getTime() : new Date(upd).getTime()) : 0
       if (updMs && (!g.lastUpdated || updMs > g.lastUpdated)) {
@@ -182,10 +184,10 @@ Page({
       }
       if (acc.includeInChart) {
         if (isDebtCategory(acc.categoryId)) {
-          netWorth -= (acc.balance || 0)
+          netWorth -= vCny
         } else {
-          netWorth += (acc.balance || 0)
-          totalAssets += (acc.balance || 0)
+          netWorth += vCny
+          totalAssets += vCny
         }
       }
     }
