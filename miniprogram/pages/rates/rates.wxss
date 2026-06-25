@@ -1,5 +1,40 @@
+.page {
+  min-height: 100vh;
+  padding: 0 32rpx 80rpx;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ============ 透明 navbar（与 theme 页一致）============ */
+.navbar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 14rpx;
+  position: relative;
+  z-index: 5;
+}
+.nav-title {
+  font-size: 26rpx;
+  color: var(--ink-80);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+.nav-btn {
+  width: 56rpx; height: 56rpx;
+  border-radius: 50%;
+  background: var(--glass-1);
+  border: 1rpx solid var(--hairline);
+  display: flex; align-items: center; justify-content: center;
+  -webkit-backdrop-filter: blur(20rpx);
+  backdrop-filter: blur(20rpx);
+}
+.nav-btn-hover { background: var(--glass-3); transform: scale(0.95); }
+.nav-spacer { width: 56rpx; }
+
 .rt-hint {
-  margin: 8rpx 32rpx 24rpx;
+  margin: 8rpx 0 24rpx;
   padding: 24rpx 26rpx;
   border-radius: 20rpx;
   font-size: 24rpx;
@@ -10,7 +45,7 @@
 }
 
 .rt-list {
-  margin: 0 32rpx;
+  margin: 0;
   border-radius: 24rpx;
   background: var(--glass-1);
   border: 1rpx solid var(--hairline);
