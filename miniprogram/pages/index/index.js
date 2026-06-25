@@ -3,7 +3,7 @@ const accountSvc = require('../../services/account.js')
 const statsSvc = require('../../services/stats.js')
 const { CATEGORIES, isDebtCategory, isIconKey } = require('../../utils/categories.js')
 const { valueCnyFen, cnyToBaseFen, baseCurrency } = require('../../utils/networth.js')
-const { symbolOf } = require('../../utils/currency.js')
+const { symbolOf, digitsOf } = require('../../utils/currency.js')
 const { formatYuan, formatMoney } = require('../../utils/format.js')
 const { formatRelative } = require('../../utils/date.js')
 const { APP_VERSION } = require('../../utils/version.js')
@@ -21,15 +21,18 @@ function currentMonthKey() {
   return d.getFullYear() + '-' + (d.getMonth() + 1)
 }
 
-function splitAmount(fen) {
-  const yuan = Math.round(fen) / 100
-  const abs = Math.abs(yuan)
-  const [int, frac = '00'] = abs.toFixed(2).split('.')
+// 按本位币的小数位拆分（人民币/美元=2 位，日元/韩元=0 位）
+function splitAmount(fen, ccy) {
+  const digits = digitsOf(ccy || 'CNY')
+  const unit = Math.round(fen) / Math.pow(10, digits)
+  const abs = Math.abs(unit)
+  const [int, frac = ''] = abs.toFixed(digits).split('.')
   const withCommas = int.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
   return {
-    sign: yuan < 0 ? '-' : '',
+    sign: unit < 0 ? '-' : '',
     int: withCommas,
     frac,
+    hasFrac: digits > 0,
   }
 }
 
@@ -41,6 +44,7 @@ Page({
 
     netWorthRaw: 0,
     baseSymbol: '¥',
+    netHasFrac: true,
     netSign: '',
     netInt: '0',
     netFrac: '00',
@@ -231,7 +235,8 @@ Page({
     })
 
     const dispNet = cnyToBaseFen(netWorth)   // 净值折算到本位币用于显示
-    const parts = splitAmount(dispNet)
+    this._baseCcy = baseCcy                   // 供 animateNetWorth 逐帧拆分用
+    const parts = splitAmount(dispNet, baseCcy)
     this.setData({
       groups: visibleGroups,
       composition,
@@ -240,6 +245,7 @@ Page({
       netSign: parts.sign,
       netInt: parts.int,
       netFrac: parts.frac,
+      netHasFrac: parts.hasFrac,
       hasData: accounts.length > 0,
     })
 
@@ -264,7 +270,7 @@ Page({
       const t = Math.min(1, (Date.now() - t0) / duration)
       const eased = 1 - Math.pow(1 - t, 3)
       const cur = Math.round(startFen + (targetFen - startFen) * eased)
-      const parts = splitAmount(cur)
+      const parts = splitAmount(cur, this._baseCcy)
       this.setData({
         netSign: parts.sign,
         netInt: parts.int,

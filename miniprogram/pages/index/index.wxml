@@ -29,7 +29,7 @@
         <text class="amt-prefix">{{baseSymbol}}</text>
         <text class="amt-sign" wx:if="{{netSign}}">{{netSign}}</text>
         <text class="amt-int">{{netInt}}</text>
-        <text class="amt-frac">.{{netFrac}}</text>
+        <text class="amt-frac" wx:if="{{netHasFrac}}">.{{netFrac}}</text>
       </block>
       <view class="amt-shine"></view>
     </view>
