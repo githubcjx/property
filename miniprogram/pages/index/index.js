@@ -195,7 +195,6 @@ Page({
       categoryId: cat.id,
       name: cat.name,
       colorClass: cat.colorClass,
-      color: cat.color,
       icon: cat.icon || '',
       glyphClass: 'ic-glyph-' + cat.id,
       tintClass: 'cat-tint-' + cat.colorClass,
@@ -258,7 +257,6 @@ Page({
       return {
         id: cat.id,
         name: cat.name,
-        color: cat.color,
         rgbName: cat.colorClass,
         sizeRpx,
         valueYuan: Math.round(v / 100),

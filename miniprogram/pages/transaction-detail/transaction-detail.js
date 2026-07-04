@@ -5,14 +5,6 @@ const { formatYuan, formatDelta, yuanToFen, fenToYuan } = require('../../utils/f
 const { formatDateTime } = require('../../utils/date.js')
 const { isIconKey, getCategory } = require('../../utils/categories.js')
 
-const CAT_RGB = {
-  liquid: '167, 211, 255',
-  investment: '200, 181, 255',
-  fixed: '183, 232, 240',
-  receivable: '224, 234, 255',
-  debt: '255, 179, 179',
-}
-
 function splitAmount(fen) {
   const yuan = Math.round(Math.abs(fen)) / 100
   const [int, frac = '00'] = yuan.toFixed(2).split('.')
@@ -53,8 +45,6 @@ Page({
     amtFrac: '00',
 
     categoryClass: 'liquid',
-    categoryColor: '#a7d3ff',
-    categoryRgb: '167, 211, 255',
     categoryName: '',
     accountId: '',
 
@@ -115,8 +105,6 @@ Page({
         amtInt: parts.int,
         amtFrac: parts.frac,
         categoryClass: cat ? cat.colorClass : 'liquid',
-        categoryColor: cat ? cat.color : '#a7d3ff',
-        categoryRgb: cat ? CAT_RGB[cat.colorClass] : '167, 211, 255',
         categoryName: cat ? cat.name : '',
       })
     } catch (err) {

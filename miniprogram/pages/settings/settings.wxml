@@ -55,7 +55,7 @@
         <text class="row-title">简化动效</text>
         <text class="row-sub">关闭模糊与持续动画，省电降温</text>
       </view>
-      <switch checked="{{reduceMotion}}" bindchange="onReduceMotionChange" color="#a7d3ff" />
+      <switch checked="{{reduceMotion}}" bindchange="onReduceMotionChange" color="{{accentColor}}" />
     </view>
     <button class="feedback-row tap" hover-class="row-hover" open-type="feedback">
       <view class="row-icon"><view class="ic ic-sm ic-edit"></view></view>

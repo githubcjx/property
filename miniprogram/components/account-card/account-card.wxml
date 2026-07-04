@@ -6,7 +6,7 @@
   <view class="acc-main">
     <view class="acc-row">
       <text class="acc-name">{{name}}</text>
-      <text class="acc-amount" style="color: {{amountColor}};">{{amountText}}</text>
+      <text class="acc-amount {{colorClass ? 'cat-' + colorClass : ''}}">{{amountText}}</text>
     </view>
     <view class="acc-row sub">
       <text class="acc-note">{{note || (excludedFromChart ? '不计入图表' : ' ')}}</text>

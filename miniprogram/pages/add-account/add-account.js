@@ -8,14 +8,6 @@ const { CURRENCIES, symbolOf } = require('../../utils/currency.js')
 const CCY_OPTIONS = CURRENCIES.map(c => c.code + ' ' + c.name)
 const CCY_CODES = CURRENCIES.map(c => c.code)
 
-const CAT_RGB = {
-  liquid: '167, 211, 255',
-  investment: '200, 181, 255',
-  fixed: '183, 232, 240',
-  receivable: '224, 234, 255',
-  debt: '255, 179, 179',
-}
-
 // 三步流程：
 //   step=1 选大类 → step=2 选子类（同页内展开） → step=3 填写表单
 // 编辑模式：URL 带 editId 时进入第 3 步，预填表单
@@ -25,14 +17,12 @@ Page({
     categories: CATEGORIES.map(c => Object.assign({}, c, {
       tintClass: 'cat-tint-' + c.colorClass,
       glyphClass: 'ic-glyph-' + c.id,
-      rgb: CAT_RGB[c.colorClass] || '167, 211, 255',
     })),
     statusBarHeight: 20,
 
     expandedCategoryId: '',
     selectedCategoryId: '',
-    selectedCategoryColor: '#a7d3ff',
-    selectedRgb: '167, 211, 255',
+    selectedColorClass: 'liquid',
     selectedCategoryName: '',
     selectedTintClass: '',
     selectedSubType: null,
@@ -79,8 +69,7 @@ Page({
         editId: id,
         step: 3,
         selectedCategoryId: acc.categoryId,
-        selectedCategoryColor: cat ? cat.color : '#a7d3ff',
-        selectedRgb: CAT_RGB[cat ? cat.colorClass : 'liquid'],
+        selectedColorClass: cat ? cat.colorClass : 'liquid',
         selectedCategoryName: cat ? cat.name : '',
         selectedTintClass: 'cat-tint-' + (cat ? cat.colorClass : 'liquid'),
         selectedSubType: sub || { id: acc.subType, name: acc.name, icon: acc.icon, custom: true },
@@ -123,8 +112,7 @@ Page({
             const name = (res.content || '').trim()
             this.setData({
               selectedCategoryId: categoryId,
-              selectedCategoryColor: cat.color,
-              selectedRgb: CAT_RGB[cat.colorClass],
+              selectedColorClass: cat.colorClass,
               selectedCategoryName: cat.name,
               selectedTintClass: 'cat-tint-' + cat.colorClass,
               selectedSubType: sub,
@@ -140,8 +128,7 @@ Page({
 
     this.setData({
       selectedCategoryId: categoryId,
-      selectedCategoryColor: cat.color,
-      selectedRgb: CAT_RGB[cat.colorClass],
+      selectedColorClass: cat.colorClass,
       selectedCategoryName: cat.name,
       selectedTintClass: 'cat-tint-' + cat.colorClass,
       selectedSubType: sub,

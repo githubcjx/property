@@ -9,7 +9,7 @@
     </view>
   </view>
   <view class="right">
-    <text class="amount" style="color: {{color}};">{{amountText}}</text>
+    <text class="amount {{textClass}}">{{amountText}}</text>
     <view class="chev {{expanded ? 'chev-open' : ''}}">
       <view class="ic ic-sm ic-chevron-down"></view>
     </view>

@@ -2,7 +2,7 @@
 
 <view class="page {{reduceMotion ? 'no-motion' : ''}} theme-{{theme}}" wx:if="{{tx}}">
   <view class="tx-halo"
-        style="background: radial-gradient(circle, rgba({{categoryRgb}}, 0.25), transparent 70%);"></view>
+        style="background: radial-gradient(circle, rgba(var(--{{categoryClass}}-rgb), 0.25), transparent 70%);"></view>
 
   <view class="navbar" style="padding-top: {{statusBarHeight}}px;">
     <view class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onClose">
@@ -19,10 +19,10 @@
       <view class="ic ic-{{iconKey}}"></view>
     </view>
     <text class="hero-name">{{accountName}}</text>
-    <text class="hero-type" style="color: {{categoryColor}};">{{typeText === '修改余额' ? 'SET BALANCE · 修改余额' : 'DELTA · 增减金额'}}</text>
+    <text class="hero-type" style="color: var(--{{categoryClass}});">{{typeText === '修改余额' ? 'SET BALANCE · 修改余额' : 'DELTA · 增减金额'}}</text>
   </view>
 
-  <view class="hero-amount entry-up d1" style="color: {{positive ? 'var(--ice-blue)' : 'var(--debt)'}}; text-shadow: 0 0 56rpx {{positive ? 'rgba(167, 211, 255, 0.55)' : 'rgba(255, 179, 179, 0.5)'}};">
+  <view class="hero-amount entry-up d1" style="color: {{positive ? 'var(--ice-blue)' : 'var(--debt)'}}; text-shadow: 0 0 56rpx {{positive ? 'rgba(var(--accent-rgb), 0.55)' : 'rgba(var(--debt-rgb), 0.5)'}};">
     <text class="amt-sign">{{deltaSign}}</text>
     <text class="amt-prefix">¥</text>
     <text class="amt-int">{{amtInt}}</text>
@@ -48,7 +48,7 @@
   <view class="edit-cta tap entry-up d4"
         hover-class="edit-cta-hover"
         bindtap="onOpenEdit"
-        style="background:linear-gradient(135deg,{{categoryColor}},rgba({{categoryRgb}},0.5));box-shadow:0 16rpx 40rpx rgba({{categoryRgb}},0.35),inset 0 2rpx 0 rgba(255,255,255,0.5);">
+        style="background:linear-gradient(135deg,var(--{{categoryClass}}),rgba(var(--{{categoryClass}}-rgb),0.5));box-shadow:0 16rpx 40rpx rgba(var(--{{categoryClass}}-rgb),0.35),inset 0 2rpx 0 rgba(255,255,255,0.5);">
     <view class="ic ic-xs ic-edit" style="filter:invert(0.95);"></view>
     <text>编辑此条记录</text>
   </view>
@@ -65,7 +65,7 @@
         <view class="edit-cancel tap" bindtap="onCloseEdit">取消</view>
         <view class="edit-title">编辑变动记录</view>
         <view class="edit-confirm tap" bindtap="onEditSubmit"
-              style="color: {{categoryColor}}; text-shadow: 0 0 16rpx rgba({{categoryRgb}}, 0.45);">
+              style="color: var(--{{categoryClass}}); text-shadow: 0 0 16rpx rgba(var(--{{categoryClass}}-rgb), 0.45);">
           {{submitting ? '...' : '完成'}}
         </view>
       </view>

@@ -16,7 +16,7 @@ Component({
     iconText: '',    // 老数据回退：emoji 字符串
     note: '',
     amountText: '',
-    amountColor: '#FFFFFF',
+    colorClass: '',
     updatedText: '',
     excludedFromChart: false,
   },
@@ -33,14 +33,13 @@ Component({
       const cat = getCategory(acc.categoryId)
       const icon = acc.icon || ''
       const useKey = isIconKey(icon)
-      console.log(useKey, icon)
       this.setData({
         name: acc.name,
         iconKey: useKey ? icon : '',
         iconText: useKey ? '' : (icon || '📁'),
         note: acc.note || '',
         amountText: hide ? '****' : '¥' + formatYuan(acc.balance || 0, {}),
-        amountColor: cat ? cat.color : '#FFFFFF',
+        colorClass: cat ? cat.colorClass : '',
         updatedText: acc.updatedAt ? formatShort(acc.updatedAt) : '',
         excludedFromChart: !acc.includeInChart,
       })

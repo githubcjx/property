@@ -624,3 +624,75 @@ button.btn-reset::after { display: none; }
   --neb-1: rgba(232, 234, 237, 0.08);
   --neb-2: rgba(184, 188, 196, 0.05);
 }
+
+/* —— 软光质感系列 · 暮蓝软光（新拟态 / Neumorphism）——
+   与其它主题不同：本主题除覆盖变量外，还在 .theme-slate 作用域下把共享玻璃表面
+   改成「同色软浮雕」——一明一暗双阴影 + 去掉 backdrop-filter，营造哑光塑感。
+   所有覆盖都限定在 .theme-slate 下，绝不影响其它主题。
+   刻意保留高对比：大数字(--ink-100)、红涨绿跌(--debt/--neg)、主按钮(.btn-primary)不动。
+   附带收益:去掉 backdrop-filter 后本主题反而比默认玻璃更省电(呼应发热反馈)。 */
+.theme-slate {
+  --bg-0: #171b22; --bg-1: #1e232c; --bg-2: #242a34;       /* 蓝灰调底色 */
+  --ink-100: #eef2f8;
+  --ink-80: rgba(238, 242, 248, 0.80);
+  --ink-60: rgba(238, 242, 248, 0.56);
+  --ink-40: rgba(238, 242, 248, 0.38);
+  --ink-20: rgba(238, 242, 248, 0.20);
+  /* 天蓝为主，黄绿点缀 */
+  --ice-blue: #6cb8f2; --accent: #6cb8f2; --accent-2: #8fcbf5;
+  --accent-rgb: 108, 184, 242;
+  --liquid: #6cb8f2;     --liquid-rgb: 108, 184, 242;   /* 现金/储蓄：天蓝(主色) */
+  --investment: #79cf8e; --investment-rgb: 121, 207, 142; /* 投资：绿 */
+  --fixed: #f0cd6a;      --fixed-rgb: 240, 205, 106;    /* 固定资产：暖黄 */
+  --receivable: #a7d4f5; --receivable-rgb: 167, 212, 245; /* 应收：浅天蓝(保持蓝占主导) */
+  --pos: #6cb8f2;
+  --neb-1: rgba(108, 184, 242, 0.05);
+  --neb-2: rgba(121, 207, 142, 0.03);
+  /* 软浮雕专用：凸面渐变端点(左上亮→右下暗) + 双向阴影色。蓝灰调,集中在此,调一处全联动。 */
+  --nm-surf:   linear-gradient(145deg, #232833, #191d25);   /* 一级表面凸面 */
+  --nm-surf-2: linear-gradient(145deg, #29303c, #1f242e);   /* 二级表面凸面(略亮) */
+  --nm-concave: linear-gradient(145deg, #191d25, #232833);  /* 按下内凹:方向翻转 */
+  --nm-dark:   rgba(0, 0, 0, 0.55);                          /* 右下暗影 */
+  --nm-light:  rgba(255, 255, 255, 0.06);                    /* 左上高光 */
+}
+/* 软浮雕表面：凸面渐变 + 双向外阴影 + 内壁倒角(枕头感)，去毛玻璃。覆盖共享工具类与首页大表面。 */
+.theme-slate .glass,
+.theme-slate .glass-2,
+.theme-slate .card,
+.theme-slate .card-sub,
+.theme-slate .cat-card,
+.theme-slate .upd-card {
+  background: var(--nm-surf);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: none;                                    /* 去掉平描边,让阴影独自定义边缘 */
+  box-shadow:
+    8rpx 8rpx 20rpx var(--nm-dark),
+    -7rpx -7rpx 18rpx var(--nm-light),
+    inset 1rpx 1rpx 1rpx rgba(255, 255, 255, 0.05),   /* 内壁高光:边缘像被压圆 */
+    inset -1rpx -1rpx 2rpx rgba(0, 0, 0, 0.30);       /* 内壁暗影 */
+}
+.theme-slate .glass-2,
+.theme-slate .card-sub { background: var(--nm-surf-2); }
+/* 工具面板图标块 / 深色 / 幽灵按钮：软浮雕凸起,阴影尺寸缩小以匹配小块比例,按下内凹 */
+.theme-slate .tool-chip,
+.theme-slate .btn-dark,
+.theme-slate .btn-ghost {
+  background: var(--nm-surf);
+  border: none;
+  box-shadow:
+    5rpx 5rpx 12rpx var(--nm-dark),
+    -4rpx -4rpx 10rpx var(--nm-light),
+    inset 1rpx 1rpx 1rpx rgba(255, 255, 255, 0.05);
+}
+.theme-slate .tool-chip::after { opacity: 0.28; } /* 只留一丝类别色透出 */
+.theme-slate .btn-dark:active,
+.theme-slate .btn-ghost:active,
+.theme-slate .tool-cell-hover .tool-chip {
+  background: var(--nm-concave);                   /* 凹面渐变方向翻转,更真实 */
+  box-shadow:
+    inset 5rpx 5rpx 12rpx var(--nm-dark),
+    inset -4rpx -4rpx 10rpx var(--nm-light);
+}
+/* 哑光底：星点几乎隐去，让浮雕阴影成为主角(主题类挂在 canvas-bg 本身，用复合选择器) */
+.theme-slate.canvas-bg::after { opacity: 0.12; }

@@ -20,7 +20,6 @@ Component({
     name: '',
     textClass: '',
     bgClass: '',
-    color: '',
     amountText: '',
     lastUpdatedText: '',
   },
@@ -46,7 +45,6 @@ Component({
         name: cat ? cat.name : catId,
         textClass: key ? 'cat-' + key : '',
         bgClass: key ? 'cat-bg-' + key : '',
-        color: cat ? cat.color : '#FFFFFF',
         amountText: amount,
         lastUpdatedText: lastUpdated ? '更新于 ' + formatShort(lastUpdated) : '',
       })

@@ -10,6 +10,7 @@ Page({
     reduceMotion: false,
     theme: 'aurora',
     themeName: '',
+    accentColor: '#a7d3ff',   // 原生 switch 的 color 取不到 CSS 变量，用当前主题强调色
     baseCurrencyText: '',
     fxDate: '',
   },
@@ -21,6 +22,7 @@ Page({
       reduceMotion: app.globalData.reduceMotion,
       theme: app.globalData.theme,
       themeName: getTheme(app.globalData.theme).name,
+      accentColor: getTheme(app.globalData.theme).accent,
     })
     this.syncCurrency()
   },
@@ -30,6 +32,7 @@ Page({
       reduceMotion: app.globalData.reduceMotion,
       theme: app.globalData.theme,
       themeName: getTheme(app.globalData.theme).name,
+      accentColor: getTheme(app.globalData.theme).accent,
     })
     this.syncCurrency()
   },

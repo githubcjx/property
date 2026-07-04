@@ -4,7 +4,7 @@
   <!-- 类目光晕（form 阶段） -->
   <view wx:if="{{step === 3 && selectedCategoryId}}"
         class="form-halo"
-        style="background: radial-gradient(circle, rgba({{selectedRgb}}, 0.30), transparent 70%);"></view>
+        style="background: radial-gradient(circle, rgba(var(--{{selectedColorClass}}-rgb), 0.30), transparent 70%);"></view>
 
   <!-- 顶部导航 -->
   <view class="navbar" style="padding-top: {{statusBarHeight}}px;">
@@ -31,7 +31,7 @@
           wx:for="{{categories}}"
           wx:key="id"
           class="cat-item glass entry-up d{{index + 1}}"
-          style="{{expandedCategoryId === item.id ? 'box-shadow: 0 0 60rpx rgba(' + item.rgb + ', 0.2); border-color: rgba(' + item.rgb + ', 0.4);' : ''}}"
+          style="{{expandedCategoryId === item.id ? 'box-shadow: 0 0 60rpx rgba(var(--' + item.colorClass + '-rgb), 0.2); border-color: rgba(var(--' + item.colorClass + '-rgb), 0.4);' : ''}}"
         >
           <view class="cat-row tap" data-id="{{item.id}}" bindtap="onToggleCategory">
             <view class="cat-icon {{item.tintClass}}">
@@ -57,7 +57,7 @@
               data-sub-id="{{sub.id}}"
               bindtap="onSelectSub"
             >
-              <view class="sub-icon" style="color: {{item.color}};">
+              <view class="sub-icon" style="color: var(--{{item.colorClass}});">
                 <view class="ic ic-sm ic-{{sub.icon}}"></view>
               </view>
               <text class="sub-name">{{sub.name}}{{sub.custom ? '（自定义）' : ''}}</text>
@@ -72,16 +72,16 @@
     <block wx:if="{{step === 3}}">
       <!-- picked preview -->
       <view class="picked glass entry-up">
-        <view class="picked-bg" style="background: radial-gradient(circle, rgba({{selectedRgb}}, 0.4), transparent 60%);"></view>
+        <view class="picked-bg" style="background: radial-gradient(circle, rgba(var(--{{selectedColorClass}}-rgb), 0.4), transparent 60%);"></view>
         <view class="picked-icon {{selectedTintClass}}">
           <view class="ic ic-{{selectedSubType.icon || 'folder'}}"></view>
         </view>
         <view class="picked-info">
-          <text class="picked-cat" style="color: {{selectedCategoryColor}};">{{selectedCategoryName}}</text>
+          <text class="picked-cat" style="color: var(--{{selectedColorClass}});">{{selectedCategoryName}}</text>
           <text class="picked-name">{{customSubName || selectedSubType.name}}</text>
         </view>
         <view wx:if="{{!editId}}" class="picked-change tap" hover-class="picked-change-hover" bindtap="onBackToList"
-              style="color: {{selectedCategoryColor}}; border-color: rgba({{selectedRgb}}, 0.5); background: rgba({{selectedRgb}}, 0.1);">
+              style="color: var(--{{selectedColorClass}}); border-color: rgba(var(--{{selectedColorClass}}-rgb), 0.5); background: rgba(var(--{{selectedColorClass}}-rgb), 0.1);">
           更换
         </view>
       </view>
@@ -139,7 +139,7 @@
         </view>
         <view class="toggle tap {{form.includeInChart ? 'on' : ''}}"
               bindtap="onChartSwitch"
-              style="{{form.includeInChart ? 'background:' + selectedCategoryColor + ';box-shadow:0 0 24rpx rgba(' + selectedRgb + ', 0.55);' : ''}}">
+              style="{{form.includeInChart ? 'background:var(--' + selectedColorClass + ');box-shadow:0 0 24rpx rgba(var(--' + selectedColorClass + '-rgb), 0.55);' : ''}}">
           <view class="toggle-knob"></view>
         </view>
       </view>
@@ -160,7 +160,7 @@
       <view class="submit-btn tap entry-up d5"
             hover-class="submit-hover"
             bindtap="onSubmit"
-            style="background:linear-gradient(135deg,{{selectedCategoryColor}},rgba({{selectedRgb}},0.5));box-shadow:0 16rpx 40rpx rgba({{selectedRgb}},0.45),inset 0 2rpx 0 rgba(255,255,255,0.5);">
+            style="background:linear-gradient(135deg,var(--{{selectedColorClass}}),rgba(var(--{{selectedColorClass}}-rgb),0.5));box-shadow:0 16rpx 40rpx rgba(var(--{{selectedColorClass}}-rgb),0.45),inset 0 2rpx 0 rgba(255,255,255,0.5);">
         <text>{{editId ? '保存修改' : '✓ 添加账户'}}</text>
         <view class="submit-shine"></view>
       </view>
@@ -174,7 +174,7 @@
     <view class="success-mask"></view>
     <view class="success-content">
       <view class="success-orb"
-            style="background:radial-gradient(circle at 30% 30%,rgba({{selectedRgb}},0.85),rgba({{selectedRgb}},0.2) 70%); border-color:rgba({{selectedRgb}},0.5); box-shadow:inset 0 4rpx 0 rgba(255,255,255,0.3),0 0 80rpx rgba({{selectedRgb}},0.55);">
+            style="background:radial-gradient(circle at 30% 30%,rgba(var(--{{selectedColorClass}}-rgb),0.85),rgba(var(--{{selectedColorClass}}-rgb),0.2) 70%); border-color:rgba(var(--{{selectedColorClass}}-rgb),0.5); box-shadow:inset 0 4rpx 0 rgba(255,255,255,0.3),0 0 80rpx rgba(var(--{{selectedColorClass}}-rgb),0.55);">
         <view class="success-check"></view>
       </view>
       <text class="success-title">{{editId ? '已保存' : '账户已添加'}}</text>
@@ -184,7 +184,7 @@
     <view class="shatter-stage">
       <view wx:for="{{[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21]}}" wx:key="*this"
             class="shard"
-            style="--tx:{{(index % 2 ? 1 : -1) * (140 + index * 8)}}rpx; --ty:{{(index % 3 - 1) * (140 + index * 6)}}rpx; --rot:{{index * 41 - 220}}deg; background:rgba({{selectedRgb}}, 0.9); box-shadow:0 0 16rpx rgba({{selectedRgb}}, 0.8); animation-delay:{{index * 16}}ms;"></view>
+            style="--tx:{{(index % 2 ? 1 : -1) * (140 + index * 8)}}rpx; --ty:{{(index % 3 - 1) * (140 + index * 6)}}rpx; --rot:{{index * 41 - 220}}deg; background:rgba(var(--{{selectedColorClass}}-rgb), 0.9); box-shadow:0 0 16rpx rgba(var(--{{selectedColorClass}}-rgb), 0.8); animation-delay:{{index * 16}}ms;"></view>
     </view>
   </view>
 </view>

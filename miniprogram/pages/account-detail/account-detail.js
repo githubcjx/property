@@ -4,6 +4,7 @@ const txSvc = require('../../services/transaction.js')
 const { formatYuan, formatDelta, formatMoney } = require('../../utils/format.js')
 const { formatDateTime } = require('../../utils/date.js')
 const { getCategory, isIconKey } = require('../../utils/categories.js')
+const { catHex, catRgb } = require('../../utils/theme.js')
 const { symbolOf, digitsOf } = require('../../utils/currency.js')
 const { valueCnyFen, cnyToBaseFen, baseCurrency } = require('../../utils/networth.js')
 
@@ -127,7 +128,7 @@ Page({
       accountName: acc.name,
       accountIcon: useKey ? icon : 'folder',
       iconKey: useKey ? icon : 'folder',
-      accountColor: cat ? cat.color : '#a7d3ff',
+      accountColor: catHex(this.data.theme, cat ? cat.colorClass : 'liquid'),
       colorClass: cat ? cat.colorClass : '',
       categoryName: cat ? cat.name : '',
       categoryTag: cat ? cat.colorClass : '',
@@ -142,19 +143,8 @@ Page({
       approxText,
       updatedText: acc.updatedAt ? formatDateTime(acc.updatedAt) + ' 更新' : '刚刚更新',
       noteText: acc.note || '',
-      burstColor: cat ? this._rgbForCat(cat.colorClass) : '167, 211, 255',
+      burstColor: catRgb(this.data.theme, cat ? cat.colorClass : 'liquid'),
     })
-  },
-
-  _rgbForCat(c) {
-    const m = {
-      liquid: '167, 211, 255',
-      investment: '200, 181, 255',
-      fixed: '183, 232, 240',
-      receivable: '224, 234, 255',
-      debt: '255, 179, 179',
-    }
-    return m[c] || '167, 211, 255'
   },
 
   applyTxs(txs) {
