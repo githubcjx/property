@@ -66,11 +66,19 @@ const THEMES = [
     dots: ['#e8eaed', '#b8bcc4', '#070708'],
     accent: '#e8eaed', accentRgb: '232,234,237', investment: '#b8bcc4',
   },
-  // —— 软光质感系列（新拟态软浮雕）——
+  // —— 解锁质感系列（结构型主题，需看一段激励视频解锁；locked:true）——
+  // 晴空软光(软光浮雕)、硬核粗野(浅色纸底)见 app.wxss 的 .theme-slate / .theme-brutalist。
   {
-    key: 'slate', name: '晴空软光', series: 'tactile',
+    key: 'slate', name: '晴空软光', series: 'premium', locked: true,
     dots: ['#6cb8f2', '#79cf8e', '#f0cd6a'],
     accent: '#6cb8f2', accentRgb: '108,184,242', investment: '#79cf8e',
+  },
+  {
+    key: 'brutalist', name: '硬核粗野', series: 'premium', locked: true, light: true,
+    dots: ['#ff5c38', '#3b6fe0', '#efe7d6'],           // 选择页色点：橙红 / 蓝 / 纸底
+    accent: '#ffce2e', accentRgb: '255,206,46', investment: '#ff5c38',
+    // 信号黄折线在浅纸底上偏浅，趋势图改用 accent-2 蓝（canvas 取不到 CSS 变量）
+    chartAccent: '#3b6fe0', chartAccentRgb: '59,111,224',
   },
 ]
 
@@ -78,7 +86,7 @@ const THEMES = [
 const THEME_SERIES = [
   { key: 'banknote', name: '人民币纸币配色系列', desc: '取自一版纸币标准色，按面值 1 / 5 / 10 / 20 / 50 / 100 排序' },
   { key: 'classic', name: '经典深色系列', desc: '深色玻璃质感原生配色' },
-  { key: 'tactile', name: '软光质感系列', desc: '新拟态软浮雕 · 去玻璃反光、哑光有质感' },
+  { key: 'premium', name: '质感臻选系列', desc: '软光浮雕 + 浅色粗野 · 两种独特结构质感' },
 ]
 
 // 派生：[{ ...series, themes: [...] }]，已过滤掉无主题的空系列。
@@ -107,8 +115,34 @@ const CAT_HEX = {
   twilight:{ liquid: '#c4a3ff', investment: '#ff9ec4', fixed: '#a3c4ff', receivable: '#f0e6ff' },
   obsidian:{ liquid: '#e8eaed', investment: '#b8bcc4', fixed: '#9aa0aa', receivable: '#f5f6f8' },
   slate:   { liquid: '#6cb8f2', investment: '#79cf8e', fixed: '#f0cd6a', receivable: '#a7d4f5' },
+  brutalist: { liquid: '#3b6fe0', investment: '#ff5c38', fixed: '#f2b90a', receivable: '#5f8f3a' },
 }
-const DEBT_HEX = '#ffb3b3'   // 与 app.wxss --debt 一致；财务负向跨主题恒红
+const DEBT_HEX = '#ffb3b3'         // 与 app.wxss --debt 一致；财务负向跨主题恒红
+const DEBT_HEX_LIGHT = '#e5382b'   // 浅色主题的 --debt(见 .theme-brutalist)；浅底上浅红不可读
+
+// 浅色主题集合(由 THEMES 的 light 标记派生)：page 底/导航栏/回弹区等系统级颜色
+// 写死为深色，浅色主题需在 JS 侧动态切换(app.applyThemeChrome)。
+const LIGHT_THEMES = THEMES.filter(t => t.light).map(t => t.key)
+function isLight(key) { return LIGHT_THEMES.indexOf(key) >= 0 }
+
+// 广告解锁总开关：UV 未达微信「流量主」开通门槛前先关闭 —— 此时 premium 系列
+// (晴空软光/硬核粗野)全部免费开放、色卡不显示解锁角标、点选直接应用。
+// 达标并把 THEME_AD_UNIT_ID 填成真实广告位后，改成 true 即启用「看广告解锁」。
+const THEME_LOCK_ENABLED = false
+
+// 需解锁的主题(locked:true 且总开关开启)：切换前要看一段激励视频。解锁状态由 app 侧
+// 持久化(app.isThemeUnlocked / app.unlockTheme)，本函数只判断该主题「当前是否需要解锁」。
+function isLocked(key) {
+  if (!THEME_LOCK_ENABLED) return false
+  const t = getTheme(key); return !!(t && t.locked)
+}
+
+// 激励视频广告位 ID —— 从微信公众平台「流量主」后台申请(形如 adunit-xxxxxxxx)，填这里即可。
+// 未配置(仍为占位值)时，主题页走「模拟解锁」便于开发预览；填真实 ID 后自动走真实广告。
+const THEME_AD_UNIT_ID = 'adunit-0000000000000000'
+function isAdConfigured() {
+  return /^adunit-[0-9a-z]+$/i.test(THEME_AD_UNIT_ID) && THEME_AD_UNIT_ID !== 'adunit-0000000000000000'
+}
 
 function hexToRgb(hex) {
   const h = String(hex || '').replace('#', '')
@@ -119,7 +153,7 @@ function hexToRgb(hex) {
 
 // 按当前主题取类目色。colorClass ∈ liquid|investment|fixed|receivable|debt。
 function catHex(themeKey, colorClass) {
-  if (colorClass === 'debt') return DEBT_HEX
+  if (colorClass === 'debt') return isLight(themeKey) ? DEBT_HEX_LIGHT : DEBT_HEX
   const m = CAT_HEX[themeKey] || CAT_HEX[DEFAULT_THEME]
   return m[colorClass] || getTheme(themeKey).accent
 }
@@ -127,4 +161,7 @@ function catRgb(themeKey, colorClass) {
   return hexToRgb(catHex(themeKey, colorClass))
 }
 
-module.exports = { THEMES, THEME_SERIES, THEME_GROUPS, DEFAULT_THEME, getTheme, catHex, catRgb, hexToRgb }
+module.exports = {
+  THEMES, THEME_SERIES, THEME_GROUPS, DEFAULT_THEME, getTheme,
+  catHex, catRgb, hexToRgb, isLight, isLocked, THEME_LOCK_ENABLED, THEME_AD_UNIT_ID, isAdConfigured,
+}

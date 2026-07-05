@@ -271,3 +271,26 @@
   font-size: 26rpx;
   color: var(--ink-100);
 }
+
+/* ============================================================
+   硬核粗野（浅色）主题：编辑变动抽屉改造
+   .edit-sheet 背景写死深色玻璃，文字走 --ink-100（浅色主题下近黑）→ 深底深字看不清。
+   本页私有元素，按 .theme-brutalist 作用域覆盖为纸底 + 黑硬边 + 硬投影（去毛玻璃），
+   并给输入容器补纸底黑边以恢复边界感。仅限 brutalist，其它主题不受影响。
+   ============================================================ */
+.theme-brutalist .edit-sheet {
+  background: var(--bg-2);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border-top: var(--bru-border);
+  border-left: var(--bru-border);
+  border-right: var(--bru-border);
+  box-shadow: 0 -12rpx 0 var(--bru-ink);
+}
+.theme-brutalist .edit-handle { background: var(--ink-40); }
+.theme-brutalist .edit-amount-wrap,
+.theme-brutalist .edit-pick,
+.theme-brutalist .edit-note-wrap {
+  background: var(--bru-paper);
+  border: 3rpx solid var(--bru-ink);
+}

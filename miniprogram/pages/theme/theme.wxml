@@ -41,7 +41,7 @@
       <view
         wx:for="{{group.themes}}"
         wx:key="key"
-        class="swatch {{item.key === theme ? 'active' : ''}}"
+        class="swatch {{item.key === theme ? 'active' : ''}} {{item.light ? 'swatch-light' : ''}} {{item.locked && !unlockedMap[item.key] ? 'swatch-locked' : ''}}"
         style="background: linear-gradient(140deg, {{item.dots[0]}}22, {{item.dots[2]}});"
         data-key="{{item.key}}"
         bindtap="onPick"
@@ -52,9 +52,10 @@
           <view class="sw-dot" style="background: {{item.dots[2]}};"></view>
         </view>
         <text class="sw-name">{{item.name}}</text>
+        <view wx:if="{{lockEnabled && item.locked && !unlockedMap[item.key]}}" class="sw-lock">看广告解锁</view>
       </view>
     </view>
   </view>
 
-  <view class="hint">所有主题共用深色玻璃质感，仅切换强调色与背景色调 · 点选即时生效</view>
+  <view class="hint">不同系列质感各异：深色玻璃 / 软光浮雕 / 浅色粗野 · 点选即时生效</view>
 </view>

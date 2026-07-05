@@ -1,7 +1,7 @@
 const app = getApp()
 const echarts = require('../../ec-canvas/echarts')
 const chartSvc = require('../../../../services/chart.js')
-const { getTheme } = require('../../../../utils/theme.js')
+const { getTheme, isLight } = require('../../../../utils/theme.js')
 
 // Tab 与时间范围常量
 const TABS = [
@@ -97,6 +97,7 @@ Page({
   },
 
   onShow() {
+    app.applyThemeChrome()
     this.setData({
       reduceMotion: app.globalData.reduceMotion,
       theme: app.globalData.theme,
@@ -155,9 +156,18 @@ Page({
 
   buildOption(data, tabKey, hide) {
     const t = getTheme(app.globalData.theme)
-    const accent = t.accent
-    const accentRgb = t.accentRgb
+    // 浅色主题：主题可指定 chartAccent（如信号黄在纸底上偏浅，改用 accent-2 蓝）；
+    // 轴文字/图例/负债线原为写死浅色，浅底下改墨色（canvas 取不到 CSS 变量）
+    const light = isLight(app.globalData.theme)
+    const accent = t.chartAccent || t.accent
+    const accentRgb = t.chartAccentRgb || t.accentRgb
     const invest = t.investment
+    const axisInk = light ? 'rgba(20,17,11,0.55)' : 'rgba(245,248,255,0.5)'
+    const legendInk = light ? 'rgba(20,17,11,0.78)' : 'rgba(245,248,255,0.78)'
+    const axisLine = light ? 'rgba(20,17,11,0.18)' : 'rgba(255,255,255,0.12)'
+    const splitLine = light ? 'rgba(20,17,11,0.08)' : 'rgba(255,255,255,0.06)'
+    const debtColor = light ? '#e5382b' : '#ffb3b3'
+    const debtRgb = light ? '229,56,43' : '255,179,179'
 
     const yFormatter = hide
       ? () => '***'
@@ -211,15 +221,15 @@ Page({
           symbolSize: 4,
           showSymbol: false,
           data: data.series.debt,
-          lineStyle: { color: '#ffb3b3', width: 1.4 },
-          itemStyle: { color: '#ffb3b3' },
+          lineStyle: { color: debtColor, width: 1.4 },
+          itemStyle: { color: debtColor },
           areaStyle: {
             color: {
               type: 'linear',
               x: 0, y: 0, x2: 0, y2: 1,
               colorStops: [
-                { offset: 0, color: 'rgba(255,179,179,0.18)' },
-                { offset: 1, color: 'rgba(255,179,179,0)' },
+                { offset: 0, color: `rgba(${debtRgb},0.18)` },
+                { offset: 1, color: `rgba(${debtRgb},0)` },
               ],
             },
           },
@@ -266,7 +276,7 @@ Page({
       backgroundColor: 'transparent',
       grid: { left: 6, right: 12, top: 32, bottom: 24, containLabel: true },
       legend: {
-        textStyle: { color: 'rgba(245,248,255,0.78)', fontSize: 11 },
+        textStyle: { color: legendInk, fontSize: 11 },
         top: 0,
         right: 0,
         icon: 'circle',
@@ -284,10 +294,10 @@ Page({
         type: 'category',
         data: data.xLabels,
         boundaryGap: false,
-        axisLine: { lineStyle: { color: 'rgba(255,255,255,0.12)' } },
+        axisLine: { lineStyle: { color: axisLine } },
         axisTick: { show: false },
         axisLabel: {
-          color: 'rgba(245,248,255,0.5)',
+          color: axisInk,
           fontSize: 10,
           interval: 'auto',
         },
@@ -296,11 +306,11 @@ Page({
         type: 'value',
         min: 0,
         axisLabel: {
-          color: 'rgba(245,248,255,0.5)',
+          color: axisInk,
           fontSize: 10,
           formatter: yFormatter,
         },
-        splitLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } },
+        splitLine: { lineStyle: { color: splitLine } },
       },
       series,
     }

@@ -696,3 +696,358 @@ button.btn-reset::after { display: none; }
 }
 /* 哑光底：星点几乎隐去，让浮雕阴影成为主角(主题类挂在 canvas-bg 本身，用复合选择器) */
 .theme-slate.canvas-bg::after { opacity: 0.12; }
+
+/* ============================================================
+   硬核粗野系列 · 硬核粗野（Neo-Brutalist）
+   与「换配色」类主题不同：本主题是「结构型主题」，参照 .theme-slate 的做法，
+   除覆盖 CSS 变量外，还在 .theme-brutalist 作用域下把共享表面（.glass/.card/.cat-card/
+   按钮/FAB/工具面板…）整体改造成「浅色纸底 + 实心色块 + 4rpx 黑硬边 + 硬投影(offset shadow)
+   + 去毛玻璃 + 去光晕」的粗野质感。所有改造都限定在 .theme-brutalist 下，绝不影响其它主题。
+
+   ⚠ 这是全套主题里第一个「浅色」主题：
+     - page 底色 / 导航栏色写死在 app.json（深色），浅色主题下由 app.applyThemeChrome()
+       在各页 onShow 时动态覆盖（状态栏前景 / 回弹区底色 / 下拉三点）。
+     - 许多表面背景是写死的半透明白（rgba(255,255,255,.0x)），在浅底上会隐形，
+       故本块逐个把它们覆盖为纸底 + 黑描边。
+
+   刻意保留高对比：大数字、红涨绿跌语义（--debt/--neg 恒红）、类别识别色。
+   附带收益：全程零 backdrop-filter，比默认玻璃更省电（呼应发热反馈）。
+   ============================================================ */
+
+.theme-brutalist {
+  /* —— 纸底三层（浅色反转）—— */
+  --bg-0: #e4dcc7;   /* 最底（回弹区/画布外沿） */
+  --bg-1: #efe7d6;   /* 页面底 */
+  --bg-2: #ffffff;   /* 卡片面 */
+
+  /* —— 玻璃占位（本主题不使用玻璃，给个纸底兜底，防止未覆盖处透出深色）—— */
+  --glass-0: rgba(255, 255, 255, 0.5);
+  --glass-1: #ffffff;
+  --glass-2: #ffffff;
+  --glass-3: #f4eedd;
+
+  /* —— 描边 = 硬黑 —— */
+  --hairline:    rgba(20, 17, 11, 0.16);
+  --hairline-hi: rgba(20, 17, 11, 0.28);
+
+  /* —— 墨（近黑，浅底之上）—— */
+  --ink-100: #14110b;
+  --ink-80:  rgba(20, 17, 11, 0.82);
+  --ink-60:  rgba(20, 17, 11, 0.60);
+  --ink-40:  rgba(20, 17, 11, 0.42);
+  --ink-20:  rgba(20, 17, 11, 0.18);
+
+  /* —— 类别识别色：饱和实心色块（浅底可读）—— */
+  --ice-blue:   #3b6fe0;                 /* 主强调（沿用 --ice-blue 别名，多处引用）*/
+  --liquid:     #3b6fe0; --liquid-rgb:     59, 111, 224;   /* 流动资金 · 蓝 */
+  --investment: #ff5c38; --investment-rgb: 255, 92, 56;    /* 投资理财 · 橙红 */
+  --fixed:      #f2b90a; --fixed-rgb:      242, 185, 10;    /* 固定资产 · 琥珀 */
+  --receivable: #5f8f3a; --receivable-rgb: 95, 143, 58;     /* 应收款 · 橄榄绿 */
+  --debt:       #e5382b; --debt-rgb:       229, 56, 43;     /* 负债 · 红（负向语义）*/
+
+  /* —— 主强调 / 涨跌 —— */
+  --accent:   #ffce2e; --accent-rgb: 255, 206, 46;   /* 信号黄：加号、主按钮填充（配黑字）*/
+  --accent-2: #3b6fe0;
+  --pos: #1f7a4d;      /* 涨 · 绿（区别于黄色强调）*/
+  --neg: #e5382b;      /* 跌 · 红 */
+  --good: #1f7a4d; --good-rgb: 31, 122, 77;
+  --warn: #f2b90a; --warn-rgb: 242, 185, 10;
+
+  /* —— 无星云：底色纯平（见下 .canvas-bg 覆盖）—— */
+  --neb-1: transparent;
+  --neb-2: transparent;
+
+  /* —— 本主题专用：硬投影 / 硬边（集中一处，改一处全联动）—— */
+  --bru-ink:       #14110b;
+  --bru-border:    4rpx solid #14110b;   /* 750rpx 画布 ≈ 2px 黑边 */
+  --bru-shadow:    10rpx 10rpx 0 #14110b; /* 卡片硬投影（无模糊、纯 offset）*/
+  --bru-shadow-sm: 6rpx 6rpx 0 #14110b;   /* 小元件硬投影 */
+  --bru-paper:     #f6f1e4;               /* 卡内次级面（如账户行）*/
+}
+
+/* —— 数字：等宽（可读、账本感）。如需精确 Space Mono，可在 app.js loadFontFace —— */
+.theme-brutalist .num,
+.theme-brutalist .amt-int,
+.theme-brutalist .amt-sign,
+.theme-brutalist .amt-frac,
+.theme-brutalist .amt-prefix {
+  font-family: "Space Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  letter-spacing: 0;
+}
+
+/* ============================================================
+   底：纯平纸色，去星云 / 去光斑
+   （主题类挂在 canvas-bg 本身，用复合选择器 .theme-brutalist.canvas-bg）
+   ============================================================ */
+.theme-brutalist.canvas-bg {
+  background: var(--bg-1);
+}
+.theme-brutalist.canvas-bg::before,
+.theme-brutalist.canvas-bg::after {
+  display: none;
+}
+
+/* ============================================================
+   共享大表面 → 白卡 + 黑硬边 + 硬投影（去毛玻璃、去柔阴影）
+   ============================================================ */
+.theme-brutalist .glass,
+.theme-brutalist .glass-2,
+.theme-brutalist .card,
+.theme-brutalist .card-sub,
+.theme-brutalist .cat-card,
+.theme-brutalist .upd-card {
+  background: var(--bg-2);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: var(--bru-border);
+  border-radius: 20rpx;
+  box-shadow: var(--bru-shadow);
+}
+.theme-brutalist .card-sub { background: var(--bru-paper); box-shadow: var(--bru-shadow-sm); }
+/* 卡片彩色柔光晕：粗野风格不要模糊光，直接隐藏 */
+.theme-brutalist .cat-glow,
+.theme-brutalist .hero-halo,
+.theme-brutalist .fab::before { display: none; }
+
+/* ============================================================
+   类别「珠」→ 实心色块 + 黑边 + 小圆角（去径向渐变 / 去外发光）
+   覆盖工具类 .cat-tint-*（首页分类珠 + Hero 成分珠共用）
+   ============================================================ */
+.theme-brutalist .cat-tint-liquid     { background: var(--liquid);     border: var(--bru-border); box-shadow: none; }
+.theme-brutalist .cat-tint-investment { background: var(--investment); border: var(--bru-border); box-shadow: none; }
+.theme-brutalist .cat-tint-fixed      { background: var(--fixed);      border: var(--bru-border); box-shadow: none; }
+.theme-brutalist .cat-tint-receivable { background: var(--receivable); border: var(--bru-border); box-shadow: none; }
+.theme-brutalist .cat-tint-debt       { background: var(--debt);       border: var(--bru-border); box-shadow: none; }
+/* 分类珠容器 / 子账户图标：方块黑边小圆角 */
+.theme-brutalist .cat-orb   { border-radius: 14rpx; }
+.theme-brutalist .acc-icon  {
+  background: var(--bru-paper);
+  border: 3rpx solid var(--bru-ink);
+  border-radius: 12rpx;
+}
+/* Hero 成分珠本是圆形，粗野化为黑边圆点即可（保留圆形做节奏对比）*/
+.theme-brutalist .orb { border: 4rpx solid var(--bru-ink); }
+
+/* ============================================================
+   Hero · 净资产：去纤细字重 / 去发光，改粗体
+   （.amt-prefix / .amt-frac 原为写死白色，浅底需改墨色）
+   ============================================================ */
+.theme-brutalist .hero-amount {
+  font-weight: 700;
+  letter-spacing: -1rpx;
+  text-shadow: none;
+}
+.theme-brutalist .amt-prefix,
+.theme-brutalist .amt-frac { color: var(--ink-60); }
+.theme-brutalist .amt-sign,
+.theme-brutalist .amt-int  { color: var(--ink-100); }
+
+/* 涨跌药丸：实心 + 黑边 + 小圆角，去毛玻璃/去发光。涨=绿、跌=红 */
+.theme-brutalist .delta-pill {
+  border-radius: 12rpx;
+  border: 3rpx solid var(--bru-ink);
+  font-weight: 700;
+  box-shadow: var(--bru-shadow-sm);
+}
+.theme-brutalist .delta-pill.pos { background: var(--pos); color: #fff; }
+.theme-brutalist .delta-pill.neg { background: var(--neg); color: #fff; }
+
+/* 金额文字：去发光 + 统一转黑（琥珀等浅识别色在白底上对比不足，颜色只留在色块珠上）。
+   顺序在后的 .cat-debt 覆盖 → 负债金额仍红（负向语义不变）。 */
+.theme-brutalist .cat-amount,
+.theme-brutalist .acc-amount { text-shadow: none; color: var(--ink-100); }
+.theme-brutalist .cat-debt { color: var(--debt); }
+
+/* ------------------------------------------------------------
+   图标着色修复（浅色主题关键）：
+   独立线性图标 .ic 的 SVG 是写死白色 stroke（%23f5f8ff），浅底上会隐形。
+   filter: brightness(0) 把任意底色图标压成纯黑、保留透明通道 —— 一处修全部。
+   例外：.acc-icon .ic 用 mask + currentColor 取类目色（自带 drop-shadow），需还原。
+   .ic-glyph（色块珠内白色字形）在饱和色块上对比良好，不属 .ic，保持白色。
+   ------------------------------------------------------------ */
+.theme-brutalist .ic { filter: brightness(0); }
+.theme-brutalist .acc-icon .ic { filter: none; }
+
+/* ============================================================
+   顶栏按钮 / FAB / 工具入口 → 实心 + 黑边 + 硬投影，去毛玻璃
+   ============================================================ */
+.theme-brutalist .eye-btn,
+.theme-brutalist .add-btn {
+  background: var(--accent);
+  border: var(--bru-border);
+  border-radius: 14rpx;
+  box-shadow: var(--bru-shadow-sm);
+}
+.theme-brutalist .eye-btn { background: var(--bg-2); }
+
+.theme-brutalist .fab,
+.theme-brutalist .tools-entry {
+  background: var(--bg-2);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: var(--bru-border);
+  box-shadow: var(--bru-shadow-sm);
+}
+.theme-brutalist .fab          { border-radius: 16rpx; }
+.theme-brutalist .tools-entry  { border-radius: 16rpx; }
+.theme-brutalist .tools-entry-label,
+.theme-brutalist .brand { color: var(--ink-100); }
+
+/* 按钮体系 */
+.theme-brutalist .btn { border-radius: 16rpx; }
+.theme-brutalist .btn-primary {
+  background: var(--accent);
+  color: var(--bru-ink);
+  border: var(--bru-border);
+  box-shadow: var(--bru-shadow-sm);
+}
+.theme-brutalist .btn-dark,
+.theme-brutalist .btn-ghost {
+  background: var(--bg-2);
+  color: var(--ink-100);
+  border: var(--bru-border);
+  box-shadow: var(--bru-shadow-sm);
+}
+
+/* ============================================================
+   账户行（写死半透明白 → 纸底 + 黑细边）
+   ============================================================ */
+.theme-brutalist .acc-row {
+  background: var(--bru-paper);
+  border: 3rpx solid var(--bru-ink);
+  border-radius: 14rpx;
+}
+.theme-brutalist .acc-row-hover { background: #efe6d2; }
+.theme-brutalist .acc-badge {
+  background: var(--bg-2);
+  border: 2rpx solid var(--ink-40);
+  color: var(--ink-60);
+  border-radius: 6rpx;
+}
+
+/* ============================================================
+   月报横幅 → 实心琥珀块 + 黑边 + 硬投影（去柔光渐变）
+   ============================================================ */
+.theme-brutalist .mreport-banner {
+  background: var(--fixed);
+  border: var(--bru-border);
+  border-radius: 18rpx;
+  box-shadow: var(--bru-shadow);
+}
+.theme-brutalist .mrb-ico {
+  background: var(--bg-2);
+  border: 3rpx solid var(--bru-ink);
+  border-radius: 12rpx;
+}
+.theme-brutalist .mrb-title,
+.theme-brutalist .mrb-sub { color: var(--bru-ink); }
+
+/* ============================================================
+   工具面板（底部抽屉）→ 纸底 + 黑顶边；chip 实心色块
+   ============================================================ */
+.theme-brutalist .tools-mask {
+  background: rgba(20, 17, 11, 0.35);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.theme-brutalist .tools-sheet {
+  background: var(--bg-1);
+  border-top: var(--bru-border);
+  border-radius: 28rpx 28rpx 0 0;
+  box-shadow: 0 -12rpx 0 var(--bru-ink);
+}
+.theme-brutalist .sheet-title,
+.theme-brutalist .tool-label { color: var(--ink-100); }
+.theme-brutalist .sheet-close {
+  background: var(--bg-2);
+  border: 3rpx solid var(--bru-ink);
+}
+.theme-brutalist .tool-chip {
+  border: var(--bru-border);
+  border-radius: 16rpx;
+  box-shadow: var(--bru-shadow-sm);
+}
+/* chip 柔光后景（::after 模糊）关闭，改实心色 */
+.theme-brutalist .tool-chip::after { display: none; }
+.theme-brutalist .chip-mint   { background: #2fb488; }
+.theme-brutalist .chip-ice    { background: var(--liquid); }
+.theme-brutalist .chip-lav    { background: var(--investment); }
+.theme-brutalist .chip-gold   { background: var(--fixed); }
+.theme-brutalist .chip-teal   { background: var(--receivable); }
+.theme-brutalist .chip-report { background: var(--accent); }
+
+/* ============================================================
+   空状态 / 版本更新弹窗：去发光，实心 + 黑边 + 硬投影
+   ============================================================ */
+.theme-brutalist .empty-orb {
+  background: var(--accent);
+  border: var(--bru-border);
+  box-shadow: var(--bru-shadow);
+  border-radius: 20rpx;
+}
+.theme-brutalist .empty-cta {
+  background: var(--accent);
+  color: var(--bru-ink);
+  border: var(--bru-border);
+  border-radius: 16rpx;
+  box-shadow: var(--bru-shadow-sm);
+}
+.theme-brutalist .upd-badge {
+  background: var(--accent);
+  border: 3rpx solid var(--bru-ink);
+  color: var(--bru-ink);
+  border-radius: 8rpx;
+}
+.theme-brutalist .upd-dot { box-shadow: none; background: var(--bru-ink); }
+.theme-brutalist .upd-btn-ghost {
+  background: var(--bg-2);
+  border: var(--bru-border);
+  color: var(--ink-100);
+}
+.theme-brutalist .upd-btn-primary {
+  background: var(--accent);
+  color: var(--bru-ink);
+  border: var(--bru-border);
+}
+
+/* ============================================================
+   动效收敛：粗野风更「硬」，去掉呼吸光/扫光更契合
+   ============================================================ */
+.theme-brutalist .amt-shine { display: none; }
+
+/* ============================================================
+   组件：金额键盘抽屉（amount-input）
+   组件走样式隔离，只接受 app.wxss 全局规则（页面 wxss 到不了组件内），故在此覆盖。
+   .ai-sheet 写死深色玻璃、内部文字走 --ink（浅色主题下变黑）→ 深底黑字看不清；
+   改为纸底 + 黑硬边 + 硬投影，键面/输入容器补纸底黑边恢复层次。仅限 brutalist。
+   ============================================================ */
+.theme-brutalist .ai-mask {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.theme-brutalist .ai-sheet {
+  background: var(--bg-2);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border-top: var(--bru-border);
+  border-left: var(--bru-border);
+  border-right: var(--bru-border);
+  box-shadow: 0 -12rpx 0 var(--bru-ink);
+}
+.theme-brutalist .ai-handle { background: var(--ink-40); }
+.theme-brutalist .ai-acc,
+.theme-brutalist .ai-note-wrap {
+  background: var(--bru-paper);
+  border: 3rpx solid var(--bru-ink);
+}
+.theme-brutalist .ai-key {
+  background: var(--bru-paper);
+  border: 3rpx solid var(--bru-ink);
+  box-shadow: var(--bru-shadow-sm);
+}
+.theme-brutalist .ai-key-back { background: var(--bg-2); }
+.theme-brutalist .ai-key-press {
+  transform: scale(0.94);
+  background: #efe6d2;
+  box-shadow: none;
+}

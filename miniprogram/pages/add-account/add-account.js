@@ -49,6 +49,7 @@ Page({
   },
 
   onLoad(query) {
+    app.applyThemeChrome()
     const sysInfo = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
     this.setData({
       statusBarHeight: sysInfo.statusBarHeight || 20,

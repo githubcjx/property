@@ -154,6 +154,7 @@ Page({
   },
 
   onShow() {
+    app.applyThemeChrome()
     const hide = app.globalData.hideAmount
     this.setData({
       reduceMotion: app.globalData.reduceMotion,

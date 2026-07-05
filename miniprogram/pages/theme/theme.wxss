@@ -148,6 +148,28 @@
 .sw-dots { display: flex; gap: 8rpx; margin-bottom: 16rpx; }
 .sw-dot { width: 30rpx; height: 30rpx; border-radius: 50%; }
 .sw-name { font-size: 22rpx; color: rgba(255, 255, 255, 0.9); }
+/* 浅色主题的色卡(如硬核粗野)：卡面是浅纸底，名字改墨色、色点加描边防止与底同色隐形 */
+.swatch-light .sw-name { color: rgba(20, 17, 11, 0.85); }
+.swatch-light .sw-dot { border: 1rpx solid rgba(20, 17, 11, 0.30); }
+.swatch-light.active {
+  border-color: rgba(20, 17, 11, 0.55);
+  box-shadow: 0 0 0 2rpx rgba(20, 17, 11, 0.30);
+}
+
+/* 解锁质感系列：未解锁的色卡显示金底黑字「看广告解锁」角标，色点略降透明度示意锁定 */
+.swatch-locked .sw-dots { opacity: 0.72; }
+.sw-lock {
+  position: absolute;
+  top: 0; right: 0;
+  padding: 4rpx 10rpx;
+  font-size: 17rpx;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #14110b;
+  background: #ffce2e;
+  border-radius: 0 24rpx 0 12rpx;
+  letter-spacing: 0.02em;
+}
 
 .hint {
   margin-top: 36rpx;

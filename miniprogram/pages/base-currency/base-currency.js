@@ -21,6 +21,7 @@ Page({
   },
 
   onShow() {
+    app.applyThemeChrome()
     this.setData({ theme: app.globalData.theme, reduceMotion: app.globalData.reduceMotion })
   },
 

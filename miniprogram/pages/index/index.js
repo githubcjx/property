@@ -117,6 +117,7 @@ Page({
   noop() {},
 
   onShow() {
+    app.applyThemeChrome()
     this.setData({
       hideAmount: app.globalData.hideAmount,
       reduceMotion: app.globalData.reduceMotion,

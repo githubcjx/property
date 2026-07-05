@@ -578,6 +578,34 @@
 .no-motion .sheet-in,
 .no-motion .sheet-out { animation-duration: 0.001s; }
 
+/* ============================================================
+   硬核粗野（浅色）主题：指标说明弹窗改造
+   .sheet 背景写死深色玻璃，而文字用 --ink-100（浅色主题下变近黑）→ 深底深字看不清。
+   本页私有元素，故在此按 .theme-brutalist 作用域覆盖为纸底 + 黑硬边 + 硬投影（去毛玻璃），
+   与全局粗野表面统一。仅限 brutalist，其它主题(含晴空软光等深色)不受影响。
+   变量 --bru-* / --bg-2 / --ink-40 由 app.wxss 的 .theme-brutalist 提供，级联至此可用。
+   ============================================================ */
+.theme-brutalist .sheet-mask { background: rgba(20, 17, 11, 0.28); }
+.theme-brutalist .sheet {
+  background: var(--bg-2);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border-top: var(--bru-border);
+  border-left: var(--bru-border);
+  border-right: var(--bru-border);
+  box-shadow: 0 -12rpx 0 var(--bru-ink);
+}
+.theme-brutalist .sheet-handle { background: var(--ink-40); }
+.theme-brutalist .sheet-close {
+  background: var(--bg-2);
+  border: 3rpx solid var(--bru-ink);
+  border-radius: 12rpx;
+}
+.theme-brutalist .sheet-formula {
+  background: var(--bru-paper);
+  border: 3rpx solid var(--bru-ink);
+}
+
 /* 晒一晒入口 */
 .share-cta {
   margin: 40rpx 8rpx 0;
