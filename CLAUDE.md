@@ -12,7 +12,7 @@ There is **no npm build, lint, or test tooling for the mini program** (`nodeModu
 
 - **Run/preview**: open the project root in WeChat DevTools and click 编译 (Compile). See `README.md` for first-time setup (importing the project, opening 云开发, creating the `accounts`/`transactions` collections and their indexes).
 - **Cloud env ID** lives at the top of `miniprogram/app.js` (`CLOUD_ENV_ID`) — already set to a real environment; not a placeholder.
-- **Cloud function** (`cloudfunctions/reminderSend/`) is the only place with npm deps: `cd cloudfunctions/reminderSend && npm install`. Deploy via DevTools → 云开发 → right-click the function → 上传并部署. It is **not** part of the mini-program runtime — see its own `README.md`. Secrets (`MP_APPID`/`MP_APPSECRET`) come from cloud-function env vars, never hardcoded. Its cron in `config.json` is in **UTC** (北京时间 − 8h).
+- **Cloud functions** live in `cloudfunctions/` and each has its own npm deps: `cd cloudfunctions/<fn> && npm install`. Currently only `fxRateSync/` (每日汇率抓取，见「多货币」不变量 / `services/fxRate.js`). Deploy via DevTools → 云开发 → right-click the function → 上传并部署. They are **not** part of the mini-program runtime — see each function's own `README.md`. Any secrets come from cloud-function env vars, never hardcoded. Crons in `config.json` are in **UTC** (北京时间 − 8h).
 
 ## Git workflow
 
@@ -63,4 +63,4 @@ These are the cross-cutting rules that aren't obvious from any single file. Viol
 
 > Note: the repo root also has `WRITING.md` — a **separate instruction file** for writing 公众号 (WeChat Official Account) articles that drive traffic to 净值本. It's unrelated to the mini-program code; read it first only when the user asks you to write an article (「写一篇」). Mini-program cards are inserted by the owner, not Claude.
 
-> Note: `benchmark.js`'s age-bucketed distribution (`AGE_BUCKETS`) is **placeholder data** (`SOURCE.isPlaceholder: true`), not authoritative — preserve the structure but don't treat the numbers as real. The README's "当前进度" section is stale (settings/health/milestones/peer-benchmark and the reminder cloud function already exist).
+> Note: `benchmark.js`'s age-bucketed distribution (`AGE_BUCKETS`) is **placeholder data** (`SOURCE.isPlaceholder: true`), not authoritative — preserve the structure but don't treat the numbers as real. The README's "当前进度" section is stale (settings/health/milestones/peer-benchmark already exist).

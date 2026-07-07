@@ -1,9 +1,0 @@
-{
-  "name": "reminderSend",
-  "version": "1.0.0",
-  "description": "Monthly mass-send reminder via subscription account",
-  "main": "index.js",
-  "dependencies": {
-    "wx-server-sdk": "~2.6.3"
-  }
-}
