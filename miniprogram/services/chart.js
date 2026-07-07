@@ -1,6 +1,7 @@
 const cloud = require('./cloud.js')
 const { CATEGORIES } = require('../utils/categories.js')
 const { snapshotCnyFen, valueCnyFen } = require('../utils/networth.js')
+const cpi = require('../utils/cpiData.js')
 
 // ============== 时间节点策略 ==============
 
@@ -165,10 +166,20 @@ async function getChartSeries(rangeKey, opts) {
   const liquid = []
   const investment = []
 
+  // 通胀调整（购买力/真实序列）：每个节点 × CPI因子(节点→今天)，把历史值折算成「今天的钱」。
+  // 右端(今天)因子=1，两线在右侧收敛、向左发散。CPI 未覆盖的节点(如 2022 前)因子取 1(按名义)，
+  // 并置 realCoverage=false 供页面提示——诚实降级，不臆造更早的通胀。
+  const factors = []
+  let realCoverage = true
+
   const nowMs = Date.now()
   for (const node of nodes) {
     const t = node.getTime()
     const isCurrent = t >= nowMs - 1000   // "当前/最新节点"判定
+
+    let f = cpi.factorBetween(t, nowMs)
+    if (f == null) { f = 1; realCoverage = false }
+    factors.push(f)
     const bucket = { liquid: 0, investment: 0, fixed: 0, receivable: 0, debt: 0 }
 
     for (const a of accounts) {
@@ -210,6 +221,16 @@ async function getChartSeries(rangeKey, opts) {
   }
 
   const series = { netWorth, debt, liquid, investment }
+
+  // 真实（通胀调整）序列：逐节点缩放。
+  const scale = (arr) => arr.map((v, i) => Math.round(v * factors[i]))
+  const seriesReal = {
+    netWorth: scale(netWorth),
+    debt: scale(debt),
+    liquid: scale(liquid),
+    investment: scale(investment),
+  }
+
   return {
     xLabels,
     granularity,
@@ -217,7 +238,11 @@ async function getChartSeries(rangeKey, opts) {
     startDate,
     endDate,
     series,
+    seriesReal,
+    realCoverage,          // 全部节点是否都被 CPI 覆盖
+    cpiLatest: cpi.META.latestYm,
     summary: buildSummary(nodes, series),
+    summaryReal: buildSummary(nodes, seriesReal),
   }
 }
 

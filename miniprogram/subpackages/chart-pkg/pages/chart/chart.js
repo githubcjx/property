@@ -42,6 +42,9 @@ Page({
     ranges: RANGES,
     tabKey: 'net',
     rangeKey: '1y',
+    basis: 'nominal',       // 'nominal' 名义 | 'real' 真实(通胀调整)
+    cpiLatest: '',
+    realCoverage: true,
     customStart: '',
     customEnd: '',
 
@@ -126,12 +129,13 @@ Page({
         : null
       const data = await chartSvc.getChartSeries(this.data.rangeKey, opts)
       this._seriesData = data
-      this._fullSummary = data.summary
+      this._summaryNominal = data.summary
+      this._summaryReal = data.summaryReal
       const hasData = data.series.netWorth.some(v => v !== 0)
         || data.series.debt.some(v => v !== 0)
         || data.series.liquid.some(v => v !== 0)
         || data.series.investment.some(v => v !== 0)
-      this.setData({ hasData })
+      this.setData({ hasData, cpiLatest: data.cpiLatest || '', realCoverage: data.realCoverage !== false })
       this.applySummaryByTab(this.data.tabKey)
       this.renderChart()
     } catch (err) {
@@ -146,7 +150,7 @@ Page({
 
   renderChart() {
     if (!this._seriesData) return
-    const option = this.buildOption(this._seriesData, this.data.tabKey, this.data.hideAmount)
+    const option = this.buildOption(this._seriesData, this.data.tabKey, this.data.hideAmount, this.data.basis)
     if (this._chart) {
       this._chart.setOption(option, true)
     } else {
@@ -154,7 +158,10 @@ Page({
     }
   },
 
-  buildOption(data, tabKey, hide) {
+  buildOption(data, tabKey, hide, basis) {
+    // 真实口径：用通胀调整序列，并给系列名加「·真实」后缀（tooltip/图例可区分）
+    const S = (basis === 'real' && data.seriesReal) ? data.seriesReal : data.series
+    const sfx = basis === 'real' ? '·真实' : ''
     const t = getTheme(app.globalData.theme)
     // 浅色主题：主题可指定 chartAccent（如信号黄在纸底上偏浅，改用 accent-2 蓝）；
     // 轴文字/图例/负债线原为写死浅色，浅底下改墨色（canvas 取不到 CSS 变量）
@@ -193,13 +200,13 @@ Page({
     if (tabKey === 'net') {
       series = [
         {
-          name: '净资产',
+          name: '净资产' + sfx,
           type: 'line',
           smooth: true,
           symbol: 'circle',
           symbolSize: 4,
           showSymbol: false,
-          data: data.series.netWorth,
+          data: S.netWorth,
           lineStyle: { color: accent, width: 2, shadowColor: `rgba(${accentRgb},0.5)`, shadowBlur: 8 },
           itemStyle: { color: accent },
           areaStyle: {
@@ -214,13 +221,13 @@ Page({
           },
         },
         {
-          name: '负债',
+          name: '负债' + sfx,
           type: 'line',
           smooth: true,
           symbol: 'circle',
           symbolSize: 4,
           showSymbol: false,
-          data: data.series.debt,
+          data: S.debt,
           lineStyle: { color: debtColor, width: 1.4 },
           itemStyle: { color: debtColor },
           areaStyle: {
@@ -238,13 +245,13 @@ Page({
     } else {
       series = [
         {
-          name: '流动资金',
+          name: '流动资金' + sfx,
           type: 'line',
           smooth: true,
           symbol: 'circle',
           symbolSize: 4,
           showSymbol: false,
-          data: data.series.liquid,
+          data: S.liquid,
           lineStyle: { color: accent, width: 2, shadowColor: `rgba(${accentRgb},0.4)`, shadowBlur: 6 },
           itemStyle: { color: accent },
           areaStyle: {
@@ -259,13 +266,13 @@ Page({
           },
         },
         {
-          name: '投资',
+          name: '投资' + sfx,
           type: 'line',
           smooth: true,
           symbol: 'circle',
           symbolSize: 4,
           showSymbol: false,
-          data: data.series.investment,
+          data: S.investment,
           lineStyle: { color: invest, width: 1.6 },
           itemStyle: { color: invest },
         },
@@ -319,7 +326,7 @@ Page({
   // ============== 交互 ==============
 
   applySummaryByTab(tabKey) {
-    const full = this._fullSummary
+    const full = this.data.basis === 'real' ? this._summaryReal : this._summaryNominal
     if (!full || !full.metrics) {
       this.setData({ summary: { rangeText: '', lines: [] } })
       return
@@ -328,6 +335,14 @@ Page({
       ? [full.metrics.netWorth.text, full.metrics.debt.text]
       : [full.metrics.liquid.text, full.metrics.investment.text]
     this.setData({ summary: { rangeText: full.rangeText, lines } })
+  },
+
+  onBasisTap(e) {
+    const key = e.currentTarget.dataset.key
+    if (key === this.data.basis) return
+    this.setData({ basis: key })
+    this.applySummaryByTab(this.data.tabKey)
+    this.renderChart()
   },
 
   onTabTap(e) {

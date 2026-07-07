@@ -189,3 +189,54 @@
   font-size: 24rpx;
   color: var(--ink-100);
 }
+
+/* Tab 行 + 名义/真实 口径切换 */
+.tabs-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 24rpx;
+}
+.tabs-row .tabs { margin-top: 0; flex: 1; }
+.basis {
+  display: flex;
+  flex-direction: row;
+  background: var(--glass-1);
+  border: 1rpx solid var(--hairline);
+  border-radius: 18rpx;
+  padding: 4rpx;
+  flex-shrink: 0;
+}
+.basis-item {
+  padding: 0 20rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22rpx;
+  color: var(--ink-60);
+  border-radius: 14rpx;
+}
+.basis-active {
+  background: var(--glass-3);
+  color: var(--ink-100);
+  font-weight: 500;
+  box-shadow: inset 0 2rpx 0 rgba(255,255,255,0.10);
+}
+
+/* 真实口径说明 */
+.basis-note {
+  position: relative;
+  z-index: 1;
+  margin-top: 14rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+  font-size: 20rpx;
+  color: var(--ink-40);
+  line-height: 1.5;
+}
+.basis-note-warn { color: var(--warn); }

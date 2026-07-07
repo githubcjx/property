@@ -20,15 +20,21 @@
     </view>
   </view>
 
-  <!-- Tab 切换 -->
-  <view class="tabs entry-up d1">
-    <view
-      wx:for="{{tabs}}"
-      wx:key="key"
-      class="tab tap {{tabKey === item.key ? 'tab-active' : ''}}"
-      data-key="{{item.key}}"
-      bindtap="onTabTap">
-      {{item.label}}
+  <!-- Tab 切换 + 名义/真实 口径切换 -->
+  <view class="tabs-row entry-up d1">
+    <view class="tabs">
+      <view
+        wx:for="{{tabs}}"
+        wx:key="key"
+        class="tab tap {{tabKey === item.key ? 'tab-active' : ''}}"
+        data-key="{{item.key}}"
+        bindtap="onTabTap">
+        {{item.label}}
+      </view>
+    </view>
+    <view class="basis">
+      <view class="basis-item tap {{basis === 'nominal' ? 'basis-active' : ''}}" data-key="nominal" bindtap="onBasisTap">名义</view>
+      <view class="basis-item tap {{basis === 'real' ? 'basis-active' : ''}}" data-key="real" bindtap="onBasisTap">真实</view>
     </view>
   </view>
 
@@ -44,6 +50,12 @@
       ec="{{ ec }}"
       style="width: 100%; height: 100%; {{!hasData ? 'opacity: 0;' : ''}}">
     </ec-canvas>
+  </view>
+
+  <!-- 真实口径说明 -->
+  <view class="basis-note entry-up" wx:if="{{basis === 'real' && hasData}}">
+    <text>已按国家统计局 CPI 折算为今日购买力 · 截至 {{cpiLatest}}</text>
+    <text wx:if="{{!realCoverage}}" class="basis-note-warn">含更早无 CPI 数据的区间，该段按名义显示</text>
   </view>
 
   <!-- 时间范围 Segmented Control -->
