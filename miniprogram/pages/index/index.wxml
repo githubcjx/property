@@ -1,4 +1,4 @@
-<view class="canvas-bg theme-{{theme}}" wx:if="{{!reduceMotion}}"></view>
+﻿<view class="canvas-bg theme-{{theme}}" wx:if="{{!reduceMotion}}"></view>
 
 <view class="page {{reduceMotion ? 'no-motion' : ''}} theme-{{theme}}">
   <!-- 顶栏 -->
@@ -146,6 +146,7 @@
     <view class="tools-entry tap" hover-class="tools-entry-hover" bindtap="onOpenTools">
       <view class="ic ic-sm ic-apps"></view>
       <text class="tools-entry-label">工具</text>
+      <view wx:if="{{toolBadgeAny}}" class="tool-dot tool-dot-fab"></view>
     </view>
   </view>
 
@@ -185,8 +186,11 @@
           <view class="tool-chip chip-ice"><view class="ic ic-sm ic-chart"></view></view>
           <text class="tool-label">净值趋势</text>
         </view>
-        <view class="tool-cell tap" hover-class="tool-cell-hover" data-url="/pages/insights/insights" bindtap="onToolTap">
-          <view class="tool-chip chip-teal"><view class="ic ic-sm ic-pie"></view></view>
+        <view class="tool-cell tap" hover-class="tool-cell-hover" data-url="/pages/insights/insights" data-badge="insights" bindtap="onToolTap">
+          <view class="tool-chip chip-teal">
+            <view class="ic ic-sm ic-pie"></view>
+            <view wx:if="{{toolBadges.insights}}" class="tool-dot"></view>
+          </view>
           <text class="tool-label">资产洞察</text>
         </view>
 <!-- 「同龄对标」入口暂时下线:对照分布(benchmark.js AGE_BUCKETS)目前为占位示意数据,

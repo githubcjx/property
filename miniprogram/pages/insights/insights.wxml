@@ -55,10 +55,7 @@
             </view>
 
             <view class="real-explain">
-              一年前的 <text class="num">{{real.baselineText}}</text>，相当于今天的
-              <text class="num hl">{{real.realBaselineText}}</text>；你现在是
-              <text class="num hl2">{{real.currentText}}</text> — 真实{{real.dir === 'up' ? '多出' : '少了'}}
-              <text class="num">{{real.realDeltaText}}</text>。
+              这一年净值{{real.nominalVerb}} <text class="num n-nom">{{real.nominalGainText}}</text>；{{real.inflationVerb}}<text wx:if="{{real.inflationBiteText}}" class="num n-infl"> {{real.inflationBiteText}}</text>，{{real.realVerb}} <text class="num n-real">{{real.realDeltaText}}</text>。
             </view>
 
             <text class="real-foot">数据来源：国家统计局 CPI · 截至 {{real.cpiLatest}} · 仅作购买力换算，非投资建议</text>

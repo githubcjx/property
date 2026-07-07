@@ -374,8 +374,9 @@
   border: 1rpx solid rgba(var(--accent-rgb), 0.15);
   font-size: 25rpx; line-height: 1.7; color: var(--ink-80);
 }
-.real-explain .hl  { color: var(--accent-2); font-weight: 500; }
-.real-explain .hl2 { color: var(--accent); font-weight: 500; }
+.real-explain .n-nom  { color: var(--ink-100); font-weight: 500; }
+.real-explain .n-infl { color: var(--fixed);   font-weight: 500; }
+.real-explain .n-real { color: var(--accent);  font-weight: 500; }
 
 .real-foot {
   display: block; margin-top: 18rpx;

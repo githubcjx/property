@@ -125,6 +125,17 @@ Page({
     }
     const sp = (v) => (v >= 0 ? '+' : '') + v.toFixed(1)   // 带符号百分比
     const up = r.realPct >= 0
+    // 「涨幅减法」文案：名义涨了多少 → 通胀占掉多少 → 真实增值多少。措辞随涨跌/通缩自适应。
+    const nomGain = r.current - r.baseline          // 名义涨幅(可负)
+    const infl = r.realBaseline - r.baseline        // 通胀占掉(通缩为负)
+    let inflationVerb, inflationBiteText
+    if (Math.round(infl / 100) > 0) {
+      inflationVerb = '通胀占掉约'; inflationBiteText = formatCNY(infl, { hide })
+    } else if (Math.round(infl / 100) < 0) {
+      inflationVerb = '通缩还帮你省了约'; inflationBiteText = formatCNY(-infl, { hide })
+    } else {
+      inflationVerb = '通胀几乎没影响'; inflationBiteText = ''
+    }
     this.setData({ real: {
       coverage: 'ok',
       dir: up ? 'up' : 'down',
@@ -133,9 +144,11 @@ Page({
       realPctText: sp(r.realPct),
       nominalPctText: sp(r.nominalPct),
       inflationPctText: sp(r.inflationPct),
-      realBaselineText: formatCNY(r.realBaseline, { hide }),
-      currentText: formatCNY(r.current, { hide }),
-      baselineText: formatCNY(r.baseline, { hide }),
+      nominalVerb: nomGain >= 0 ? '涨了' : '少了',
+      nominalGainText: formatCNY(Math.abs(nomGain), { hide }),
+      inflationVerb,
+      inflationBiteText,
+      realVerb: r.realDeltaFen >= 0 ? '真实增值' : '真实缩水',
       realDeltaText: formatCNY(Math.abs(r.realDeltaFen), { hide }),
       cpiLatest: r.cpiLatest,
     } })

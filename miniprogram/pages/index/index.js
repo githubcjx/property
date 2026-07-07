@@ -8,8 +8,10 @@ const { formatYuan, formatMoney } = require('../../utils/format.js')
 const { formatRelative } = require('../../utils/date.js')
 const { APP_VERSION } = require('../../utils/version.js')
 const { RELEASES } = require('../../utils/releases.js')
+const { TOOL_BADGES } = require('../../utils/toolBadges.js')
 
 const STORAGE_SEEN_UPDATE = 'seen_update_version'
+const STORAGE_TOOL_SEEN = 'tool_badge_seen'   // { 工具key: 已读到的功能版本号 }
 
 const STORAGE_EXPANDED = 'idx_expanded_categories'
 
@@ -70,6 +72,8 @@ Page({
     // 工具 · 分析中心面板
     toolsVisible: false,
     toolsClosing: false,
+    toolBadges: {},        // { 工具key: 是否显示新功能红点 }
+    toolBadgeAny: false,   // 是否有任意未读（聚合到「工具」入口的红点）
 
     // 月报横幅
     monthlyBannerVisible: false,
@@ -90,7 +94,21 @@ Page({
       theme: app.globalData.theme,
       expandedMap: stored,
     })
+    this._refreshToolBadges()
     this.checkUpdateNotice()
+  },
+
+  // 工具红点：读已读记录，算出每个工具是否有未读新功能 + 是否有任意未读。
+  _refreshToolBadges() {
+    const seen = wx.getStorageSync(STORAGE_TOOL_SEEN) || {}
+    const badges = {}
+    let any = false
+    Object.keys(TOOL_BADGES).forEach((k) => {
+      const show = TOOL_BADGES[k] > (seen[k] || 0)
+      badges[k] = show
+      if (show) any = true
+    })
+    this.setData({ toolBadges: badges, toolBadgeAny: any })
   },
 
   // 版本更新提醒：当前版本与已读版本不一致时，弹一次玻璃弹窗；关闭后记下版本，不再展示。
@@ -123,6 +141,7 @@ Page({
       reduceMotion: app.globalData.reduceMotion,
       theme: app.globalData.theme,
     })
+    this._refreshToolBadges()
     this.refresh()
   },
 
@@ -362,7 +381,16 @@ Page({
     setTimeout(() => this.setData({ toolsVisible: false, toolsClosing: false }), 300)
   },
   onToolTap(e) {
-    const url = e.currentTarget.dataset.url
+    const { url, badge } = e.currentTarget.dataset
+    // 点进带新功能红点的工具 → 标记已读，红点消失（下次该工具再更新才会重现）
+    if (badge && TOOL_BADGES[badge]) {
+      const seen = wx.getStorageSync(STORAGE_TOOL_SEEN) || {}
+      if ((seen[badge] || 0) < TOOL_BADGES[badge]) {
+        seen[badge] = TOOL_BADGES[badge]
+        wx.setStorageSync(STORAGE_TOOL_SEEN, seen)
+        this._refreshToolBadges()
+      }
+    }
     this.setData({ toolsVisible: false, toolsClosing: false })
     if (url) wx.navigateTo({ url })
   },
