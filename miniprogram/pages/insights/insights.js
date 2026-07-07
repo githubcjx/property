@@ -2,6 +2,7 @@ const app = getApp()
 const accountSvc = require('../../services/account.js')
 const allocationSvc = require('../../services/allocation.js')
 const attributionSvc = require('../../services/attribution.js')
+const realworthSvc = require('../../services/realworth.js')
 const { formatCNY } = require('../../utils/format.js')
 
 Page({
@@ -16,6 +17,9 @@ Page({
 
     // 配置（处理后的展示对象）
     alloc: null,
+
+    // 购买力（通胀调整后的真实增长）
+    real: null,
 
     // 变动
     periods: [],
@@ -52,6 +56,9 @@ Page({
 
       // 配置（同步计算）
       this.applyAlloc(allocationSvc.evaluate(accounts))
+
+      // 购买力（异步，固定近 12 个月窗口）
+      this.applyReal(await realworthSvc.evaluate(accounts))
 
       // 变动（异步，按当前周期）
       const changeRaw = await attributionSvc.evaluate(accounts, this.data.periodKey)
@@ -100,6 +107,38 @@ Page({
         accountCount: r.accountCount,
       },
     })
+  },
+
+  applyReal(r) {
+    const hide = this.data.hideAmount
+    // 无账户 → 不显示卡片
+    if (!r || r.coverage === 'nodata') { this.setData({ real: null }); return }
+    // 降级态（历史不足 / CPI 未覆盖）：只带够渲染提示的字段
+    if (r.coverage !== 'ok') {
+      this.setData({ real: {
+        coverage: r.coverage,
+        nominalPctText: (r.nominalPct != null)
+          ? (r.nominalPct >= 0 ? '+' : '') + r.nominalPct.toFixed(1)
+          : '',
+      } })
+      return
+    }
+    const sp = (v) => (v >= 0 ? '+' : '') + v.toFixed(1)   // 带符号百分比
+    const up = r.realPct >= 0
+    this.setData({ real: {
+      coverage: 'ok',
+      dir: up ? 'up' : 'down',
+      headline: up ? '真实增长' : '真实缩水',
+      verdict: up ? '跑赢通胀' : '未跑赢通胀',
+      realPctText: sp(r.realPct),
+      nominalPctText: sp(r.nominalPct),
+      inflationPctText: sp(r.inflationPct),
+      realBaselineText: formatCNY(r.realBaseline, { hide }),
+      currentText: formatCNY(r.current, { hide }),
+      baselineText: formatCNY(r.baseline, { hide }),
+      realDeltaText: formatCNY(Math.abs(r.realDeltaFen), { hide }),
+      cpiLatest: r.cpiLatest,
+    } })
   },
 
   applyChange(r) {

@@ -29,6 +29,47 @@
 
       <!-- ============ 资产配置 ============ -->
       <block wx:if="{{tab === 'alloc' && alloc}}">
+        <!-- 购买力（通胀调整后的真实增长） -->
+        <view wx:if="{{real}}" class="card real-card entry-up">
+          <view class="real-head">
+            <view class="real-dot"></view>
+            <text class="real-eyebrow">REAL · 购买力 · 近 12 个月</text>
+          </view>
+
+          <block wx:if="{{real.coverage === 'ok'}}">
+            <view class="real-hero">
+              <text class="real-pct {{real.dir}}">{{real.realPctText}}%</text>
+              <text class="real-verdict {{real.dir}}">{{real.verdict}}</text>
+            </view>
+            <text class="real-sub">{{real.headline}} · 已扣除通胀</text>
+
+            <view class="real-grid">
+              <view class="real-cell">
+                <text class="rc-k">名义增长</text>
+                <text class="rc-v">{{real.nominalPctText}}%</text>
+              </view>
+              <view class="real-cell">
+                <text class="rc-k">通胀</text>
+                <text class="rc-v cat-fixed">{{real.inflationPctText}}%</text>
+              </view>
+            </view>
+
+            <view class="real-explain">
+              一年前的 <text class="num">{{real.baselineText}}</text>，相当于今天的
+              <text class="num hl">{{real.realBaselineText}}</text>；你现在是
+              <text class="num hl2">{{real.currentText}}</text> — 真实{{real.dir === 'up' ? '多出' : '少了'}}
+              <text class="num">{{real.realDeltaText}}</text>。
+            </view>
+
+            <text class="real-foot">数据来源：国家统计局 CPI · 截至 {{real.cpiLatest}} · 仅作购买力换算，非投资建议</text>
+          </block>
+
+          <view wx:else class="real-degrade">
+            <text wx:if="{{real.coverage === 'short'}}">记录满 12 个月后，这里会显示扣除通胀的「真实增长」</text>
+            <text wx:elif="{{real.coverage === 'noCpi'}}">通胀数据暂未覆盖这段时间，当前仅名义增长 {{real.nominalPctText}}%</text>
+          </view>
+        </view>
+
         <!-- 环图卡 -->
         <view class="card entry-up">
           <view class="donut-wrap">
