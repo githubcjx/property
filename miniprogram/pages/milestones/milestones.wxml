@@ -1,4 +1,4 @@
-<view class="canvas-bg theme-{{theme}}" wx:if="{{!reduceMotion}}"></view>
+﻿<view class="canvas-bg theme-{{theme}}" wx:if="{{!reduceMotion}}"></view>
 
 <view class="page {{reduceMotion ? 'no-motion' : ''}} theme-{{theme}}">
   <!-- 透明导航栏 -->
@@ -24,7 +24,18 @@
     <scroll-view scroll-y class="scroll" enable-flex>
 
       <!-- ============ 我的目标 ============ -->
-      <view wx:if="{{goal.hasGoal}}" class="goal-card entry-up">
+      <!-- 加载骨架：避免请求返回前先闪一下「未设目标」空态 -->
+      <view wx:if="{{goalLoading}}" class="goal-card goal-skel">
+        <view class="goal-head">
+          <view class="skel-box sk-flag"></view>
+          <view class="skel-line sk-name"></view>
+        </view>
+        <view class="skel-line sk-pct"></view>
+        <view class="skel-line sk-bar"></view>
+        <view class="skel-line sk-nums"></view>
+      </view>
+
+      <view wx:elif="{{goal.hasGoal}}" class="goal-card entry-up">
         <view class="goal-head">
           <view class="goal-flag"><view class="ic ic-xs ic-flag"></view></view>
           <text class="goal-name">{{goal.name}}</text>
@@ -197,19 +208,14 @@
         <text class="gs-cancel tap" catchtap="onCloseGoalSheet">取消</text>
       </view>
 
-      <view class="gs-lab">选个常见目标，或直接输金额</view>
-      <view class="gs-chips">
-        <view wx:for="{{goalPresets}}" wx:key="name"
-              class="gs-chip tap" hover-class="btn-hover"
-              data-i="{{index}}" bindtap="onPickPreset">{{item.label}}</view>
+      <view class="field-input-wrap glass gs-name-field">
+        <input class="field-input" placeholder="目标名称，如「首付」「换车」" placeholder-class="ph"
+               maxlength="10" value="{{goalNameInput}}" bindinput="onGoalNameInput" />
       </view>
 
-      <input class="gs-input" placeholder="目标名称，如「首付」「换车」" placeholder-class="ph"
-             maxlength="10" value="{{goalNameInput}}" bindinput="onGoalNameInput" />
-
-      <view class="gs-amount">
-        <text class="gs-sym">{{goalCcySymbol}}</text>
-        <input class="gs-amount-input mono" type="digit" placeholder="0" placeholder-class="ph"
+      <view class="field-input-wrap glass field-input-mono">
+        <text class="field-prefix">{{goalCcySymbol}}</text>
+        <input class="field-input mono" type="digit" placeholder="0" placeholder-class="ph"
                value="{{goalAmountInput}}" bindinput="onGoalAmountInput" />
       </view>
 

@@ -5,13 +5,6 @@ const { formatMoney, unitToFen, fenToUnit } = require('../../utils/format.js')
 const { baseCurrency, cnyToBaseFen } = require('../../utils/networth.js')
 const { symbolOf } = require('../../utils/currency.js')
 
-// 设定目标时的常见档位（金额单位：元）
-const GOAL_PRESETS = [
-  { name: '应急金', unit: 100000, label: '应急金 ¥10 万' },
-  { name: '首付', unit: 600000, label: '首付 ¥60 万' },
-  { name: '一百万', unit: 1000000, label: '一百万' },
-]
-
 Page({
   data: {
     statusBarHeight: 20,
@@ -37,7 +30,7 @@ Page({
 
     // 我的目标
     goal: { hasGoal: false },
-    goalPresets: GOAL_PRESETS,
+    goalLoading: true,
     goalSheetVisible: false,
     goalSheetEditing: false,
     goalNameInput: '',
@@ -89,7 +82,7 @@ Page({
       goal = await goalSvc.getActiveGoal()
     } catch (err) {
       console.warn('[goal] 读取目标失败，隐藏目标卡', err)
-      this.setData({ goal: { hasGoal: false } })
+      this.setData({ goal: { hasGoal: false }, goalLoading: false })
       return
     }
     const view = goalSvc.buildGoalView(goal, this._current || 0, this._growth)
@@ -97,7 +90,7 @@ Page({
     if (view.hasGoal && view.state === 'achieved' && goal && !goal.achievedAt) {
       goalSvc.markAchieved(goal._id).catch(() => {})
     }
-    this.setData({ goal: this.decorateGoal(view) })
+    this.setData({ goal: this.decorateGoal(view), goalLoading: false })
   },
 
   // 补上展示用文案：金额随全局 hideAmount 打码，进度与预计时间不打码
@@ -184,14 +177,6 @@ Page({
 
   onGoalAmountInput(e) {
     this.setData({ goalAmountInput: e.detail.value })
-  },
-
-  // 快捷档位：带出名称与金额，用户仍可改
-  onPickPreset(e) {
-    const i = Number(e.currentTarget.dataset.i)
-    const p = GOAL_PRESETS[i]
-    if (!p) return
-    this.setData({ goalNameInput: p.name, goalAmountInput: String(p.unit) })
   },
 
   async onSaveGoal() {

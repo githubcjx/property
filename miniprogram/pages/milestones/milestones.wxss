@@ -468,6 +468,28 @@
   background: rgba(var(--warn-rgb), 0.16); border: 1rpx solid rgba(var(--warn-rgb), 0.45);
 }
 
+/* 我的目标 · 加载骨架（复用 goal-card 外形，仅内容占位闪烁） */
+.goal-skel { pointer-events: none; }
+.skel-box, .skel-line {
+  background: linear-gradient(100deg,
+    rgba(255, 255, 255, 0.05) 30%,
+    rgba(255, 255, 255, 0.13) 50%,
+    rgba(255, 255, 255, 0.05) 70%);
+  background-size: 200% 100%;
+  border-radius: 12rpx;
+  animation: skel-shimmer 1.3s ease-in-out infinite;
+}
+.sk-flag { width: 56rpx; height: 56rpx; flex: 0 0 56rpx; border-radius: 18rpx; }
+.sk-name { flex: 1; height: 32rpx; }
+.sk-pct { width: 200rpx; height: 76rpx; margin-top: 24rpx; border-radius: 16rpx; }
+.sk-bar { width: 100%; height: 12rpx; margin-top: 24rpx; }
+.sk-nums { width: 68%; height: 22rpx; margin-top: 20rpx; }
+@keyframes skel-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+.no-motion .skel-box, .no-motion .skel-line { animation: none; }
+
 /* ============ 设定目标半屏 ============ */
 .gs-mask {
   position: fixed; inset: 0; z-index: 90;
@@ -491,26 +513,31 @@
 .gs-title { flex: 1; font-size: 32rpx; font-weight: 800; color: var(--ink-100); }
 .gs-cancel { font-size: 26rpx; color: var(--ink-60); padding: 8rpx; }
 
-.gs-lab { font-size: 22rpx; color: var(--ink-60); margin-bottom: 16rpx; }
-.gs-chips { display: flex; flex-wrap: wrap; gap: 14rpx; margin-bottom: 28rpx; }
-.gs-chip {
-  font-size: 24rpx; padding: 14rpx 24rpx; border-radius: 20rpx;
-  background: var(--glass-1); border: 1rpx solid var(--hairline); color: var(--ink-80);
-}
-.gs-input {
-  width: 100%; box-sizing: border-box;
-  background: var(--glass-1); border: 1rpx solid var(--hairline); border-radius: 22rpx;
-  padding: 22rpx 24rpx; color: var(--ink-100); font-size: 28rpx;
-  margin-bottom: 18rpx;
-}
 .ph { color: var(--ink-40); }
-.gs-amount {
-  display: flex; align-items: center; gap: 12rpx;
-  background: var(--glass-1); border: 1rpx solid var(--hairline); border-radius: 22rpx;
-  padding: 18rpx 24rpx;
+
+/* 目标输入框：结构/样式与 add-account 金额输入框一致 */
+.field-input-wrap {
+  border-radius: 22rpx;
+  padding: 22rpx 26rpx;
+  display: flex;
+  align-items: center;
 }
-.gs-sym { font-size: 30rpx; color: var(--ink-60); }
-.gs-amount-input { flex: 1; font-size: 44rpx; font-weight: 800; color: var(--ink-100); }
+.gs-name-field { margin-bottom: 18rpx; }
+.field-input-mono { gap: 8rpx; }
+.field-prefix {
+  font-size: 28rpx;
+  color: var(--ink-40);
+  font-variant-numeric: tabular-nums;
+}
+.field-input {
+  flex: 1;
+  font-size: 28rpx;
+  color: var(--ink-100);
+}
+.field-input.mono {
+  font-size: 32rpx;
+  font-variant-numeric: tabular-nums;
+}
 .gs-save {
   margin-top: 28rpx; height: 96rpx; border-radius: 28rpx;
   display: flex; align-items: center; justify-content: center;
