@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>净值目标 · 原型</title>
+<style>
+  :root {
+    --bg-0:#050507; --glass-1:rgba(255,255,255,0.05); --glass-2:rgba(255,255,255,0.08);
+    --hairline:rgba(255,255,255,0.08); --hairline-hi:rgba(255,255,255,0.16);
+    --ink-100:#f5f8ff; --ink-80:rgba(245,248,255,0.78); --ink-60:rgba(245,248,255,0.55); --ink-40:rgba(245,248,255,0.36);
+    --ice-blue:#a7d3ff; --investment:#c8b5ff; --fixed:#b7e8f0; --good:#9ee6c1; --warn:#f6d68a; --debt:#ffb3b3;
+    --goal:#f3dfa3; --goal-rgb:243,223,163; --accent-rgb:167,211,255; --good-rgb:158,230,193;
+  }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; padding:0; }
+  body { min-height:100vh; background:#0a0b10; color:var(--ink-100);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",system-ui,sans-serif; font-size:14px; line-height:1.4;
+    display:flex; flex-wrap:wrap; gap:30px; justify-content:center; align-items:flex-start; padding:44px 14px 80px; }
+
+  .i { display:inline-flex; align-items:center; justify-content:center; }
+  .i svg { width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; display:block; }
+
+  .pwrap { position:relative; }
+  .ptitle { position:absolute; top:-28px; left:8px; font-size:12px; color:var(--ink-60); }
+  .phone { position:relative; width:340px; height:730px; border-radius:44px;
+    background:radial-gradient(120% 70% at 12% 0%, rgba(167,211,255,0.12), transparent 55%),
+               radial-gradient(120% 70% at 95% 10%, rgba(var(--goal-rgb),0.10), transparent 55%), #08090c;
+    border:1px solid var(--hairline-hi); box-shadow:0 40px 90px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06);
+    overflow:hidden; display:flex; flex-direction:column; }
+  .statusbar { height:44px; flex:0 0 44px; display:flex; align-items:center; justify-content:space-between; padding:0 22px; font-size:13px; color:var(--ink-80); font-weight:600; }
+  .capsule { display:flex; align-items:center; border:1px solid var(--hairline-hi); border-radius:16px; height:28px; background:var(--glass-1); overflow:hidden; }
+  .capsule .dots { padding:0 11px; font-size:16px; color:var(--ink-80); } .capsule .sep { width:1px; height:16px; background:var(--hairline-hi);} .capsule .o { padding:0 10px; font-size:14px; color:var(--ink-60);}
+
+  .screen { flex:1; overflow-y:auto; padding:0 16px 24px; position:relative; }
+  .screen::-webkit-scrollbar { width:0; }
+
+  .navbar { display:flex; align-items:center; padding:2px 0 12px; position:relative; }
+  .navbar .nb { width:32px; height:32px; border-radius:50%; background:var(--glass-1); border:1px solid var(--hairline); display:flex; align-items:center; justify-content:center; color:var(--ink-80); cursor:pointer; z-index:1; }
+  .navbar .nb .i { width:14px; height:14px; }
+  .navbar .nt { position:absolute; left:0; right:0; text-align:center; font-size:13px; font-weight:500; }
+
+  /* ===== 我的目标卡 ===== */
+  .gcard { border-radius:24px; padding:20px 18px 18px; position:relative; overflow:hidden;
+    background:radial-gradient(130% 120% at 0% 0%, rgba(var(--goal-rgb),0.16), transparent 62%),
+               linear-gradient(180deg, rgba(var(--goal-rgb),0.10), rgba(var(--goal-rgb),0.03));
+    border:1px solid rgba(var(--goal-rgb),0.34); }
+  .gc-head { display:flex; align-items:center; gap:9px; }
+  .gc-flag { width:30px; height:30px; border-radius:10px; flex:0 0 30px; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(160deg, rgba(var(--goal-rgb),0.38), rgba(var(--goal-rgb),0.10)); color:var(--goal); }
+  .gc-flag .i { width:16px; height:16px; }
+  .gc-name { font-size:16px; font-weight:800; flex:1; }
+  .gc-edit { width:28px; height:28px; border-radius:9px; background:var(--glass-1); display:flex; align-items:center; justify-content:center; color:var(--ink-60); cursor:pointer; }
+  .gc-edit .i { width:13px; height:13px; }
+
+  .gc-pct { display:flex; align-items:baseline; gap:7px; margin-top:16px; }
+  .gc-pct .big { font-size:40px; font-weight:800; letter-spacing:-1.5px; color:var(--goal); }
+  .gc-pct .unit { font-size:16px; font-weight:800; color:var(--goal); }
+  .gc-pct .of { font-size:11px; color:var(--ink-60); margin-left:auto; text-align:right; line-height:1.5; }
+
+  .gbar { height:8px; border-radius:8px; background:rgba(255,255,255,0.07); overflow:hidden; margin-top:12px; position:relative; }
+  .gbar .fill { height:100%; border-radius:8px; background:linear-gradient(90deg, rgba(var(--goal-rgb),0.45), var(--goal)); transition:width .5s cubic-bezier(0.25,1,0.5,1); }
+  .gc-nums { display:flex; justify-content:space-between; margin-top:10px; font-size:11px; color:var(--ink-60); }
+  .gc-nums b { color:var(--ink-100); font-weight:700; }
+
+  .gc-eta { margin-top:16px; padding-top:14px; border-top:1px solid var(--hairline); }
+  .gc-eta .lab { font-size:11px; color:var(--ink-60); }
+  .gc-eta .val { font-size:20px; font-weight:800; margin-top:3px; }
+  .gc-eta .val.na { font-size:13px; font-weight:600; color:var(--ink-80); line-height:1.5; }
+  .gc-basis { font-size:10px; color:var(--ink-40); margin-top:8px; line-height:1.6; }
+  .gc-warn { font-size:10px; color:var(--warn); margin-top:8px; line-height:1.6; display:flex; gap:5px; }
+
+  /* 空态 */
+  .gempty { border-radius:24px; padding:26px 20px; text-align:center; background:var(--glass-1); border:1px dashed rgba(var(--goal-rgb),0.34); }
+  .gempty .eo { width:52px; height:52px; border-radius:50%; margin:0 auto; display:flex; align-items:center; justify-content:center; color:var(--goal);
+    background:radial-gradient(circle at 32% 28%, rgba(var(--goal-rgb),0.30), rgba(var(--goal-rgb),0.06)); border:1px solid rgba(var(--goal-rgb),0.3); }
+  .gempty .eo .i { width:24px; height:24px; }
+  .gempty .et { font-size:15px; font-weight:800; margin-top:14px; }
+  .gempty .es { font-size:11px; color:var(--ink-60); margin-top:7px; line-height:1.6; }
+  .gempty .eb { margin-top:16px; height:42px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700;
+    background:rgba(var(--goal-rgb),0.16); border:1px solid rgba(var(--goal-rgb),0.45); color:var(--goal); cursor:pointer; }
+
+  /* ===== 里程碑列表 ===== */
+  .sec-lab { font-size:11px; color:var(--ink-40); letter-spacing:2px; margin:22px 4px 12px; }
+  .ms-row { display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:16px; background:var(--glass-1); border:1px solid var(--hairline); margin-bottom:9px; position:relative; }
+  .ms-row.cur { border-color:rgba(var(--goal-rgb),0.42); background:linear-gradient(180deg, rgba(var(--goal-rgb),0.10), rgba(var(--goal-rgb),0.03)); }
+  .ms-dot { width:24px; height:24px; flex:0 0 24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; }
+  .ms-dot.done { background:rgba(var(--good-rgb),0.18); color:var(--good); }
+  .ms-dot.cur { background:rgba(var(--goal-rgb),0.22); color:var(--goal); }
+  .ms-dot.future { background:rgba(255,255,255,0.06); color:var(--ink-40); }
+  .ms-mid { flex:1; min-width:0; }
+  .ms-amt { font-size:14px; font-weight:700; }
+  .ms-amt.dim { color:var(--ink-40); font-weight:600; }
+  .ms-sub { font-size:10px; color:var(--ink-40); margin-top:3px; }
+  .ms-sub.gold { color:var(--goal); }
+  .ms-star { font-size:10px; color:var(--goal); }
+
+  /* ===== 设定目标半屏 ===== */
+  .amask { position:absolute; inset:0; background:rgba(0,0,0,0.55); backdrop-filter:blur(4px); opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:30; }
+  .amask.show { opacity:1; pointer-events:auto; }
+  .asheet { position:absolute; left:0; right:0; bottom:0; z-index:31; background:linear-gradient(180deg,#14161d,#0c0d12);
+    border-top-left-radius:28px; border-top-right-radius:28px; border-top:1px solid var(--hairline-hi); padding:12px 18px 22px;
+    transform:translateY(102%); transition:transform .3s cubic-bezier(0.25,1,0.5,1); }
+  .asheet.show { transform:translateY(0); }
+  .ah { display:flex; align-items:center; margin-bottom:12px; }
+  .ah .at { flex:1; font-size:15px; font-weight:800; }
+  .ah .ac { font-size:12px; color:var(--ink-60); cursor:pointer; padding:6px; }
+  .qlab { font-size:11px; color:var(--ink-60); margin-bottom:8px; }
+  .qgrid { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:14px; }
+  .qchip { font-size:12px; padding:8px 13px; border-radius:12px; background:var(--glass-1); border:1px solid var(--hairline); cursor:pointer; }
+  .qchip.on { background:rgba(var(--goal-rgb),0.16); border-color:rgba(var(--goal-rgb),0.45); color:var(--goal); font-weight:700; }
+  .aname { width:100%; background:var(--glass-1); border:1px solid var(--hairline); border-radius:12px; padding:11px 13px; color:var(--ink-100); font-size:14px; font-family:inherit; margin-bottom:10px; }
+  .aname::placeholder { color:var(--ink-40); }
+  .aval { display:flex; align-items:baseline; gap:6px; border-radius:14px; background:var(--glass-1); border:1px solid var(--hairline); padding:11px 13px; }
+  .aval .sym { font-size:16px; color:var(--ink-60); }
+  .aval .num { font-size:26px; font-weight:800; min-height:32px; }
+  .aval .num .plc { color:var(--ink-40); font-weight:600; }
+  .akeys { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:11px; }
+  .akey { height:42px; border-radius:12px; background:var(--glass-1); border:1px solid var(--hairline); display:flex; align-items:center; justify-content:center; font-size:17px; font-weight:700; cursor:pointer; }
+  .akey.ok { background:rgba(var(--goal-rgb),0.85); color:#1a1407; border:none; font-size:14px; }
+
+  /* ===== 盘点完成页的目标行 ===== */
+  .done { display:flex; flex-direction:column; align-items:center; text-align:center; padding-top:34px; }
+  .done .dic { width:66px; height:66px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--good);
+    background:radial-gradient(circle at 32% 28%, rgba(var(--good-rgb),0.36), rgba(var(--good-rgb),0.10));
+    border:1px solid rgba(var(--good-rgb),0.45); box-shadow:0 0 40px rgba(var(--good-rgb),0.22); font-size:28px; font-weight:800; }
+  .done .dt { font-size:19px; font-weight:800; margin-top:14px; }
+  .done .ds { font-size:11px; color:var(--ink-60); margin-top:5px; }
+  .dchips { display:flex; gap:7px; margin-top:14px; }
+  .dchip { font-size:10px; padding:5px 11px; border-radius:20px; background:var(--glass-1); border:1px solid var(--hairline); color:var(--ink-80); }
+  .dchip b { color:var(--ink-100); }
+  .dcard { width:100%; margin-top:16px; border-radius:20px; background:var(--glass-1); border:1px solid var(--hairline); padding:16px 14px; }
+  .dcard .lab { font-size:10px; color:var(--ink-60); }
+  .dcard .nv { font-size:27px; font-weight:800; margin-top:4px; }
+  .dcard .dl { font-size:11px; margin-top:6px; color:var(--good); font-weight:700; }
+
+  /* 新增的目标行 */
+  .dgoal { width:100%; margin-top:11px; border-radius:18px; padding:14px 15px; text-align:left; cursor:pointer;
+    background:linear-gradient(180deg, rgba(var(--goal-rgb),0.12), rgba(var(--goal-rgb),0.04)); border:1px solid rgba(var(--goal-rgb),0.34); }
+  .dgoal .top { display:flex; align-items:center; gap:8px; }
+  .dgoal .gi { width:26px; height:26px; border-radius:9px; flex:0 0 26px; display:flex; align-items:center; justify-content:center; background:rgba(var(--goal-rgb),0.18); color:var(--goal); }
+  .dgoal .gi .i { width:14px; height:14px; }
+  .dgoal .gn { font-size:13px; font-weight:700; flex:1; }
+  .dgoal .gp { font-size:13px; font-weight:800; color:var(--goal); }
+  .dgoal .bar { height:5px; border-radius:5px; background:rgba(255,255,255,0.07); overflow:hidden; margin-top:10px; }
+  .dgoal .bar i { display:block; height:100%; border-radius:5px; background:linear-gradient(90deg, rgba(var(--goal-rgb),0.45), var(--goal)); }
+  .dgoal .sub { font-size:11px; color:var(--ink-80); margin-top:9px; }
+  .dgoal .sub b { color:var(--goal); }
+
+  .toast { position:absolute; left:50%; top:42%; transform:translate(-50%,-50%) scale(0.9); background:rgba(20,22,28,0.96); border:1px solid var(--hairline-hi); padding:13px 18px; border-radius:14px; z-index:40; text-align:center; opacity:0; pointer-events:none; transition:all .2s ease; max-width:80%; }
+  .toast.show { opacity:1; transform:translate(-50%,-50%) scale(1); }
+  .toast .tt{font-size:12px; color:var(--ink-80);}
+
+  /* notes */
+  .notes { width:390px; max-width:92vw; color:var(--ink-80); }
+  .notes h2 { font-size:17px; margin:0 0 4px; color:#fff; } .notes .lead { font-size:12px; color:var(--ink-60); margin-bottom:16px; line-height:1.6; }
+  .demo { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:16px; }
+  .demo button { font-size:12px; padding:8px 12px; border-radius:10px; border:1px solid var(--hairline-hi); background:var(--glass-1); color:var(--ink-100); cursor:pointer; }
+  .demo button:active { transform:scale(0.96); }
+  .step { background:var(--glass-1); border:1px solid var(--hairline); border-radius:14px; padding:13px 15px; margin-bottom:11px; }
+  .step .h { font-size:13px; font-weight:700; color:#fff; }
+  .step .h .n { display:inline-flex; width:20px; height:20px; border-radius:50%; background:rgba(var(--goal-rgb),0.22); color:var(--goal); font-size:11px; font-weight:700; align-items:center; justify-content:center; margin-right:8px; }
+  .step p { margin:7px 0 0; font-size:12px; color:var(--ink-60); line-height:1.7; }
+  .step code { background:rgba(255,255,255,0.08); padding:1px 6px; border-radius:5px; font-size:11px; color:var(--goal); }
+  .step b { color:var(--ink-80); }
+  .step .warnbox { margin-top:9px; padding:9px 11px; border-radius:10px; background:rgba(246,214,138,0.08); border:1px solid rgba(246,214,138,0.22); font-size:11px; color:var(--warn); line-height:1.6; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ ① 主态 ═══════════ -->
+<div class="pwrap">
+  <div class="ptitle">① 净值目标页 · 已设目标（主态）</div>
+  <div class="phone">
+    <div class="statusbar"><span>9:41</span><div class="capsule"><span class="dots">•••</span><span class="sep"></span><span class="o">◎</span></div></div>
+    <div class="screen">
+      <div class="navbar">
+        <div class="nb"><span class="i"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></span></div>
+        <div class="nt">净值目标</div>
+      </div>
+
+      <div class="gcard">
+        <div class="gc-head">
+          <div class="gc-flag"><span class="i"><svg viewBox="0 0 24 24"><path d="M4 21V4M4 4h11l-1.5 3.5L15 11H4"/></svg></span></div>
+          <div class="gc-name">首付</div>
+          <div class="gc-edit" onclick="openSheet(1)"><span class="i"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span></div>
+        </div>
+        <div class="gc-pct">
+          <span class="big">42.1</span><span class="unit">%</span>
+          <span class="of">目标 ¥600,000<br/>本位币 CNY</span>
+        </div>
+        <div class="gbar"><i class="fill" style="width:42.1%"></i></div>
+        <div class="gc-nums">
+          <span>当前 <b>¥252,430</b></span>
+          <span>还差 <b>¥347,570</b></span>
+        </div>
+        <div class="gc-eta">
+          <div class="lab">按你的历史增速，预计达成</div>
+          <div class="val">2029 年 6 月</div>
+          <div class="gc-basis">依据：近 12 个月月均净增 ¥8,240（取月度中位数）。这是按你已记录的历史推算，不是承诺，实际取决于后续储蓄与市场波动。</div>
+        </div>
+      </div>
+
+      <div class="sec-lab">里程碑</div>
+      <div class="ms-row">
+        <div class="ms-dot done">✓</div>
+        <div class="ms-mid"><div class="ms-amt">¥1 万</div><div class="ms-sub">2024 年 3 月 12 日达成</div></div>
+      </div>
+      <div class="ms-row">
+        <div class="ms-dot done">✓</div>
+        <div class="ms-mid"><div class="ms-amt">¥10 万</div><div class="ms-sub">2025 年 1 月 8 日达成 · 距上一关 10 个月</div></div>
+      </div>
+      <div class="ms-row cur">
+        <div class="ms-dot cur">◎</div>
+        <div class="ms-mid">
+          <div class="ms-amt">¥50 万</div>
+          <div class="ms-sub gold">进行中 50.5% · 预计 2032 年 1 月</div>
+        </div>
+      </div>
+      <div class="ms-row">
+        <div class="ms-dot future">·</div>
+        <div class="ms-mid"><div class="ms-amt dim">¥100 万 <span class="ms-star">★</span></div><div class="ms-sub">复利启航关口</div></div>
+      </div>
+      <div class="ms-row" style="margin-bottom:30px;">
+        <div class="ms-dot future">·</div>
+        <div class="ms-mid"><div class="ms-amt dim">¥300 万</div></div>
+      </div>
+    </div>
+    <div class="toast" id="toast1"><div class="tt"></div></div>
+  </div>
+</div>
+
+<!-- ═══════════ ② 空态 + 设定流程 ═══════════ -->
+<div class="pwrap">
+  <div class="ptitle">② 未设目标空态 → 设定半屏（可点击）</div>
+  <div class="phone">
+    <div class="statusbar"><span>9:41</span><div class="capsule"><span class="dots">•••</span><span class="sep"></span><span class="o">◎</span></div></div>
+    <div class="screen">
+      <div class="navbar">
+        <div class="nb"><span class="i"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></span></div>
+        <div class="nt">净值目标</div>
+      </div>
+
+      <div class="gempty" id="emptyCard">
+        <div class="eo"><span class="i"><svg viewBox="0 0 24 24"><path d="M4 21V4M4 4h11l-1.5 3.5L15 11H4"/></svg></span></div>
+        <div class="et">设一个属于你的目标</div>
+        <div class="es">下面的里程碑是通用关口。<br/>定一个你自己的数字，每次盘点都能看到它更近一点。</div>
+        <div class="eb" onclick="openSheet(0)">设定目标</div>
+      </div>
+
+      <!-- 设好之后就地替换成主态卡 -->
+      <div class="gcard" id="filledCard" style="display:none">
+        <div class="gc-head">
+          <div class="gc-flag"><span class="i"><svg viewBox="0 0 24 24"><path d="M4 21V4M4 4h11l-1.5 3.5L15 11H4"/></svg></span></div>
+          <div class="gc-name" id="newName">新目标</div>
+          <div class="gc-edit" onclick="openSheet(1)"><span class="i"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span></div>
+        </div>
+        <div class="gc-pct">
+          <span class="big" id="newPct">0</span><span class="unit">%</span>
+          <span class="of">目标 <span id="newTarget">¥0</span><br/>本位币 CNY</span>
+        </div>
+        <div class="gbar"><i class="fill" id="newFill" style="width:0%"></i></div>
+        <div class="gc-nums"><span>当前 <b>¥252,430</b></span><span>还差 <b id="newRemain">¥0</b></span></div>
+        <div class="gc-eta">
+          <div class="lab">按你的历史增速，预计达成</div>
+          <div class="val" id="newEta">—</div>
+          <div class="gc-basis">依据：近 12 个月月均净增 ¥8,240（取月度中位数）。</div>
+        </div>
+      </div>
+
+      <div class="sec-lab">里程碑</div>
+      <div class="ms-row"><div class="ms-dot done">✓</div><div class="ms-mid"><div class="ms-amt">¥1 万</div><div class="ms-sub">2024 年 3 月 12 日达成</div></div></div>
+      <div class="ms-row"><div class="ms-dot done">✓</div><div class="ms-mid"><div class="ms-amt">¥10 万</div><div class="ms-sub">2025 年 1 月 8 日达成</div></div></div>
+      <div class="ms-row cur"><div class="ms-dot cur">◎</div><div class="ms-mid"><div class="ms-amt">¥50 万</div><div class="ms-sub gold">进行中 50.5% · 预计 2032 年 1 月</div></div></div>
+    </div>
+
+    <div class="amask" id="amask" onclick="closeSheet()"></div>
+    <div class="asheet" id="asheet">
+      <div class="ah"><span class="at" id="sheetTitle">设定目标</span><span class="ac" onclick="closeSheet()">取消</span></div>
+
+      <div class="qlab">选个常见目标，或直接输金额</div>
+      <div class="qgrid">
+        <span class="qchip" onclick="pick(this,'应急金',100000)">应急金 ¥10 万</span>
+        <span class="qchip" onclick="pick(this,'首付',600000)">首付 ¥60 万</span>
+        <span class="qchip" onclick="pick(this,'一百万',1000000)">一百万</span>
+        <span class="qchip" onclick="pick(this,'',0)">自定义</span>
+      </div>
+
+      <input class="aname" id="gname" placeholder="目标名称，如「首付」「换车」" maxlength="10" />
+      <div class="aval"><span class="sym">¥</span><span class="num" id="anum"><span class="plc">0</span></span></div>
+      <div class="akeys">
+        <div class="akey" onclick="key('1')">1</div><div class="akey" onclick="key('2')">2</div><div class="akey" onclick="key('3')">3</div>
+        <div class="akey" onclick="key('4')">4</div><div class="akey" onclick="key('5')">5</div><div class="akey" onclick="key('6')">6</div>
+        <div class="akey" onclick="key('7')">7</div><div class="akey" onclick="key('8')">8</div><div class="akey" onclick="key('9')">9</div>
+        <div class="akey" onclick="key('000')">000</div><div class="akey" onclick="key('0')">0</div><div class="akey" onclick="key('back')">⌫</div>
+      </div>
+      <div class="akeys" style="grid-template-columns:1fr; margin-top:8px;">
+        <div class="akey ok" onclick="saveGoal()">保存目标</div>
+      </div>
+    </div>
+    <div class="toast" id="toast2"><div class="tt"></div></div>
+  </div>
+</div>
+
+<!-- ═══════════ ③ 降级与达成态 ═══════════ -->
+<div class="pwrap">
+  <div class="ptitle">③ 四种降级 / 特殊态（点下方按钮切换）</div>
+  <div class="phone">
+    <div class="statusbar"><span>9:41</span><div class="capsule"><span class="dots">•••</span><span class="sep"></span><span class="o">◎</span></div></div>
+    <div class="screen">
+      <div class="navbar">
+        <div class="nb"><span class="i"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></span></div>
+        <div class="nt">净值目标</div>
+      </div>
+
+      <div class="gcard" id="degCard">
+        <div class="gc-head">
+          <div class="gc-flag"><span class="i"><svg viewBox="0 0 24 24"><path d="M4 21V4M4 4h11l-1.5 3.5L15 11H4"/></svg></span></div>
+          <div class="gc-name" id="dName">首付</div>
+          <div class="gc-edit"><span class="i"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span></div>
+        </div>
+        <div class="gc-pct">
+          <span class="big" id="dPct">42.1</span><span class="unit">%</span>
+          <span class="of">目标 ¥600,000<br/>本位币 CNY</span>
+        </div>
+        <div class="gbar"><i class="fill" id="dFill" style="width:42.1%"></i></div>
+        <div class="gc-nums"><span>当前 <b id="dCur">¥252,430</b></span><span id="dRemainWrap">还差 <b id="dRemain">¥347,570</b></span></div>
+        <div class="gc-eta">
+          <div class="lab" id="dLab">按你的历史增速，预计达成</div>
+          <div class="val" id="dVal">2029 年 6 月</div>
+          <div class="gc-basis" id="dBasis">依据：近 12 个月月均净增 ¥8,240（取月度中位数）。</div>
+          <div class="gc-warn" id="dWarn" style="display:none"><span>⚠</span><span id="dWarnText"></span></div>
+        </div>
+      </div>
+
+      <div class="sec-lab">里程碑</div>
+      <div class="ms-row"><div class="ms-dot done">✓</div><div class="ms-mid"><div class="ms-amt">¥1 万</div><div class="ms-sub">2024 年 3 月 12 日达成</div></div></div>
+      <div class="ms-row cur"><div class="ms-dot cur">◎</div><div class="ms-mid"><div class="ms-amt">¥50 万</div><div class="ms-sub gold">进行中 50.5%</div></div></div>
+    </div>
+    <div class="toast" id="toast3"><div class="tt"></div></div>
+  </div>
+  <div class="demo" style="margin-top:12px; width:340px;">
+    <button onclick="deg('ok')">正常</button>
+    <button onclick="deg('short')">历史不足</button>
+    <button onclick="deg('neg')">增速为负</button>
+    <button onclick="deg('volatile')">波动过大</button>
+    <button onclick="deg('done')">已达成</button>
+  </div>
+</div>
+
+<!-- ═══════════ ④ 盘点完成页新增的目标行 ═══════════ -->
+<div class="pwrap">
+  <div class="ptitle">④ 盘点完成页 · 新增目标进度行（闭环）</div>
+  <div class="phone">
+    <div class="statusbar"><span>9:41</span><div class="capsule"><span class="dots">•••</span><span class="sep"></span><span class="o">◎</span></div></div>
+    <div class="screen">
+      <div class="navbar"><div class="nb"><span class="i"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></div><div class="nt">盘点</div></div>
+      <div class="done">
+        <div class="dic">✓</div>
+        <div class="dt">盘点完成</div>
+        <div class="ds">5 个账户已全部核对</div>
+        <div class="dchips">
+          <span class="dchip">核对 <b>3</b></span><span class="dchip">改过 <b>2</b></span><span class="dchip">跳过 <b>0</b></span>
+        </div>
+        <div class="dcard">
+          <div class="lab">当前净资产</div>
+          <div class="nv">¥252,430</div>
+          <div class="dl">较上次盘点 +¥8,420 <span style="color:var(--ink-40);font-weight:400">· 32 天前</span></div>
+        </div>
+
+        <!-- ★ 本期新增 -->
+        <div class="dgoal" onclick="toast3('跳转净值目标页')">
+          <div class="top">
+            <div class="gi"><span class="i"><svg viewBox="0 0 24 24"><path d="M4 21V4M4 4h11l-1.5 3.5L15 11H4"/></svg></span></div>
+            <div class="gn">首付</div>
+            <div class="gp">42.1%</div>
+          </div>
+          <div class="bar"><i style="width:42.1%"></i></div>
+          <div class="sub">还差 ¥347,570 · 预计 <b>2029 年 6 月</b> 达成</div>
+        </div>
+
+        <div style="width:100%; margin-top:16px; height:44px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; background:rgba(var(--good-rgb),0.16); border:1px solid rgba(var(--good-rgb),0.45); color:var(--good);">完成</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 说明 ═══════════ -->
+<div class="notes">
+  <h2>净值目标 · 交互说明</h2>
+  <div class="lead">V2.0 P0-2 · 改造 <code>pages/milestones</code> 为「净值目标」 · 新增 <code>goals</code> 集合 + <code>services/goal.js</code></div>
+
+  <div class="step"><div class="h"><span class="n">1</span>命名与位置</div>
+    <p>页面名定为 <b>「净值目标」</b>（4 字），和工具面板里已有的「净值趋势」成对，同时涵盖「我自己的目标」与「7 个预设关口」。工具格子标签由「里程碑」改为「净值目标」，<code>data-url</code> 仍指向 <code>/pages/milestones/milestones</code>（不改路由，省一次全局替换；页面内标题与导航栏文案改掉即可）。备选：净值关口 / 我的目标 / 目标进度。</p>
+  </div>
+
+  <div class="step"><div class="h"><span class="n">2</span>一期只支持一个进行中的目标</div>
+    <p>多目标会立刻引出「哪些账户算进这个目标」，那是另一个产品。一期的产品表述保持干净：<b>我的下一个目标是什么、还差多少、照现在的速度什么时候到</b>。<code>goals</code> 集合按 <code>isArchived</code> 过滤，同时只允许一条 active；换目标 = 归档旧的、建新的（旧目标不删，为二期的「目标历史」留数据）。</p>
+  </div>
+
+  <div class="step"><div class="h"><span class="n">3</span>目标卡（主态，见 ① 号机）</div>
+    <p>自上而下：目标名 + 编辑按钮 → <b>完成度大数字</b>（比金额更适合当主视觉，且天然规避打码问题）→ 进度条 → 当前 / 还差 → <b>预计达成月份</b> → 口径说明小字。金额受全局 <code>hideAmount</code> 打码，<b>百分比和预计日期不打码</b>（不含绝对金额，且是这张卡的意义所在）。</p>
+  </div>
+
+  <div class="step"><div class="h"><span class="n">4</span>设定目标（见 ② 号机，可点击）</div>
+    <p>半屏面板：<b>常见目标快捷 chip</b>（应急金 ¥10 万 / 首付 ¥60 万 / 一百万 / 自定义）→ 名称输入（≤10 字）→ 金额键盘（带 <code>000</code> 键，目标金额通常是整数万）。点 chip 自动带出名称与金额，仍可改。保存后空态卡就地替换为主态卡。<b>金额按本位币存储并记录币种</b>——若存人民币分，本位币是美元的用户会看到目标随汇率漂移。</p>
+  </div>
+
+  <div class="step"><div class="h"><span class="n">5</span>预测口径与四种降级（见 ③ 号机）</div>
+    <p>预测 = 剩余金额 ÷ 月均净增，只用<b>用户自己的真实历史</b>外推，<b>不提供自填收益率</b>——这是与 Kubera Fast Forward 的分界线，也是不变量 10 的底线。月均净增改用<b>近 12 个月月度净增的中位数</b>（现有 <code>computeMonthlyGrowth</code> 是首尾两点相减，一笔年终奖就能把预测拉飞）。四种降级：</p>
+    <div class="warnbox">
+      <b>历史不足</b>（&lt; 6 个完整月）→ 只显示进度条，「再记录 X 个月就能估算达成时间」<br/>
+      <b>增速 ≤ 0</b> → 不显示日期，「按最近的变化，暂时还在远离这个目标」，绝不给假期望<br/>
+      <b>波动过大</b>（最大单月 &gt; 3× 中位数）→ 照常给日期，但加一行「你的月度变化波动较大，这个时间仅作粗略参考」<br/>
+      <b>已达成</b> → 卡片转为达成态，引导设定下一个目标
+    </div>
+  </div>
+
+  <div class="step"><div class="h"><span class="n">6</span>两处预测必须共用一个估算器</div>
+    <p>里程碑「当前关」现在也显示预计月份。若只改目标卡，同一屏上两个预测口径会打架，用户一眼看得出矛盾。所以把增速估算收口成 <code>services/goal.js</code> 的单一函数，<b>目标卡与里程碑都调它</b>。这正是不变量 4 说的那类重复实现陷阱——这次不要再制造一份。</p>
+  </div>
+
+  <div class="step"><div class="h"><span class="n">7</span>与盘点闭环（见 ④ 号机）</div>
+    <p>盘点完成页在净值卡下方新增一行目标进度：名称 + 完成度 + 迷你进度条 + 「还差 X · 预计 Y 达成」，点击进入净值目标页。<b>这是这个功能存在的最大理由</b>——盘点是付出，看着目标更近一点是回报，留存循环由此闭合。未设目标时这一行显示为引导：「设一个目标，让每次盘点都有奔头 →」。</p>
+  </div>
+
+  <div class="step"><div class="h"><span class="n">8</span>你需要先做的一件事</div>
+    <p><code>goals</code> 是新集合，要在云开发控制台建好，权限设为<b>「仅创建者可读写」</b>（与 <code>accounts</code> 一致，靠 <code>_openid</code> 天然隔离）。这一步不做，第 2 步之后的代码跑不起来。字段：<code>name / targetFen / currency / createdAt / achievedAt / isArchived</code>。</p>
+  </div>
+
+  <div class="step"><div class="h"><span class="n">9</span>交付顺序</div>
+    <p>① 增速估算收口 + 换成中位数算法（里程碑页先受益，用户可感知「预测变稳了」）→ ② <code>goals</code> 集合 + <code>services/goal.js</code> + 目标 CRUD → ③ 里程碑页改造为「净值目标」→ ④ 盘点完成页目标行。发布时 <code>APP_VERSION</code> → V2.1，<code>releases.js</code> 加条目，<code>toolBadges.js</code> 把 <code>milestones</code> 打上红点。</p>
+  </div>
+</div>
+
+<script>
+  function mkToast(id){ let t; return function(msg){ const el=document.getElementById(id); el.querySelector('.tt').textContent=msg; el.classList.add('show'); clearTimeout(t); t=setTimeout(()=>el.classList.remove('show'),1700) } }
+  const toast1=mkToast('toast1'), toast2=mkToast('toast2'), toast3=mkToast('toast3')
+
+  // ── ② 设定目标 ──
+  const CURRENT = 252430, MONTHLY = 8240
+  let raw='', editing=false
+  function openSheet(isEdit){
+    editing=!!isEdit
+    document.getElementById('sheetTitle').textContent = isEdit ? '修改目标' : '设定目标'
+    if(isEdit){ raw='600000'; document.getElementById('gname').value='首付' }
+    else { raw=''; document.getElementById('gname').value='' }
+    document.querySelectorAll('.qchip').forEach(c=>c.classList.remove('on'))
+    renderNum()
+    document.getElementById('amask').classList.add('show')
+    document.getElementById('asheet').classList.add('show')
+  }
+  function closeSheet(){ document.getElementById('amask').classList.remove('show'); document.getElementById('asheet').classList.remove('show') }
+  function pick(el,name,amt){
+    document.querySelectorAll('.qchip').forEach(c=>c.classList.remove('on'))
+    el.classList.add('on')
+    document.getElementById('gname').value=name
+    raw = amt ? String(amt) : ''
+    renderNum()
+  }
+  function key(k){
+    if(k==='back') raw=raw.slice(0,-1)
+    else if(k==='000'){ if(raw!=='' && raw!=='0' && raw.length<=9) raw+='000' }
+    else { if(raw==='0') raw=k; else if(raw.length<12) raw+=k }
+    renderNum()
+  }
+  function renderNum(){
+    document.getElementById('anum').innerHTML = raw==='' ? '<span class="plc">0</span>' : Number(raw).toLocaleString('en-US')
+  }
+  function saveGoal(){
+    const name=(document.getElementById('gname').value||'').trim()
+    const amt=Number(raw||0)
+    if(!amt){ toast2('请输入目标金额'); return }
+    if(amt<=CURRENT){ toast2('目标需要大于当前净资产'); return }
+    const pct = (CURRENT/amt*100)
+    const remain = amt-CURRENT
+    const months = Math.ceil(remain/MONTHLY)
+    const d=new Date(); d.setMonth(d.getMonth()+months)
+    document.getElementById('newName').textContent = name || '我的目标'
+    document.getElementById('newPct').textContent = pct.toFixed(1)
+    document.getElementById('newTarget').textContent = '¥'+amt.toLocaleString('en-US')
+    document.getElementById('newRemain').textContent = '¥'+remain.toLocaleString('en-US')
+    document.getElementById('newFill').style.width = pct.toFixed(1)+'%'
+    document.getElementById('newEta').textContent = d.getFullYear()+' 年 '+(d.getMonth()+1)+' 月'
+    document.getElementById('emptyCard').style.display='none'
+    document.getElementById('filledCard').style.display='block'
+    closeSheet()
+    toast2(editing?'目标已更新':'目标已设定')
+  }
+
+  // ── ③ 降级态 ──
+  function deg(mode){
+    const $=id=>document.getElementById(id)
+    $('dWarn').style.display='none'
+    $('dName').textContent='首付'
+    $('dPct').textContent='42.1'; $('dFill').style.width='42.1%'
+    $('dCur').textContent='¥252,430'
+    $('dRemainWrap').style.display=''; $('dRemain').textContent='¥347,570'
+    $('dVal').className='val'
+    if(mode==='ok'){
+      $('dLab').textContent='按你的历史增速，预计达成'
+      $('dVal').textContent='2029 年 6 月'
+      $('dBasis').textContent='依据：近 12 个月月均净增 ¥8,240（取月度中位数）。这是按你已记录的历史推算，不是承诺。'
+    } else if(mode==='short'){
+      $('dLab').textContent='还不能估算达成时间'
+      $('dVal').className='val na'
+      $('dVal').textContent='再记录 4 个月，就能按你的真实增速估算达成时间'
+      $('dBasis').textContent='需要至少 6 个完整月的记录才能算出稳定的月均增速，目前只有 2 个月。'
+    } else if(mode==='neg'){
+      $('dLab').textContent='暂时算不出达成时间'
+      $('dVal').className='val na'
+      $('dVal').textContent='按最近的变化，你暂时还在远离这个目标'
+      $('dBasis').textContent='依据：近 12 个月月均净增 −¥1,300（取月度中位数）。增速转正后这里会重新给出预计时间。'
+    } else if(mode==='volatile'){
+      $('dLab').textContent='按你的历史增速，预计达成'
+      $('dVal').textContent='2029 年 6 月'
+      $('dBasis').textContent='依据：近 12 个月月均净增 ¥8,240（取月度中位数）。'
+      $('dWarn').style.display='flex'
+      document.getElementById('dWarnText').textContent='你的月度变化波动较大（最大单月是中位数的 5.2 倍），这个时间只作粗略参考。'
+    } else if(mode==='done'){
+      $('dPct').textContent='100'; $('dFill').style.width='100%'
+      $('dCur').textContent='¥612,900'
+      $('dRemainWrap').style.display='none'
+      $('dLab').textContent='🎉 已达成'
+      $('dVal').textContent='2026 年 7 月 达成'
+      $('dBasis').textContent='用时 2 年 4 个月。要不要设定下一个目标？'
+    }
+  }
+</script>
+</body>
+</html>

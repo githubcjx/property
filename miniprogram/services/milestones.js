@@ -17,6 +17,7 @@
 const cloud = require('./cloud.js')
 const { isDebtCategory } = require('../utils/categories.js')
 const { netCnyFen, isIncluded, snapshotCnyFen } = require('../utils/networth.js')
+const { estimateMonthlyGrowth } = require('../utils/growth.js')
 
 // 7 档（单位：分；1 元 = 100 分）
 const MILESTONES_FEN = [
@@ -129,20 +130,6 @@ function findFirstPositive(timeline) {
   return null
 }
 
-// 近 N 天的月均增速（fen / 月）。
-// 优先用近 180 天数据点首尾差；若窗口内点不足，退化用全时间线。
-function computeMonthlyGrowth(timeline, lookbackDays) {
-  if (timeline.length < 2) return 0
-  const cutoff = Date.now() - (lookbackDays || 180) * 86400000
-  const recent = timeline.filter(p => p.time >= cutoff)
-  const series = recent.length >= 2 ? recent : timeline
-  const first = series[0]
-  const last = series[series.length - 1]
-  const months = (last.time - first.time) / (86400000 * 30)
-  if (months < 0.5) return 0
-  return (last.net - first.net) / months
-}
-
 // ---------- 格式化（数值 → 文案） ----------
 
 function fmtAmountText(fen) {
@@ -217,7 +204,9 @@ async function evaluate() {
 
   const firstPositiveAt = findFirstPositive(timeline)
   const peakPoint = findPeak(timeline)
-  const monthlyRate = computeMonthlyGrowth(timeline, 180)
+  // 增速估算收口在 utils/growth.js：净值目标卡与下面里程碑当前关共用同一口径
+  const growth = estimateMonthlyGrowth(timeline)
+  const monthlyRate = growth.monthlyFen
 
   // 遍历 7 档，构建结果
   const milestones = []
@@ -338,6 +327,7 @@ async function evaluate() {
     firstPositive,
     monthlyRate,
     monthlyRateText: monthlyRate > 0 ? '+' + fmtAmountText(monthlyRate) : (monthlyRate < 0 ? '-' + fmtAmountText(-monthlyRate) : '¥0'),
+    growth,   // { monthlyFen, coverage, months, volatile }，净值目标卡据此决定是否给预测
     hasData: true,
   }
 }
@@ -356,6 +346,7 @@ function emptyResult(current) {
     firstPositive: null,
     monthlyRate: 0,
     monthlyRateText: '¥0',
+    growth: { monthlyFen: 0, coverage: 'short', months: 0, volatile: false },
     hasData: false,
   }
 }

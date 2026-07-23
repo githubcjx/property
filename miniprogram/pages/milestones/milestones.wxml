@@ -6,7 +6,7 @@
     <view class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onBack">
       <view class="ic ic-xs ic-back"></view>
     </view>
-    <text class="nav-title">里程碑</text>
+    <text class="nav-title">净值目标</text>
   </view>
 
   <!-- 空态 -->
@@ -22,6 +22,80 @@
 
   <block wx:if="{{hasData}}">
     <scroll-view scroll-y class="scroll" enable-flex>
+
+      <!-- ============ 我的目标 ============ -->
+      <view wx:if="{{goal.hasGoal}}" class="goal-card entry-up">
+        <view class="goal-head">
+          <view class="goal-flag"><view class="ic ic-xs ic-flag"></view></view>
+          <text class="goal-name">{{goal.name}}</text>
+          <view class="goal-edit tap" hover-class="btn-hover" data-edit="1" bindtap="onOpenGoalSheet">
+            <view class="ic ic-xs ic-edit"></view>
+          </view>
+        </view>
+
+        <view class="goal-pct-row">
+          <text class="goal-pct num">{{goal.pctText}}</text>
+          <text class="goal-pct-unit">%</text>
+          <view class="goal-target">
+            <view>目标 {{goal.targetText}}</view>
+            <view class="goal-target-ccy">本位币 {{goal.currency}}</view>
+          </view>
+        </view>
+
+        <view class="goal-bar"><view class="goal-fill" style="width: {{goal.pct}}%;"></view></view>
+
+        <view class="goal-nums">
+          <text>当前 <text class="num strong">{{goal.currentText}}</text></text>
+          <text wx:if="{{!goal.achieved}}">还差 <text class="num strong">{{goal.remainingText}}</text></text>
+        </view>
+
+        <view class="goal-eta">
+          <!-- 已达成 -->
+          <block wx:if="{{goal.state === 'achieved'}}">
+            <view class="goal-eta-lab">🎉 已达成</view>
+            <view class="goal-eta-val">恭喜，要不要设定下一个目标？</view>
+            <view class="goal-next tap" hover-class="btn-hover" bindtap="onOpenGoalSheet">设定下一个目标</view>
+          </block>
+
+          <!-- 正常预测 -->
+          <block wx:elif="{{goal.state === 'ok'}}">
+            <view class="goal-eta-lab">按你的历史增速，预计达成</view>
+            <view class="goal-eta-val">{{goal.etaText}}</view>
+            <view class="goal-basis">依据：近 {{goal.months}} 个月的月度净增中位数 {{goal.monthlyText}}。这是按你已记录的历史推算，不是承诺，实际取决于后续储蓄与市场波动。</view>
+            <view wx:if="{{goal.volatile}}" class="goal-warn">你的月度变化波动较大，这个时间只作粗略参考</view>
+          </block>
+
+          <!-- 历史不足 -->
+          <block wx:elif="{{goal.state === 'short'}}">
+            <view class="goal-eta-lab">还不能估算达成时间</view>
+            <view class="goal-eta-val small">再记录 {{goal.monthsNeeded}} 个月，就能按你的真实增速估算</view>
+            <view class="goal-basis">需要至少 6 个完整月的记录才能算出稳定的月均增速，目前有 {{goal.months}} 个月。</view>
+          </block>
+
+          <!-- 增速为负 -->
+          <block wx:elif="{{goal.state === 'nonPositive'}}">
+            <view class="goal-eta-lab">暂时算不出达成时间</view>
+            <view class="goal-eta-val small">按最近的变化，你暂时还在远离这个目标</view>
+            <view class="goal-basis">近 {{goal.months}} 个月的月度净增中位数不为正。增速转正后，这里会重新给出预计时间。</view>
+          </block>
+
+          <!-- 太远 -->
+          <block wx:elif="{{goal.state === 'tooFar'}}">
+            <view class="goal-eta-lab">暂时算不出达成时间</view>
+            <view class="goal-eta-val small">按当前增速，达成时间超出可预测范围</view>
+            <view class="goal-basis">近 {{goal.months}} 个月的月均净增相对目标金额太小。提高储蓄或调低目标后，这里会给出预计时间。</view>
+          </block>
+        </view>
+      </view>
+
+      <!-- 未设目标 -->
+      <view wx:else class="goal-empty entry-up">
+        <view class="goal-empty-orb"><view class="ic ic-sm ic-flag"></view></view>
+        <view class="goal-empty-title">设一个属于你的目标</view>
+        <view class="goal-empty-desc">下面的里程碑是通用关口。定一个你自己的数字，每次盘点都能看到它更近一点。</view>
+        <view class="goal-empty-btn tap" hover-class="btn-hover" bindtap="onOpenGoalSheet">设定目标</view>
+      </view>
+
 
       <!-- ============ Hero · 下一关 ============ -->
       <view class="hero entry-up" wx:if="{{nextTarget}}">
@@ -44,7 +118,7 @@
             <view class="meta-v num">{{nextTarget.remainingText}}</view>
           </view>
           <view class="meta-item">
-            <view class="meta-k">近 6 月增速</view>
+            <view class="meta-k">月均增速</view>
             <view class="meta-v num">{{monthlyRateText}}<text class="meta-suffix">/ 月</text></view>
           </view>
         </view>
@@ -53,7 +127,7 @@
           按当前节奏，预计在 <text class="em">{{nextTarget.predictedText}}</text> 前后跨过下一关
         </view>
         <view class="hero-tip" wx:elif="{{monthlyRateText === '¥0' || monthlyRateText[0] === '-'}}">
-          近 6 月增速不足以预测，先持续记录每月余额
+          目前的增速不足以预测，先持续记录每月余额
         </view>
       </view>
 
@@ -149,4 +223,36 @@
       <view class="bottom-spacer"></view>
     </scroll-view>
   </block>
+
+  <!-- ============ 设定 / 修改目标 半屏 ============ -->
+  <view wx:if="{{goalSheetVisible}}" class="gs-mask" bindtap="onCloseGoalSheet">
+    <view class="gs-sheet" catchtap="noop">
+      <view class="gs-handle"></view>
+      <view class="gs-head">
+        <text class="gs-title">{{goalSheetEditing ? '修改目标' : '设定目标'}}</text>
+        <text class="gs-cancel tap" catchtap="onCloseGoalSheet">取消</text>
+      </view>
+
+      <view class="gs-lab">选个常见目标，或直接输金额</view>
+      <view class="gs-chips">
+        <view wx:for="{{goalPresets}}" wx:key="name"
+              class="gs-chip tap" hover-class="btn-hover"
+              data-i="{{index}}" bindtap="onPickPreset">{{item.label}}</view>
+      </view>
+
+      <input class="gs-input" placeholder="目标名称，如「首付」「换车」" placeholder-class="ph"
+             maxlength="10" value="{{goalNameInput}}" bindinput="onGoalNameInput" />
+
+      <view class="gs-amount">
+        <text class="gs-sym">{{goalCcySymbol}}</text>
+        <input class="gs-amount-input mono" type="digit" placeholder="0" placeholder-class="ph"
+               value="{{goalAmountInput}}" bindinput="onGoalAmountInput" />
+      </view>
+
+      <view class="gs-save tap {{goalSaving ? 'is-busy' : ''}}" hover-class="btn-hover" catchtap="onSaveGoal">
+        {{goalSaving ? '保存中…' : '保存目标'}}
+      </view>
+      <view wx:if="{{goalSheetEditing}}" class="gs-archive tap" catchtap="onArchiveGoal">结束这个目标</view>
+    </view>
+  </view>
 </view>

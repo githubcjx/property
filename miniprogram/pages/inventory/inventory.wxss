@@ -169,6 +169,34 @@
   font-size: 22rpx; color: var(--warn); line-height: 1.6;
 }
 
+/* ============ 完成页 · 目标进度行 ============ */
+.done-goal {
+  width: 100%; box-sizing: border-box;
+  margin-top: 24rpx; border-radius: 28rpx;
+  padding: 24rpx 26rpx; text-align: left;
+  background: linear-gradient(180deg, rgba(var(--warn-rgb), 0.12), rgba(var(--warn-rgb), 0.04));
+  border: 1rpx solid rgba(var(--warn-rgb), 0.34);
+}
+.dg-top { display: flex; align-items: center; gap: 14rpx; }
+.dg-ico {
+  width: 48rpx; height: 48rpx; flex: 0 0 48rpx; border-radius: 16rpx;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(var(--warn-rgb), 0.18);
+}
+.dg-name { flex: 1; font-size: 26rpx; font-weight: 700; color: var(--ink-100); }
+.dg-pct { font-size: 28rpx; font-weight: 800; color: var(--warn); }
+.dg-bar { height: 10rpx; border-radius: 10rpx; overflow: hidden; margin-top: 18rpx; background: rgba(255, 255, 255, 0.07); }
+.dg-fill { height: 100%; border-radius: 10rpx; background: linear-gradient(90deg, rgba(var(--warn-rgb), 0.45), var(--warn)); }
+.dg-sub { font-size: 22rpx; color: var(--ink-80); margin-top: 16rpx; }
+
+.done-goal-empty {
+  width: 100%; box-sizing: border-box;
+  margin-top: 24rpx; border-radius: 28rpx;
+  padding: 26rpx; text-align: center;
+  font-size: 24rpx; color: var(--ink-60);
+  background: var(--glass-1); border: 1rpx dashed rgba(var(--warn-rgb), 0.3);
+}
+
 .done-remind {
   width: 100%; box-sizing: border-box;
   margin-top: 24rpx; border-radius: 28rpx;

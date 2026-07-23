@@ -5,6 +5,7 @@
 const app = getApp()
 const accountSvc = require('../../services/account.js')
 const invSvc = require('../../services/inventory.js')
+const goalSvc = require('../../services/goal.js')
 const { CATEGORIES, isIconKey } = require('../../utils/categories.js')
 const { catRgb } = require('../../utils/theme.js')
 const { symbolOf } = require('../../utils/currency.js')
@@ -51,6 +52,9 @@ Page({
     deltaText: '',
     deltaPositive: true,
     lastDaysText: '',
+
+    // 完成页的目标进度行（盘点的回报：看着目标更近一点）
+    goal: { hasGoal: false },
   },
 
   onLoad() {
@@ -270,6 +274,10 @@ Page({
       baseSymbol: symbolOf(baseCcy),
     })
 
+    // 目标进度行：只显示进度与还差，不算预计达成时间 —— 那需要全量拉交易记录重建时间线，
+    // 压在盘点结束这一刻太重。点这一行进净值目标页即可看到预计时间。
+    this.loadGoalRow(netCny)
+
     // 对比基线按快照口径回算；先算完再记录本次盘点时间
     if (lastTs) {
       try {
@@ -290,6 +298,26 @@ Page({
       }
     }
     invSvc.markInventoryDone()
+  },
+
+  // 目标失败不应影响盘点结果展示（比如 goals 集合还没建），静默降级为「未设目标」引导
+  async loadGoalRow(netCnyFen) {
+    try {
+      const goal = await goalSvc.getActiveGoal()
+      if (!goal) return
+      const v = goalSvc.buildGoalView(goal, netCnyFen, null)
+      this.setData({
+        goal: Object.assign({}, v, {
+          remainingText: formatMoney(v.remainingFen, v.currency, { symbol: true }),
+        }),
+      })
+    } catch (err) {
+      console.warn('[inventory] 读取目标失败，隐藏目标行', err)
+    }
+  },
+
+  onOpenGoal() {
+    wx.navigateTo({ url: '/pages/milestones/milestones' })
   },
 
   // 订阅提醒：占位入口（云函数下发能力随 V2.0.1 上线，这里明确告知还不能订阅）

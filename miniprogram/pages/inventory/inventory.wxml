@@ -77,6 +77,23 @@
           <view wx:if="{{skipNote}}" class="done-skip-note">{{skipNote}}</view>
         </view>
 
+        <!-- 目标进度：盘点的回报 -->
+        <view wx:if="{{goal.hasGoal}}" class="done-goal tap entry-up d3" hover-class="btn-hover" bindtap="onOpenGoal">
+          <view class="dg-top">
+            <view class="dg-ico"><view class="ic ic-xs ic-flag"></view></view>
+            <text class="dg-name">{{goal.name}}</text>
+            <text class="dg-pct num">{{goal.pctText}}%</text>
+          </view>
+          <view class="dg-bar"><view class="dg-fill" style="width: {{goal.pct}}%;"></view></view>
+          <view class="dg-sub">
+            <block wx:if="{{goal.achieved}}">已达成，去看看 →</block>
+            <block wx:else>还差 {{hideAmount ? '••••' : goal.remainingText}} · 看预计达成时间 →</block>
+          </view>
+        </view>
+        <view wx:else class="done-goal-empty tap entry-up d3" hover-class="btn-hover" bindtap="onOpenGoal">
+          设一个目标，让每次盘点都有奔头 →
+        </view>
+
         <view class="done-remind entry-up d4" bindtap="onSubscribeTap">
           <view class="done-remind-ico"><view class="ic ic-sm ic-bell"></view></view>
           <view class="done-remind-txt">

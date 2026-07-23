@@ -223,9 +223,12 @@
         </view>
 -->
 
-        <view class="tool-cell tap" hover-class="tool-cell-hover" data-url="/pages/milestones/milestones" bindtap="onToolTap">
-          <view class="tool-chip chip-gold"><view class="ic ic-sm ic-trophy"></view></view>
-          <text class="tool-label">里程碑</text>
+        <view class="tool-cell tap" hover-class="tool-cell-hover" data-url="/pages/milestones/milestones" data-badge="milestones" bindtap="onToolTap">
+          <view class="tool-chip chip-gold">
+            <view class="ic ic-sm ic-trophy"></view>
+            <view wx:if="{{toolBadges.milestones}}" class="tool-dot"></view>
+          </view>
+          <text class="tool-label">净值目标</text>
         </view>
       </view>
     </view>
