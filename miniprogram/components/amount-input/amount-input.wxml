@@ -1,4 +1,3 @@
-<wxs src="./display.wxs" module="dp" />
 
 <view wx:if="{{visible}}"
       class="ai-mask {{closing ? 'ai-mask-out' : 'ai-mask-in'}} {{reduceMotion ? 'no-motion' : ''}}"
@@ -24,7 +23,7 @@
       </view>
       <view class="ai-acc-meta">
         <text class="ai-acc-name">{{accountName}}</text>
-        <text class="ai-acc-bal">当前余额 <text class="num">{{currentBalanceText || dp.fenToCNY(currentBalanceFen)}}</text></text>
+        <text class="ai-acc-bal">当前余额 <text class="num">{{currentBalanceText}}</text></text>
       </view>
     </view>
 

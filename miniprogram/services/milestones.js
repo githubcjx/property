@@ -132,6 +132,9 @@ function findFirstPositive(timeline) {
 
 // ---------- 格式化（数值 → 文案） ----------
 
+// 关口金额专用：7 个关口是**人民币锚点**（「一百万」本身就是人民币语境的说法，
+// 折成 $14 万会让高光关口失去意义），所以这里的 ¥ 与 万/亿 是有意为之，不是漏改的硬编码。
+// 真实金额（当前净值 / 峰值 / 月均增速）一律由页面用 formatMoney + 本位币渲染。
 function fmtAmountText(fen) {
   const yuan = Math.round(fen / 100)
   if (Math.abs(yuan) >= 10000_0000) return '¥' + (yuan / 10000_0000).toFixed(0) + ' 亿'
@@ -300,7 +303,6 @@ async function evaluate() {
       : 0
     peak = {
       amount: peakPoint.net,
-      amountText: fmtAmountText(peakPoint.net),
       time: peakPoint.time,
       dateText: fmtDate(peakPoint.time),
       daysAgo: Math.max(0, Math.round((nowMs - peakPoint.time) / 86400000)),
@@ -321,12 +323,10 @@ async function evaluate() {
 
   return {
     current,
-    currentText: fmtAmountText(current),
     milestones,
     peak,
     firstPositive,
     monthlyRate,
-    monthlyRateText: monthlyRate > 0 ? '+' + fmtAmountText(monthlyRate) : (monthlyRate < 0 ? '-' + fmtAmountText(-monthlyRate) : '¥0'),
     growth,   // { monthlyFen, coverage, months, volatile }，净值目标卡据此决定是否给预测
     hasData: true,
   }
@@ -335,7 +335,6 @@ async function evaluate() {
 function emptyResult(current) {
   return {
     current,
-    currentText: fmtAmountText(current),
     milestones: MILESTONES_FEN.map(ms => ({
       amount: ms,
       amountText: fmtAmountText(ms),
@@ -345,7 +344,6 @@ function emptyResult(current) {
     peak: null,
     firstPositive: null,
     monthlyRate: 0,
-    monthlyRateText: '¥0',
     growth: { monthlyFen: 0, coverage: 'short', months: 0, volatile: false },
     hasData: false,
   }

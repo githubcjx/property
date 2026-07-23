@@ -1,4 +1,4 @@
-const { formatYuan } = require('../../utils/format.js')
+const { formatMoney } = require('../../utils/format.js')
 const { formatShort } = require('../../utils/date.js')
 const { getCategory, isIconKey } = require('../../utils/categories.js')
 
@@ -38,7 +38,7 @@ Component({
         iconKey: useKey ? icon : '',
         iconText: useKey ? '' : (icon || '📁'),
         note: acc.note || '',
-        amountText: hide ? '****' : '¥' + formatYuan(acc.balance || 0, {}),
+        amountText: hide ? '****' : formatMoney(acc.balance || 0, acc.currency || 'CNY', { symbol: true }),
         colorClass: cat ? cat.colorClass : '',
         updatedText: acc.updatedAt ? formatShort(acc.updatedAt) : '',
         excludedFromChart: !acc.includeInChart,

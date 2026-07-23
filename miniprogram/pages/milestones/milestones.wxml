@@ -126,7 +126,7 @@
         <view class="hero-tip" wx:if="{{nextTarget.predictedText}}">
           按当前节奏，预计在 <text class="em">{{nextTarget.predictedText}}</text> 前后跨过下一关
         </view>
-        <view class="hero-tip" wx:elif="{{monthlyRateText === '¥0' || monthlyRateText[0] === '-'}}">
+        <view class="hero-tip" wx:elif="{{rateNonPositive}}">
           目前的增速不足以预测，先持续记录每月余额
         </view>
       </view>

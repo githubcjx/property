@@ -645,8 +645,6 @@
 .chip-mint::after  { background: radial-gradient(circle, rgba(143, 230, 207, 0.40), transparent 70%); }
 .chip-ice   { background: rgba(var(--accent-rgb), 0.16); border-color: rgba(var(--accent-rgb), 0.32); }
 .chip-ice::after   { background: radial-gradient(circle, rgba(var(--accent-rgb), 0.40), transparent 70%); }
-.chip-lav   { background: rgba(var(--investment-rgb), 0.16); border-color: rgba(var(--investment-rgb), 0.32); }
-.chip-lav::after   { background: radial-gradient(circle, rgba(var(--investment-rgb), 0.38), transparent 70%); }
 .chip-gold  { background: rgba(243, 223, 163, 0.16); border-color: rgba(243, 223, 163, 0.32); }
 .chip-gold::after  { background: radial-gradient(circle, rgba(243, 223, 163, 0.34), transparent 70%); }
 .chip-teal  { background: rgba(var(--fixed-rgb), 0.16); border-color: rgba(var(--fixed-rgb), 0.32); }

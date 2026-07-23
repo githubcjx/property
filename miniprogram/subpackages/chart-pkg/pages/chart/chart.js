@@ -2,6 +2,9 @@ const app = getApp()
 const echarts = require('../../ec-canvas/echarts')
 const chartSvc = require('../../../../services/chart.js')
 const { getTheme, isLight } = require('../../../../utils/theme.js')
+const { baseCurrency, cnyToBaseFen } = require('../../../../utils/networth.js')
+const { symbolOf } = require('../../../../utils/currency.js')
+const { formatMoney, fenToUnit } = require('../../../../utils/format.js')
 
 // Tab 与时间范围常量
 const TABS = [
@@ -176,12 +179,16 @@ Page({
     const debtColor = light ? '#e5382b' : '#ffb3b3'
     const debtRgb = light ? '229,56,43' : '255,179,179'
 
+    // series 内部是人民币分（历史重建口径），显示时折算到本位币
+    const baseCcy = baseCurrency()
+    const baseSym = symbolOf(baseCcy)
+
     const yFormatter = hide
       ? () => '***'
       : (v) => {
-          const n = Math.round(v / 100)
-          if (Math.abs(n) >= 10000) return '¥' + (n / 10000).toFixed(1) + 'w'
-          return '¥' + n
+          const n = Math.round(fenToUnit(cnyToBaseFen(v), baseCcy))
+          if (Math.abs(n) >= 10000) return baseSym + (n / 10000).toFixed(1) + 'w'
+          return baseSym + n
         }
 
     const tooltipFormatter = hide
@@ -189,9 +196,8 @@ Page({
       : (params) => {
           const lines = [params[0].axisValue]
           for (const p of params) {
-            const fen = p.data
-            const yuan = Math.round(fen / 100).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-            lines.push(`${p.marker} ${p.seriesName}: ¥${yuan}`)
+            const text = formatMoney(cnyToBaseFen(p.data), baseCcy, { symbol: true })
+            lines.push(`${p.marker} ${p.seriesName}: ${text}`)
           }
           return lines.join('\n')
         }

@@ -1,16 +1,20 @@
 const app = getApp()
 const txSvc = require('../../services/transaction.js')
 const accountSvc = require('../../services/account.js')
-const { formatYuan, formatDelta, yuanToFen, fenToYuan } = require('../../utils/format.js')
+const { formatMoney, fenToUnit, unitToFen } = require('../../utils/format.js')
 const { formatDateTime } = require('../../utils/date.js')
 const { isIconKey, getCategory } = require('../../utils/categories.js')
+const { symbolOf, digitsOf } = require('../../utils/currency.js')
 
-function splitAmount(fen) {
-  const yuan = Math.round(Math.abs(fen)) / 100
-  const [int, frac = '00'] = yuan.toFixed(2).split('.')
+// 按账户币种拆分金额（人民币/美元 2 位小数，日元 0 位）
+function splitAmount(fen, ccy) {
+  const digits = digitsOf(ccy || 'CNY')
+  const unit = Math.abs(fenToUnit(fen, ccy || 'CNY'))
+  const [int, frac = ''] = unit.toFixed(digits).split('.')
   return {
     int: int.replace(/\B(?=(\d{3})+(?!\d))/g, ','),
     frac,
+    hasFrac: digits > 0,
   }
 }
 
@@ -38,11 +42,16 @@ Page({
     afterText: '',
     typeText: '',
 
+    // 金额按账户原币种展示
+    ccy: 'CNY',
+    ccySymbol: '¥',
+
     // 中间大数字 = 本次变动金额（delta）
     positive: true,
     deltaSign: '',
     amtInt: '0',
     amtFrac: '00',
+    amtHasFrac: true,
 
     categoryClass: 'liquid',
     categoryName: '',
@@ -88,23 +97,29 @@ Page({
       const icon = acc ? (acc.icon || '') : ''
       const useKey = isIconKey(icon)
 
+      // 金额一律按账户原币种展示（账户已删除时退回人民币）
+      const ccy = (acc && acc.currency) || 'CNY'
+
       // 中间大数字始终展示「本次变动金额」(tx.amount)
       const displayAmt = tx.amount || 0
       const positive = displayAmt >= 0
-      const parts = splitAmount(displayAmt)
+      const parts = splitAmount(displayAmt, ccy)
 
       this.setData({
         tx,
         accountId: tx.accountId,
         accountName: acc ? acc.name : '账户已删除',
         iconKey: useKey ? icon : 'folder',
+        ccy,
+        ccySymbol: symbolOf(ccy),
         timeText: formatDateTime(tx.createdAt),
-        afterText: '¥' + formatYuan(tx.balanceAfter || 0, {}),
+        afterText: formatMoney(tx.balanceAfter || 0, ccy, { symbol: true }),
         typeText: tx.type === 'set' ? '修改余额' : '增减金额',
         positive,
         deltaSign: positive ? '+' : '−',
         amtInt: parts.int,
         amtFrac: parts.frac,
+        amtHasFrac: parts.hasFrac,
         categoryClass: cat ? cat.colorClass : 'liquid',
         categoryName: cat ? cat.name : '',
       })
@@ -121,12 +136,12 @@ Page({
     const tx = this.data.tx
     if (!tx) return
     const fen = tx.amount || 0
-    const absYuan = Math.abs(fen) / 100
+    const absUnit = Math.abs(fenToUnit(fen, this.data.ccy))
     const d = toDateObj(tx.createdAt)
     this.setData({
       showEdit: true,
       editClosing: false,
-      editAmountStr: absYuan ? String(absYuan) : '',
+      editAmountStr: absUnit ? String(absUnit) : '',
       editSign: fen < 0 ? -1 : 1,
       editNote: tx.note || '',
       editDate: fmtDateOnly(d),
@@ -156,7 +171,7 @@ Page({
       wx.showToast({ icon: 'none', title: '请输入合法金额' })
       return
     }
-    const fen = yuanToFen(num) * editSign
+    const fen = unitToFen(num, this.data.ccy) * editSign
     if (this.data.tx.type === 'delta' && fen === 0) {
       wx.showToast({ icon: 'none', title: '变动金额不能为 0' })
       return

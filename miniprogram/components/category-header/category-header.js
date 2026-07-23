@@ -1,6 +1,7 @@
-const { formatYuan } = require('../../utils/format.js')
+const { formatMoney } = require('../../utils/format.js')
 const { formatShort } = require('../../utils/date.js')
 const { getCategory } = require('../../utils/categories.js')
+const { baseCurrency, cnyToBaseFen } = require('../../utils/networth.js')
 
 Component({
   options: {
@@ -38,9 +39,11 @@ Component({
       const cat = getCategory(catId)
       const key = cat ? cat.colorClass : ''
       const sign = isDebt ? '-' : ''
+      // total 为人民币分（大类合计口径），显示折算到本位币
+      const baseCcy = baseCurrency()
       const amount = hide
         ? '****'
-        : (sign + '¥' + formatYuan(Math.abs(total), {}))
+        : (sign + formatMoney(cnyToBaseFen(Math.abs(total)), baseCcy, { symbol: true }))
       this.setData({
         name: cat ? cat.name : catId,
         textClass: key ? 'cat-' + key : '',

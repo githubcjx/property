@@ -1,7 +1,7 @@
 const app = getApp()
 const accountSvc = require('../../services/account.js')
 const txSvc = require('../../services/transaction.js')
-const { formatYuan, formatDelta, formatMoney } = require('../../utils/format.js')
+const { formatMoney } = require('../../utils/format.js')
 const { formatDateTime } = require('../../utils/date.js')
 const { getCategory, isIconKey } = require('../../utils/categories.js')
 const { catHex, catRgb } = require('../../utils/theme.js')
@@ -102,7 +102,7 @@ Page({
         txSvc.listByAccount(this.data.accountId, 100),
       ])
       this.applyAccount(acc)
-      this.applyTxs(txs)
+      this.applyTxs(txs, (acc && acc.currency) || 'CNY')
     } catch (err) {
       console.error(err)
       wx.showToast({ icon: 'none', title: '加载失败' })
@@ -148,18 +148,19 @@ Page({
     })
   },
 
-  applyTxs(txs) {
+  // 变动记录一律按账户原币种展示（外币账户不能拿 ¥ 拼字符串）
+  applyTxs(txs, ccy) {
     const list = txs.map(t => {
-      const d = formatDelta(t.amount, false)
+      const amt = t.amount || 0
       return {
         _id: t._id,
         type: t.type,
         note: t.note || (t.type === 'set' ? '修改余额' : '增减金额'),
         time: formatDateTime(t.createdAt),
-        deltaText: d.text,
-        deltaCls: d.cls,
-        afterText: '余额 ¥' + formatYuan(t.balanceAfter || 0, {}),
-        positive: t.amount >= 0,
+        deltaText: formatMoney(amt, ccy, { symbol: true, sign: true }),
+        deltaCls: amt > 0 ? 'amount-pos' : (amt < 0 ? 'amount-neg' : ''),
+        afterText: '余额 ' + formatMoney(t.balanceAfter || 0, ccy, { symbol: true }),
+        positive: amt >= 0,
       }
     })
 

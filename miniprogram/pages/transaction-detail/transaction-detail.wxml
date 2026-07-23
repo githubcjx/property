@@ -24,9 +24,9 @@
 
   <view class="hero-amount entry-up d1" style="color: {{positive ? 'var(--ice-blue)' : 'var(--debt)'}}; text-shadow: 0 0 56rpx {{positive ? 'rgba(var(--accent-rgb), 0.55)' : 'rgba(var(--debt-rgb), 0.5)'}};">
     <text class="amt-sign">{{deltaSign}}</text>
-    <text class="amt-prefix">¥</text>
+    <text class="amt-prefix">{{ccySymbol}}</text>
     <text class="amt-int">{{amtInt}}</text>
-    <text class="amt-frac">.{{amtFrac}}</text>
+    <text class="amt-frac" wx:if="{{amtHasFrac}}">.{{amtFrac}}</text>
   </view>
   <text class="hero-after entry-up d2">本次变动后余额 {{afterText}}</text>
 
@@ -71,9 +71,9 @@
       </view>
 
       <!-- 金额行 -->
-      <view class="edit-label">AMOUNT · 变动金额（元）</view>
+      <view class="edit-label">AMOUNT · 变动金额（{{ccy}}）</view>
       <view class="edit-amount-wrap glass">
-        <text class="edit-amount-cny">¥</text>
+        <text class="edit-amount-cny">{{ccySymbol}}</text>
         <input
           class="edit-amount-input"
           type="digit"

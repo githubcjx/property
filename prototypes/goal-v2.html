@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>净值目标 · 改版原型</title>
+<style>
+  :root {
+    --glass-1:rgba(255,255,255,0.05); --hairline:rgba(255,255,255,0.08); --hairline-hi:rgba(255,255,255,0.16);
+    --ink-100:#f5f8ff; --ink-80:rgba(245,248,255,0.78); --ink-60:rgba(245,248,255,0.55); --ink-40:rgba(245,248,255,0.36);
+    --good:#9ee6c1; --good-rgb:158,230,193; --warn:#f6d68a; --warn-rgb:246,214,138; --debt:#ffb3b3;
+    --accent:#a7d3ff; --accent-rgb:167,211,255;
+  }
+  * { box-sizing:border-box; }
+  html,body { margin:0; padding:0; }
+  body { min-height:100vh; background:#0a0b10; color:var(--ink-100);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",system-ui,sans-serif; font-size:14px; line-height:1.4;
+    display:flex; flex-wrap:wrap; gap:34px; justify-content:center; align-items:flex-start; padding:46px 14px 80px; }
+  .i { display:inline-flex; align-items:center; justify-content:center; }
+  .i svg { width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; display:block; }
+
+  .pwrap { position:relative; }
+  .ptitle { position:absolute; top:-30px; left:6px; font-size:12px; color:var(--ink-60); }
+  .ptitle b { color:var(--good); }
+  .ptitle.old b { color:var(--debt); }
+  .phone { position:relative; width:340px; height:760px; border-radius:44px;
+    background:radial-gradient(120% 70% at 12% 0%, rgba(167,211,255,0.11), transparent 55%),
+               radial-gradient(120% 70% at 95% 10%, rgba(var(--warn-rgb),0.09), transparent 55%), #08090c;
+    border:1px solid var(--hairline-hi); box-shadow:0 40px 90px rgba(0,0,0,0.6); overflow:hidden; display:flex; flex-direction:column; }
+  .statusbar { height:42px; flex:0 0 42px; display:flex; align-items:center; justify-content:space-between; padding:0 22px; font-size:12px; color:var(--ink-80); font-weight:600; }
+  .screen { flex:1; overflow-y:auto; padding:0 16px 24px; }
+  .screen::-webkit-scrollbar { width:0; }
+  .navbar { display:flex; align-items:center; padding:2px 0 14px; position:relative; }
+  .navbar .nb { width:32px; height:32px; border-radius:50%; background:var(--glass-1); border:1px solid var(--hairline); display:flex; align-items:center; justify-content:center; color:var(--ink-80); z-index:1; }
+  .navbar .nb .i { width:13px; height:13px; }
+  .navbar .nt { position:absolute; left:0; right:0; text-align:center; font-size:13px; font-weight:500; }
+
+  /* 目标卡 */
+  .gcard { border-radius:24px; padding:18px 16px 16px; overflow:hidden;
+    background:radial-gradient(130% 120% at 0% 0%, rgba(var(--warn-rgb),0.16), transparent 62%),
+               linear-gradient(180deg, rgba(var(--warn-rgb),0.10), rgba(var(--warn-rgb),0.03));
+    border:1px solid rgba(var(--warn-rgb),0.34); }
+  .gc-head { display:flex; align-items:center; gap:9px; }
+  .gc-flag { width:29px; height:29px; border-radius:10px; flex:0 0 29px; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(160deg, rgba(var(--warn-rgb),0.38), rgba(var(--warn-rgb),0.10)); color:var(--warn); }
+  .gc-flag .i { width:15px; height:15px; }
+  .gc-name { font-size:16px; font-weight:800; flex:1; }
+  .gc-edit { width:26px; height:26px; border-radius:8px; background:var(--glass-1); display:flex; align-items:center; justify-content:center; color:var(--ink-40); }
+  .gc-edit .i { width:12px; height:12px; }
+  .gc-pct { display:flex; align-items:baseline; gap:6px; margin-top:14px; }
+  .gc-pct .big { font-size:42px; font-weight:800; letter-spacing:-1.5px; color:var(--warn); line-height:1; }
+  .gc-pct .unit { font-size:17px; font-weight:800; color:var(--warn); }
+  .gc-pct .of { font-size:10px; color:var(--ink-60); margin-left:auto; text-align:right; line-height:1.5; }
+  .gbar { height:8px; border-radius:8px; background:rgba(255,255,255,0.07); overflow:hidden; margin-top:12px; }
+  .gbar i { display:block; height:100%; border-radius:8px; background:linear-gradient(90deg, rgba(var(--warn-rgb),0.45), var(--warn)); }
+  .gc-nums { display:flex; justify-content:space-between; margin-top:10px; font-size:11px; color:var(--ink-60); }
+  .gc-nums b { color:var(--ink-100); font-weight:700; }
+  .gc-eta { margin-top:14px; padding-top:13px; border-top:1px solid var(--hairline); }
+  .gc-eta .lab { font-size:10px; color:var(--ink-60); }
+  .gc-eta .val { font-size:21px; font-weight:800; margin-top:3px; }
+  .gc-basis { font-size:9.5px; color:var(--ink-40); margin-top:8px; line-height:1.6; }
+
+  /* 区块标题 */
+  .sec { display:flex; align-items:baseline; margin:24px 4px 12px; }
+  .sec .nm { font-size:13px; font-weight:700; }
+  .sec .sb { font-size:10px; color:var(--ink-40); margin-left:auto; }
+
+  /* 时间线 */
+  .tl { position:relative; padding-left:4px; }
+  .row { display:flex; gap:11px; padding:11px 12px; border-radius:14px; background:var(--glass-1); border:1px solid var(--hairline); margin-bottom:8px; align-items:flex-start; }
+  .row.cur { border-color:rgba(var(--warn-rgb),0.38); background:linear-gradient(180deg, rgba(var(--warn-rgb),0.09), rgba(var(--warn-rgb),0.02)); }
+  .dot { width:22px; height:22px; flex:0 0 22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; margin-top:1px; }
+  .dot.done { background:rgba(var(--good-rgb),0.18); color:var(--good); }
+  .dot.cur { background:rgba(var(--warn-rgb),0.22); color:var(--warn); }
+  .dot.fut { background:rgba(255,255,255,0.06); color:var(--ink-40); }
+  .body { flex:1; min-width:0; }
+  .amt { font-size:14px; font-weight:700; }
+  .amt.dim { color:var(--ink-40); font-weight:600; }
+  .star { font-size:9px; color:var(--warn); margin-left:3px; }
+  .sub { font-size:10px; color:var(--ink-40); margin-top:3px; }
+  .mini { height:4px; border-radius:4px; background:rgba(255,255,255,0.07); overflow:hidden; margin-top:8px; }
+  .mini i { display:block; height:100%; background:linear-gradient(90deg, rgba(var(--warn-rgb),0.45), var(--warn)); }
+  .right { text-align:right; flex:0 0 auto; }
+  .dur { font-size:11px; font-weight:700; color:var(--ink-80); }
+  .durl { font-size:9px; color:var(--ink-40); margin-top:2px; }
+  .spd { font-size:9px; margin-top:4px; padding:2px 6px; border-radius:6px; display:inline-block; }
+  .spd.faster { background:rgba(var(--good-rgb),0.16); color:var(--good); }
+  .spd.slower { background:rgba(255,179,179,0.14); color:var(--debt); }
+
+  /* 旅程 */
+  .grid { display:flex; gap:9px; }
+  .card { flex:1; border-radius:16px; background:var(--glass-1); border:1px solid var(--hairline); padding:13px 12px; }
+  .card .k { font-size:10px; color:var(--ink-60); display:flex; align-items:center; gap:5px; }
+  .card .badge { font-size:8px; padding:1px 5px; border-radius:5px; background:rgba(255,179,179,0.14); color:var(--debt); }
+  .card .v { font-size:17px; font-weight:800; margin-top:6px; }
+  .card .f { font-size:9px; color:var(--ink-40); margin-top:5px; line-height:1.5; }
+
+  /* 被删除的旧 hero（对照用） */
+  .old-hero { border-radius:24px; padding:20px 16px; background:var(--glass-1); border:1px solid var(--hairline); text-align:center; position:relative; }
+  .strike { position:absolute; inset:0; border-radius:24px; background:repeating-linear-gradient(45deg, rgba(255,179,179,0.07) 0 8px, transparent 8px 16px); border:1px solid rgba(255,179,179,0.35); display:flex; align-items:center; justify-content:center; }
+  .strike span { font-size:11px; font-weight:800; color:var(--debt); background:rgba(10,11,16,0.9); padding:5px 12px; border-radius:10px; }
+  .eyebrow { font-size:9px; letter-spacing:2px; color:var(--ink-40); }
+  .ring { width:130px; height:130px; border-radius:50%; margin:14px auto 0; position:relative;
+    background:conic-gradient(var(--warn) 0deg 182deg, rgba(255,255,255,0.07) 182deg 360deg); display:flex; align-items:center; justify-content:center; }
+  .ring::after { content:''; position:absolute; inset:11px; border-radius:50%; background:#0c0d12; }
+  .ring .rc { position:relative; z-index:1; text-align:center; }
+  .ring .rl { font-size:9px; color:var(--ink-40); }
+  .ring .rt { font-size:20px; font-weight:800; margin-top:2px; }
+  .ring .rp { font-size:12px; color:var(--warn); font-weight:700; margin-top:2px; }
+  .om { display:flex; justify-content:space-around; margin-top:16px; }
+  .om .k { font-size:9px; color:var(--ink-40); } .om .v { font-size:14px; font-weight:700; margin-top:3px; }
+  .otip { font-size:10px; color:var(--ink-60); margin-top:14px; }
+
+  .notes { width:400px; max-width:92vw; color:var(--ink-80); }
+  .notes h2 { font-size:17px; margin:0 0 4px; color:#fff; }
+  .notes .lead { font-size:12px; color:var(--ink-60); margin-bottom:16px; line-height:1.6; }
+  .step { background:var(--glass-1); border:1px solid var(--hairline); border-radius:14px; padding:13px 15px; margin-bottom:11px; }
+  .step .h { font-size:13px; font-weight:700; color:#fff; }
+  .step p { margin:7px 0 0; font-size:12px; color:var(--ink-60); line-height:1.7; }
+  .step code { background:rgba(255,255,255,0.08); padding:1px 6px; border-radius:5px; font-size:11px; color:var(--warn); }
+  .step b { color:var(--ink-80); }
+  .del { color:var(--debt); } .keep { color:var(--good); }
+</style>
+</head>
+<body>
+
+<!-- 改版后 -->
+<div class="pwrap">
+  <div class="ptitle">改版后 · <b>上半屏「我要去哪」 / 下半屏「我走过哪」</b></div>
+  <div class="phone">
+    <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+    <div class="screen">
+      <div class="navbar">
+        <div class="nb"><span class="i"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></span></div>
+        <div class="nt">净值目标</div>
+      </div>
+
+      <!-- 我的目标（唯一的「前瞻」模块） -->
+      <div class="gcard">
+        <div class="gc-head">
+          <div class="gc-flag"><span class="i"><svg viewBox="0 0 24 24"><path d="M5 22V4M5 4h12l-2 4 2 4H5"/></svg></span></div>
+          <div class="gc-name">首付</div>
+          <div class="gc-edit"><span class="i"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span></div>
+        </div>
+        <div class="gc-pct">
+          <span class="big">42.1</span><span class="unit">%</span>
+          <span class="of">目标 ¥600,000<br/>本位币 CNY</span>
+        </div>
+        <div class="gbar"><i style="width:42.1%"></i></div>
+        <div class="gc-nums"><span>当前 <b>¥252,430</b></span><span>还差 <b>¥347,570</b></span></div>
+        <div class="gc-eta">
+          <div class="lab">按你的历史增速，预计达成</div>
+          <div class="val">2029 年 6 月</div>
+          <div class="gc-basis">依据：近 12 个月的月度净增中位数 ¥8,240。按你已记录的历史推算，不是承诺。</div>
+        </div>
+      </div>
+
+      <!-- 成长轨迹（纯回顾） -->
+      <div class="sec"><span class="nm">成长轨迹</span><span class="sb">2 / 7 已达成</span></div>
+      <div class="tl">
+        <div class="row">
+          <div class="dot done">✓</div>
+          <div class="body"><div class="amt">¥1 万</div><div class="sub">2024 年 3 月 12 日</div></div>
+        </div>
+        <div class="row">
+          <div class="dot done">✓</div>
+          <div class="body"><div class="amt">¥10 万</div><div class="sub">2025 年 1 月 8 日</div></div>
+          <div class="right"><div class="dur">10 个月</div><div class="durl">距上一关</div></div>
+        </div>
+        <div class="row cur">
+          <div class="dot cur">●</div>
+          <div class="body">
+            <div class="amt">¥50 万</div>
+            <div class="sub">进行中 · 50.5%</div>
+            <div class="mini"><i style="width:50.5%"></i></div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="dot fut">○</div>
+          <div class="body"><div class="amt dim">¥100 万<span class="star">★</span></div><div class="sub">关键关口 · 复利启航</div></div>
+        </div>
+        <div class="row">
+          <div class="dot fut">○</div>
+          <div class="body"><div class="amt dim">¥300 万</div></div>
+        </div>
+      </div>
+
+      <!-- 旅程 -->
+      <div class="sec"><span class="nm">旅程</span></div>
+      <div class="grid">
+        <div class="card">
+          <div class="k">历史峰值 <span class="badge">距峰 -3.2%</span></div>
+          <div class="v">¥260,800</div>
+          <div class="f">2026 年 5 月 2 日<br/>距今 82 天</div>
+        </div>
+        <div class="card">
+          <div class="k">首次破零</div>
+          <div class="v">2024 · 1 月</div>
+          <div class="f">记账以来 936 天</div>
+        </div>
+      </div>
+      <div style="height:20px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 被删掉的部分 -->
+<div class="pwrap">
+  <div class="ptitle old">这块<b>删掉</b> · 与上面的目标卡重复</div>
+  <div class="phone" style="height:auto; padding-bottom:20px;">
+    <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+    <div class="screen" style="flex:none;">
+      <div class="navbar"><div class="nb"><span class="i"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></span></div><div class="nt">净值目标</div></div>
+
+      <div class="gcard" style="opacity:0.35">
+        <div class="gc-head"><div class="gc-flag"><span class="i"><svg viewBox="0 0 24 24"><path d="M5 22V4M5 4h12l-2 4 2 4H5"/></svg></span></div><div class="gc-name">首付</div></div>
+        <div class="gc-pct"><span class="big">42.1</span><span class="unit">%</span><span class="of">还差 ¥347,570<br/>预计 2029 年 6 月</span></div>
+        <div class="gbar"><i style="width:42.1%"></i></div>
+      </div>
+
+      <div style="height:14px"></div>
+
+      <div class="old-hero">
+        <div class="eyebrow">NEXT MILESTONE · 下一关</div>
+        <div class="ring">
+          <div class="rc"><div class="rl">即将抵达</div><div class="rt">¥50 万</div><div class="rp">50.5%</div></div>
+        </div>
+        <div class="om">
+          <div><div class="k">还差</div><div class="v">¥24.7 万</div></div>
+          <div><div class="k">月均增速</div><div class="v">+¥8,240</div></div>
+        </div>
+        <div class="otip">按当前节奏，预计在 <b style="color:var(--warn)">2032 年 1 月</b> 前后跨过下一关</div>
+        <div class="strike"><span>删除</span></div>
+      </div>
+
+      <div style="font-size:11px; color:var(--debt); margin-top:16px; line-height:1.7;">
+        两个进度、两个「还差」、两个预计日期挨在一起 ——<br/>
+        用户会问：到底哪个是我的目标？为什么差 3 年？
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="notes">
+  <h2>净值目标 · 改版要点</h2>
+  <div class="lead">分工：<b>目标卡回答「我要去哪」，下面全部回答「我走过哪」</b>。全页只保留一处预测。</div>
+
+  <div class="step"><div class="h">删除 <span class="del">hero「下一关」整块</span></div>
+    <p>环形进度 + 还差 + 月均增速 + 预计月份。它的角色已由目标卡承担，留着就是同屏两个互相矛盾的 ETA。<code>ring-*</code> 相关 wxss（约 60 行）与 <code>pctToDeg</code>/<code>pctToTipDeg</code>/<code>ringDeg</code>/<code>ringTipDeg</code> 一并清理。</p>
+  </div>
+
+  <div class="step"><div class="h">当前关 <span class="del">去掉预计月份</span>，只留进度</div>
+    <p>时间线里的当前关保留「进行中 · 50.5%」和迷你进度条，删掉「预计 2032 年 1 月」。<code>milestones.js</code> 的 <code>monthsToNext</code> / <code>predictedText</code> 随之成为死代码，删掉；<code>monthlyRate</code> 仍需保留（<code>growth</code> 对象要透传给目标卡）。</p>
+  </div>
+
+  <div class="step"><div class="h">改名 <span class="keep">「财富之路 · 7 关」→「成长轨迹」</span></div>
+    <p>「财富之路」听起来仍是前瞻叙事，「成长轨迹」明确是回顾。右侧计数 <code>2 / 7 已达成</code> 保留。</p>
+  </div>
+
+  <div class="step"><div class="h"><span class="keep">保留</span>：达成日期 · 距上一关用时 · 加速/减速</div>
+    <p>这是全 App 唯一回答「我攒钱比以前快还是慢」的地方，且必须靠固定关口才算得出来（自定义目标是一次性的，没有「上一关」可比）。原型里第二关右侧的「10 个月 / 距上一关」就是它；第三关及之后还会出现「快了 3 个月」的加速标签。</p>
+  </div>
+
+  <div class="step"><div class="h"><span class="keep">保留</span>：历史峰值 + 回撤 · 首次破零</div>
+    <p>纯回顾内容，与目标卡零重叠，原样保留。</p>
+  </div>
+
+  <div class="step"><div class="h">全部达成态</div>
+    <p><code>allDone</code> 时原本显示的「所有关口已达成」奖杯卡保留，位置在成长轨迹上方（此时没有当前关，不存在重复问题）。</p>
+  </div>
+</div>
+</body>
+</html>

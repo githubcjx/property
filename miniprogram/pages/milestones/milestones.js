@@ -2,7 +2,7 @@ const app = getApp()
 const milestonesSvc = require('../../services/milestones.js')
 const goalSvc = require('../../services/goal.js')
 const { formatMoney, unitToFen, fenToUnit } = require('../../utils/format.js')
-const { baseCurrency } = require('../../utils/networth.js')
+const { baseCurrency, cnyToBaseFen } = require('../../utils/networth.js')
 const { symbolOf } = require('../../utils/currency.js')
 
 // 设定目标时的常见档位（金额单位：元）
@@ -167,12 +167,22 @@ Page({
       ringTipDeg = hide ? '-90deg' : pctToTipDeg(current.progressPct)
     }
 
-    const peak = r.peak ? Object.assign({}, r.peak, hide ? { amountText: '¥••' } : {}) : null
+    // 关口金额是人民币锚点（¥1 万 / ¥100 万…），服务层已格式化好，原样用；
+    // 但「当前净值 / 历史峰值 / 月均增速」是真实金额，必须折算并按本位币符号显示。
+    const baseCcy = baseCurrency()
+    const maskText = symbolOf(baseCcy) + '••'
+    const inBase = (cnyFen, opts) => formatMoney(cnyToBaseFen(cnyFen), baseCcy, Object.assign({ symbol: true }, opts))
+
+    const peak = r.peak
+      ? Object.assign({}, r.peak, { amountText: hide ? maskText : inBase(r.peak.amount) })
+      : null
 
     this.setData({
       hasData: r.hasData,
-      currentText: hide ? '¥••' : r.currentText,
-      monthlyRateText: hide ? '¥••' : r.monthlyRateText,
+      currentText: hide ? maskText : inBase(r.current),
+      monthlyRateText: hide ? maskText : inBase(r.monthlyRate, { sign: true }),
+      // 增速 ≤ 0 时不给预测（文案由 wxml 分支处理），不靠比对格式化后的字符串
+      rateNonPositive: !(r.monthlyRate > 0),
       milestones,
       achievedCount,
       totalCount: milestones.length,
