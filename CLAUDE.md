@@ -31,7 +31,7 @@ There is **no npm build, lint, or test tooling for the mini program** (`nodeModu
 > Good: `新增「一键盘点」：逐个核对账户余额，几分钟全部更新完`
 > Bad: `新增「一键盘点」：逐个核对各账户余额，一致就点确认，不一致顺手改掉，几分钟让全部数据回到最新`
 
-Remote: `origin` = https://github.com/githubcjx/property.git. On Windows the editing tools may write CRLF; git's autocrlf normalizes to LF on commit. Write source files as **UTF-8 without BOM** — WeChat's WXSS compiler rejects a leading BOM (`unexpected ` at pos 1).
+Remote: `origin` = https://github.com/githubcjx/property.git. On Windows the editing tools may write CRLF; git's autocrlf normalizes to LF on commit. Write source files as **UTF-8 without BOM** — WeChat's WXSS compiler rejects a leading BOM (`unexpected ` at pos 1). **The one place a BOM is required is the opposite direction: CSV files produced by `services/export.js` must start with `\uFEFF`**, or Excel on a Chinese Windows opens them as GBK mojibake. Don't "fix" that BOM away; it is written as the escape `'\uFEFF'` (never a literal zero-width char) precisely so it stays visible in the source.
 
 ## Architecture & invariants
 

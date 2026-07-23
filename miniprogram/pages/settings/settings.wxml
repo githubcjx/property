@@ -57,6 +57,14 @@
       </view>
       <switch checked="{{reduceMotion}}" bindchange="onReduceMotionChange" color="{{accentColor}}" />
     </view>
+    <view class="row tap" hover-class="row-hover" bindtap="onExport">
+      <view class="row-icon"><view class="ic ic-sm ic-export"></view></view>
+      <view class="row-main">
+        <text class="row-title">导出数据</text>
+        <text class="row-sub">导出 CSV 转发到微信 · 数据始终是你的</text>
+      </view>
+      <view class="row-arrow"><view class="ic ic-xs ic-chevron-right"></view></view>
+    </view>
     <button class="feedback-row tap" hover-class="row-hover" open-type="feedback">
       <view class="row-icon"><view class="ic ic-sm ic-edit"></view></view>
       <view class="row-main">

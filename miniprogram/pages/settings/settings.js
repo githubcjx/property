@@ -2,6 +2,7 @@ const app = getApp()
 const { getTheme } = require('../../utils/theme.js')
 const { getCurrency } = require('../../utils/currency.js')
 const { APP_VERSION } = require('../../utils/version.js')
+const exportSvc = require('../../services/export.js')
 
 Page({
   data: {
@@ -65,6 +66,66 @@ Page({
     app.globalData.reduceMotion = v
     wx.setStorageSync('pref_reduce_motion', v)
     this.setData({ reduceMotion: v })
+  },
+
+  // ============ 导出数据 ============
+  // 两张表分开导出：CSV 是单表格式，塞两张表进一个文件在 Excel 里会列错位。
+  onExport() {
+    wx.showActionSheet({
+      itemList: ['导出变动记录', '导出账户清单'],
+      success: (res) => {
+        this.confirmExport(res.tapIndex === 1 ? 'accounts' : 'transactions')
+      },
+      fail: () => {},
+    })
+  },
+
+  // 导出的是明文金额，发错人就全泄露了，先确认一次
+  confirmExport(kind) {
+    wx.showModal({
+      title: '导出数据',
+      content: '导出文件包含全部金额明文（不受「隐藏金额」影响）。下一步会让你把文件转发到微信会话，建议发给「文件传输助手」，注意不要误发他人。',
+      confirmText: '继续导出',
+      success: (res) => {
+        if (res.confirm) this.doExport(kind)
+      },
+    })
+  },
+
+  async doExport(kind) {
+    if (this._exporting) return
+    this._exporting = true
+    // 云开发单次最多取 20 条，全量靠翻页，记录多时会慢，这里给个明确的等待态
+    wx.showLoading({ title: '正在整理数据', mask: true })
+    try {
+      const { content, fileName, count } = await exportSvc.build(kind)
+      if (!count) {
+        wx.hideLoading()
+        wx.showToast({ icon: 'none', title: '还没有可导出的数据' })
+        return
+      }
+      const filePath = await exportSvc.writeTemp(fileName, content)
+      wx.hideLoading()
+      wx.shareFileMessage({
+        filePath,
+        fileName,
+        success: () => {
+          wx.showToast({ icon: 'success', title: '已发送' })
+        },
+        fail: (err) => {
+          // 用户主动取消转发不算失败
+          if (err && /cancel/i.test(err.errMsg || '')) return
+          console.error('[export] 转发失败', err)
+          wx.showToast({ icon: 'none', title: '转发失败，请稍后再试' })
+        },
+      })
+    } catch (err) {
+      wx.hideLoading()
+      console.error('[export] 导出失败', err)
+      wx.showToast({ icon: 'none', title: '导出失败：' + (err.errMsg || err.message || '') })
+    } finally {
+      this._exporting = false
+    }
   },
 
   onBack() {
