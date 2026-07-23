@@ -126,7 +126,9 @@ function buildGoalView(goal, currentCnyFen, growth) {
   }
 
   const monthsToGo = remainingCny / growth.monthlyFen
-  view.monthlyFen = growth.monthlyFen
+  // growth 是人民币口径，折算到目标币种后再交给 UI，
+  // 否则卡上「目标/当前/还差」是 $，而「月均净增」却是 ¥
+  view.monthlyFen = convert(growth.monthlyFen, 'CNY', ccy, rates)
   view.monthsToGo = monthsToGo
   // 超过 50 年不给具体月份：写出「2183 年 4 月」只会显得荒谬，且那么远的外推本就没有意义
   if (monthsToGo > MAX_PREDICT_MONTHS) {

@@ -7,11 +7,11 @@
 //   current: fen,
 //   milestones: [
 //     { amount, status, achievedAt, durationFromPrevMonths, speedupMonths,
-//       progressPct, remainingFen, monthsToNext, isHighlight }
+//       progressPct, remainingFen, isHighlight }
 //   ],
 //   peak: { amount, time, drawdownPct } | null,
 //   firstPositiveAt: ms | null,
-//   monthlyRate: fen / month,
+//   growth: utils/growth.js 的估算结果，仅供净值目标卡做预测（本服务自己不预测）
 // }
 
 const cloud = require('./cloud.js')
@@ -147,11 +147,6 @@ function fmtDate(ms) {
   return d.getFullYear() + ' 年 ' + (d.getMonth() + 1) + ' 月 ' + d.getDate() + ' 日'
 }
 
-function fmtMonthOnly(ms) {
-  const d = new Date(ms)
-  return d.getFullYear() + ' 年 ' + (d.getMonth() + 1) + ' 月'
-}
-
 // 月数 → 人类表达
 function fmtDuration(months) {
   if (months == null || !isFinite(months)) return ''
@@ -165,14 +160,6 @@ function fmtDuration(months) {
   const rem = Math.round(abs % 12)
   if (rem === 0) return years + ' 年'
   return years + ' 年 ' + rem + ' 个月'
-}
-
-// 未来月数 → "2026 年 12 月"
-function fmtFutureMonth(monthsFromNow) {
-  if (monthsFromNow == null || !isFinite(monthsFromNow) || monthsFromNow < 0) return ''
-  const d = new Date()
-  d.setMonth(d.getMonth() + Math.round(monthsFromNow))
-  return fmtMonthOnly(d.getTime())
 }
 
 // ---------- 主入口 ----------
@@ -207,9 +194,8 @@ async function evaluate() {
 
   const firstPositiveAt = findFirstPositive(timeline)
   const peakPoint = findPeak(timeline)
-  // 增速估算收口在 utils/growth.js：净值目标卡与下面里程碑当前关共用同一口径
+  // 增速估算收口在 utils/growth.js（不变量 4b）：只由净值目标卡消费，里程碑自己不做预测
   const growth = estimateMonthlyGrowth(timeline)
-  const monthlyRate = growth.monthlyFen
 
   // 遍历 7 档，构建结果
   const milestones = []
@@ -269,9 +255,8 @@ async function evaluate() {
       const progressPct = ms > 0
         ? Math.max(0, Math.min(99.9, (current / ms) * 100))
         : 0
-      const monthsToNext = monthlyRate > 0 ? remaining / monthlyRate : null
-      const predictedText = monthsToNext != null ? fmtFutureMonth(monthsToNext) : ''
-
+      // 这里不算「预计达成」：全页唯一的预测在净值目标卡（见 utils/growth.js 与 CLAUDE.md 不变量 4b），
+      // 同屏出现两个 ETA 会自相矛盾。
       milestones.push({
         amount: ms,
         amountText: fmtAmountText(ms),
@@ -280,8 +265,6 @@ async function evaluate() {
         progressPctText: progressPct.toFixed(1),
         remainingFen: remaining,
         remainingText: fmtAmountText(remaining),
-        monthsToNext,
-        predictedText,
         isHighlight,
       })
     } else {
@@ -326,7 +309,6 @@ async function evaluate() {
     milestones,
     peak,
     firstPositive,
-    monthlyRate,
     growth,   // { monthlyFen, coverage, months, volatile }，净值目标卡据此决定是否给预测
     hasData: true,
   }
@@ -343,7 +325,6 @@ function emptyResult(current) {
     })),
     peak: null,
     firstPositive: null,
-    monthlyRate: 0,
     growth: { monthlyFen: 0, coverage: 'short', months: 0, volatile: false },
     hasData: false,
   }

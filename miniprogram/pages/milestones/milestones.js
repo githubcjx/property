@@ -12,20 +12,6 @@ const GOAL_PRESETS = [
   { name: '一百万', unit: 1000000, label: '一百万' },
 ]
 
-// 进度 0-100 → conic-gradient 度数
-function pctToDeg(pct) {
-  if (pct == null || isNaN(pct)) return '0deg'
-  const d = (Math.max(0, Math.min(100, pct)) / 100) * 360
-  return d.toFixed(1) + 'deg'
-}
-
-// 进度小球：从 -90deg 起，pct% × 360 之后落在圆周
-function pctToTipDeg(pct) {
-  if (pct == null || isNaN(pct)) return '-90deg'
-  const d = -90 + (Math.max(0, Math.min(100, pct)) / 100) * 360
-  return d.toFixed(1) + 'deg'
-}
-
 Page({
   data: {
     statusBarHeight: 20,
@@ -35,13 +21,7 @@ Page({
     loading: true,
     hasData: false,
 
-    currentText: '¥0',
-    monthlyRateText: '¥0',
-
-    // hero · 下一关
-    nextTarget: null,        // 仅当存在 current 关时填
-    ringDeg: '0deg',
-    ringTipDeg: '-90deg',
+    currentText: '¥0',       // 仅「全部达成」态展示
 
     // 关口列表 + 计数
     milestones: [],
@@ -132,7 +112,7 @@ Page({
       currentText: hide ? mask : formatMoney(v.currentFen, ccy, { symbol: true }),
       remainingText: hide ? mask : formatMoney(v.remainingFen, ccy, { symbol: true }),
       monthlyText: v.monthlyFen != null && !hide
-        ? formatMoney(v.monthlyFen, 'CNY', { symbol: true })
+        ? formatMoney(v.monthlyFen, ccy, { symbol: true })
         : mask,
     })
   },
@@ -155,20 +135,8 @@ Page({
       return c
     })
 
-    let nextTarget = null
-    let ringDeg = '0deg'
-    let ringTipDeg = '-90deg'
-    if (current) {
-      // hero 的"还差"与环心进度% 同样会反推金额：隐藏时换占位符，并把环弧/弧端小球归零
-      nextTarget = hide
-        ? Object.assign({}, current, { remainingText: '¥••', progressPctText: '••' })
-        : current
-      ringDeg = hide ? '0deg' : pctToDeg(current.progressPct)
-      ringTipDeg = hide ? '-90deg' : pctToTipDeg(current.progressPct)
-    }
-
     // 关口金额是人民币锚点（¥1 万 / ¥100 万…），服务层已格式化好，原样用；
-    // 但「当前净值 / 历史峰值 / 月均增速」是真实金额，必须折算并按本位币符号显示。
+    // 但「当前净值 / 历史峰值」是真实金额，必须折算并按本位币符号显示。
     const baseCcy = baseCurrency()
     const maskText = symbolOf(baseCcy) + '••'
     const inBase = (cnyFen, opts) => formatMoney(cnyToBaseFen(cnyFen), baseCcy, Object.assign({ symbol: true }, opts))
@@ -180,15 +148,9 @@ Page({
     this.setData({
       hasData: r.hasData,
       currentText: hide ? maskText : inBase(r.current),
-      monthlyRateText: hide ? maskText : inBase(r.monthlyRate, { sign: true }),
-      // 增速 ≤ 0 时不给预测（文案由 wxml 分支处理），不靠比对格式化后的字符串
-      rateNonPositive: !(r.monthlyRate > 0),
       milestones,
       achievedCount,
       totalCount: milestones.length,
-      nextTarget,
-      ringDeg,
-      ringTipDeg,
       peak,
       firstPositive: r.firstPositive,
       allDone: !!r.hasData && !current,

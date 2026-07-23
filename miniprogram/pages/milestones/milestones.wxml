@@ -97,40 +97,6 @@
       </view>
 
 
-      <!-- ============ Hero · 下一关 ============ -->
-      <view class="hero entry-up" wx:if="{{nextTarget}}">
-        <view class="hero-eyebrow">NEXT MILESTONE · 下一关</view>
-
-        <view class="ring-wrap {{nextTarget.isHighlight ? 'ring-highlight' : ''}}">
-          <view class="ring-bg"></view>
-          <view class="ring-fill" style="--score-deg: {{ringDeg}};"></view>
-          <view class="ring-tip" wx:if="{{!hideAmount}}" style="--tip-deg: {{ringTipDeg}};"></view>
-          <view class="ring-center">
-            <view class="ring-next-label">即将抵达</view>
-            <view class="ring-target">{{nextTarget.amountText}}</view>
-            <view class="ring-pct">{{nextTarget.progressPctText}}%</view>
-          </view>
-        </view>
-
-        <view class="hero-meta">
-          <view class="meta-item">
-            <view class="meta-k">还差</view>
-            <view class="meta-v num">{{nextTarget.remainingText}}</view>
-          </view>
-          <view class="meta-item">
-            <view class="meta-k">月均增速</view>
-            <view class="meta-v num">{{monthlyRateText}}<text class="meta-suffix">/ 月</text></view>
-          </view>
-        </view>
-
-        <view class="hero-tip" wx:if="{{nextTarget.predictedText}}">
-          按当前节奏，预计在 <text class="em">{{nextTarget.predictedText}}</text> 前后跨过下一关
-        </view>
-        <view class="hero-tip" wx:elif="{{rateNonPositive}}">
-          目前的增速不足以预测，先持续记录每月余额
-        </view>
-      </view>
-
       <!-- ============ 全部达成态 ============ -->
       <view class="hero hero-done entry-up" wx:if="{{allDone}}">
         <view class="done-orb"><view class="ic ic-lg ic-trophy"></view></view>
@@ -138,9 +104,9 @@
         <view class="done-desc">当前 {{currentText}}，是一段了不起的旅程</view>
       </view>
 
-      <!-- ============ 时间线 ============ -->
+      <!-- ============ 成长轨迹（纯回顾；前瞻由上方的目标卡负责） ============ -->
       <view class="sec-title entry-up d1">
-        <text class="sec-name">财富之路 · {{totalCount}} 关</text>
+        <text class="sec-name">成长轨迹</text>
         <text class="sec-sub">{{achievedCount}} / {{totalCount}} 已达成</text>
       </view>
 
@@ -167,11 +133,9 @@
               <text>{{item.achievedDateText}}</text>
             </view>
 
-            <!-- current -->
+            <!-- current：只给进度，不给预计时间（全页唯一的预测在目标卡） -->
             <view wx:if="{{item.status === 'current'}}" class="ms-sub">
               <text>进度 {{item.progressPctText}}%</text>
-              <text wx:if="{{item.predictedText}}" class="sep"></text>
-              <text wx:if="{{item.predictedText}}">预计 {{item.predictedText}}</text>
             </view>
 
             <!-- future highlight tag -->

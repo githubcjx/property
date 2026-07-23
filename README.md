@@ -10,7 +10,7 @@ property/
 ├── miniprogram/                 # 小程序源码
 │   ├── app.js / app.json / app.wxss
 │   ├── pages/                   # index / add-account / account-detail / transaction-detail
-│   ├── components/              # amount-input / account-card / category-header
+│   ├── components/              # amount-input / share-sheet
 │   ├── services/                # cloud / account / transaction（云开发数据访问）
 │   └── utils/                   # categories / format / date
 └── cloudfunctions/              # 云函数目录（MVP 暂未使用）
