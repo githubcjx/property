@@ -213,14 +213,22 @@
 .done-remind-txt { flex: 1; min-width: 0; }
 .done-remind-t { font-size: 26rpx; font-weight: 700; color: var(--ink-100); }
 .done-remind-s { font-size: 22rpx; color: var(--ink-60); margin-top: 4rpx; }
-/* 尚未上线：整块降透明度 + 「即将上线」标签，避免看起来可点即订阅 */
-.done-remind { opacity: 0.62; }
+/* 模板未配置时整块降透明度 + 「即将上线」标签，避免看起来可点即订阅 */
+.done-remind.is-soon { opacity: 0.62; }
 .done-remind-soon {
   flex: 0 0 auto;
   font-size: 20rpx; color: var(--ink-60);
   background: var(--glass-1); border: 1rpx solid var(--hairline);
   border-radius: 999rpx; padding: 6rpx 16rpx;
 }
+.done-remind-go { flex: 0 0 auto; font-size: 22rpx; font-weight: 700; color: var(--accent); }
+/* 已订阅：转成绿色确认态，与盘点主色一致 */
+.done-remind.is-on {
+  background: linear-gradient(180deg, rgba(var(--good-rgb), 0.10), rgba(var(--good-rgb), 0.04));
+  border-color: rgba(var(--good-rgb), 0.32);
+}
+.done-remind.is-on .done-remind-ico { background: rgba(var(--good-rgb), 0.16); }
+.done-remind-done { flex: 0 0 auto; font-size: 22rpx; font-weight: 700; color: var(--good); }
 
 .done-cta {
   width: 100%; box-sizing: border-box;

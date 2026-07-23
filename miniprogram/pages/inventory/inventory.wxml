@@ -94,13 +94,20 @@
           设一个目标，让每次盘点都有奔头 →
         </view>
 
-        <view class="done-remind entry-up d4" bindtap="onSubscribeTap">
+        <view class="done-remind entry-up d4 {{remindState === 'soon' ? 'is-soon' : ''}} {{remindState === 'on' ? 'is-on' : ''}}"
+              hover-class="{{remindState === 'off' ? 'btn-hover' : ''}}" bindtap="onSubscribeTap">
           <view class="done-remind-ico"><view class="ic ic-sm ic-bell"></view></view>
           <view class="done-remind-txt">
             <view class="done-remind-t">下月初提醒我盘点</view>
-            <view class="done-remind-s">微信服务通知，正在开发中</view>
+            <view class="done-remind-s">
+              <block wx:if="{{remindState === 'on'}}">下月 1 日发微信服务通知给你</block>
+              <block wx:elif="{{remindState === 'soon'}}">微信服务通知，正在开发中</block>
+              <block wx:else>微信服务通知 · 每次盘点后需重新订阅</block>
+            </view>
           </view>
-          <text class="done-remind-soon">即将上线</text>
+          <text wx:if="{{remindState === 'soon'}}" class="done-remind-soon">即将上线</text>
+          <text wx:elif="{{remindState === 'on'}}" class="done-remind-done">已订阅</text>
+          <text wx:else class="done-remind-go">订阅 ›</text>
         </view>
 
         <view class="done-cta tap entry-up d4" hover-class="wiz-btn-hover" bindtap="onDone">完成</view>

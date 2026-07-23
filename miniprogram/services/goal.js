@@ -18,9 +18,7 @@ const { MIN_MONTHS } = require('../utils/growth.js')
 
 const MAX_PREDICT_MONTHS = 600   // 50 年，超出即视为不可预测
 
-function goals() {
-  return cloud.db().collection('goals')
-}
+const goals = cloud.goals   // 集合访问器统一走 services/cloud.js（不变量 2）
 
 // 当前进行中的目标；没有则返回 null
 async function getActiveGoal() {

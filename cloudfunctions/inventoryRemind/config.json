@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "openapi": [
+      "subscribeMessage.send"
+    ]
+  },
+  "triggers": [
+    {
+      "name": "monthly-1st-0900-bj",
+      "type": "timer",
+      "config": "0 0 1 1 * * *"
+    }
+  ]
+}

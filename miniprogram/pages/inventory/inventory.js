@@ -6,6 +6,7 @@ const app = getApp()
 const accountSvc = require('../../services/account.js')
 const invSvc = require('../../services/inventory.js')
 const goalSvc = require('../../services/goal.js')
+const reminderSvc = require('../../services/reminder.js')
 const { CATEGORIES, isIconKey } = require('../../utils/categories.js')
 const { catRgb } = require('../../utils/theme.js')
 const { symbolOf } = require('../../utils/currency.js')
@@ -55,6 +56,10 @@ Page({
 
     // 完成页的目标进度行（盘点的回报：看着目标更近一点）
     goal: { hasGoal: false },
+
+    // 提醒订阅：'off' 未订阅 | 'on' 已订阅 | 'soon' 模板未配置（显示「即将上线」）
+    remindState: 'soon',
+    remindBusy: false,
   },
 
   onLoad() {
@@ -277,6 +282,7 @@ Page({
     // 目标进度行：只显示进度与还差，不算预计达成时间 —— 那需要全量拉交易记录重建时间线，
     // 压在盘点结束这一刻太重。点这一行进净值目标页即可看到预计时间。
     this.loadGoalRow(netCny)
+    this._refreshRemindState()
 
     // 对比基线按快照口径回算；先算完再记录本次盘点时间
     if (lastTs) {
@@ -320,9 +326,45 @@ Page({
     wx.navigateTo({ url: '/pages/milestones/milestones' })
   },
 
-  // 订阅提醒：占位入口（云函数下发能力随 V2.0.1 上线，这里明确告知还不能订阅）
-  onSubscribeTap() {
-    wx.showToast({ icon: 'none', title: '提醒功能还在开发中，暂时无法订阅' })
+  // 提醒入口状态：模板未配置时保持「即将上线」，否则查一次是否已有未使用的订阅额度
+  async _refreshRemindState() {
+    if (!reminderSvc.isConfigured()) {
+      this.setData({ remindState: 'soon' })
+      return
+    }
+    try {
+      const pending = await reminderSvc.isPending()
+      this.setData({ remindState: pending ? 'on' : 'off' })
+    } catch (err) {
+      console.warn('[inventory] 读取提醒订阅状态失败', err)
+      this.setData({ remindState: 'off' })
+    }
+  },
+
+  // 「下月初提醒我盘点」：微信一次性订阅，同意后记一次额度，云函数每月 1 日发
+  async onSubscribeTap() {
+    if (this.data.remindBusy) return
+    if (this.data.remindState === 'soon') {
+      wx.showToast({ icon: 'none', title: '提醒功能还在开发中' })
+      return
+    }
+    if (this.data.remindState === 'on') {
+      wx.showToast({ icon: 'none', title: '已订阅，下月初会提醒你' })
+      return
+    }
+    this.setData({ remindBusy: true })
+    const r = await reminderSvc.requestSubscribe()
+    this.setData({ remindBusy: false })
+    if (r === 'ok') {
+      this.setData({ remindState: 'on' })
+      wx.showToast({ icon: 'success', title: '下月初会提醒你' })
+    } else if (r === 'reject') {
+      wx.showToast({ icon: 'none', title: '已取消订阅' })
+    } else if (r === 'unconfigured') {
+      this.setData({ remindState: 'soon' })
+    } else {
+      wx.showToast({ icon: 'none', title: '订阅失败，稍后再试' })
+    }
   },
 
   onDone() {

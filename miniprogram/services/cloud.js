@@ -21,6 +21,16 @@ function fxRates() {
   return db().collection('fxRates')
 }
 
+// 净值目标（每人同时只有一条未归档）
+function goals() {
+  return db().collection('goals')
+}
+
+// 盘点提醒订阅（每人一条；云函数 inventoryRemind 读它决定给谁发）
+function reminders() {
+  return db().collection('reminders')
+}
+
 // 服务端时间（写入字段使用）
 function serverDate(offset) {
   return db().serverDate(offset ? { offset } : undefined)
@@ -107,6 +117,8 @@ module.exports = {
   accounts,
   transactions,
   fxRates,
+  goals,
+  reminders,
   serverDate,
   getAll,
   latestBalanceMapBefore,

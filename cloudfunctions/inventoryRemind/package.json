@@ -1,0 +1,9 @@
+{
+  "name": "inventoryRemind",
+  "version": "1.0.0",
+  "description": "Monthly inventory reminder via WeChat subscribe message",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}
