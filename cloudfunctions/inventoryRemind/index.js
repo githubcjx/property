@@ -18,10 +18,9 @@
 const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
-const _ = db.command
 
 // ⚠️ 与 miniprogram/utils/reminder.js 的 TEMPLATE_ID 保持一致
-const TEMPLATE_ID = ''
+const TEMPLATE_ID = 'ER_yTytW0B13nJQfeULlPy0EA85jYS2Z2IKw1fRV3H8'
 
 // 点开提醒后的落地页
 const LANDING_PAGE = 'pages/inventory/inventory'
@@ -29,15 +28,20 @@ const LANDING_PAGE = 'pages/inventory/inventory'
 // 单次执行最多发多少条，避免异常情况下把额度打满
 const MAX_PER_RUN = 500
 
-// 模板字段：不同模板字段名不同（thing1 / time2 / phrase3 …），
-// 选定模板后照抄「详情」里的字段名改这里。value 有长度限制（thing 类 ≤ 20 字符）。
+// 模板字段（键名取自「我的模板 → 详情」，编号不连续是微信模板的常态，别按顺序猜）：
+//   thing19 项目名称
+//   thing16 提醒时间 —— 注意是 thing 类而非 time 类，不要求日期格式，但同样限 20 字符
+//   thing2  提醒内容
+// 三者都是 thing 类：≤ 20 个字符，且尽量只用中文/数字（部分符号会被微信拒掉，
+// 所以日期不写成「8月1日 09:00」这种带冒号的形式）。改动前先核对模板详情，
+// 键名对不上微信直接返回 47003。
 function buildData(nowMs) {
   const d = new Date(nowMs + 8 * 3600 * 1000)   // 云函数跑在 UTC，+8h 得北京时间
-  const monthText = (d.getUTCMonth() + 1) + ' 月'
+  const dateText = d.getUTCFullYear() + '年' + (d.getUTCMonth() + 1) + '月' + d.getUTCDate() + '日'
   return {
-    thing1: { value: '该盘点了' },
-    thing2: { value: '花几分钟核对各账户余额' },
-    time3: { value: d.getUTCFullYear() + ' 年 ' + monthText },
+    thing19: { value: '净值本月度盘点' },
+    thing16: { value: dateText },
+    thing2:  { value: '花几分钟核对各账户余额' },
   }
 }
 

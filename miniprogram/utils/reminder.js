@@ -11,7 +11,7 @@
 // ⚠️ 选定模板后，模板的字段名（thing1 / time2 …）必须与云函数 inventoryRemind
 //    里 buildData() 的键一一对应，否则微信会报 47003 参数不匹配。
 
-const TEMPLATE_ID = ''
+const TEMPLATE_ID = 'ER_yTytW0B13nJQfeULlPy0EA85jYS2Z2IKw1fRV3H8'
 
 function isConfigured() {
   return typeof TEMPLATE_ID === 'string' && TEMPLATE_ID.length >= 20
