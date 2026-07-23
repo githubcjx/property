@@ -92,4 +92,22 @@
   </view>
 
   <view class="foot">{{version}} · MADE WITH CARE</view>
+
+  <!-- 转发面板：文件已生成，由用户点按钮同步触发转发（满足 shareFileMessage 的点击手势要求） -->
+  <view wx:if="{{sharePanelVisible}}" class="share-mask" bindtap="onCloseSharePanel">
+    <view class="share-sheet" catchtap="noop">
+      <view class="share-handle"></view>
+      <view class="share-title">文件已准备好</view>
+      <view class="share-file glass">
+        <view class="share-file-icon"><view class="ic ic-sm ic-export"></view></view>
+        <view class="share-file-info">
+          <text class="share-file-name">{{exportFileName}}</text>
+          <text class="share-file-meta">{{exportKindText}} · {{exportCount}} 条</text>
+        </view>
+      </view>
+      <view class="share-tip">点下方按钮，选择「文件传输助手」或指定联系人。金额为明文，注意不要误发他人。</view>
+      <view class="share-btn tap" hover-class="share-btn-hover" bindtap="onSharePrepared">转发到微信会话</view>
+      <view class="share-cancel tap" bindtap="onCloseSharePanel">取消</view>
+    </view>
+  </view>
 </view>

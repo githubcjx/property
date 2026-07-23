@@ -14,6 +14,12 @@ Page({
     accentColor: '#a7d3ff',   // 原生 switch 的 color 取不到 CSS 变量，用当前主题强调色
     baseCurrencyText: '',
     fxDate: '',
+
+    // 导出：文件生成后弹出的转发面板
+    sharePanelVisible: false,
+    exportFileName: '',
+    exportCount: 0,
+    exportKindText: '',
   },
 
   onLoad() {
@@ -87,12 +93,16 @@ Page({
       content: '导出文件包含全部金额明文（不受「隐藏金额」影响）。下一步会让你把文件转发到微信会话，建议发给「文件传输助手」，注意不要误发他人。',
       confirmText: '继续导出',
       success: (res) => {
-        if (res.confirm) this.doExport(kind)
+        if (res.confirm) this.prepareExport(kind)
       },
     })
   },
 
-  async doExport(kind) {
+  // 先把文件生成好，再弹出转发面板让用户点按钮触发转发。
+  // 关键：wx.shareFileMessage 必须在「用户点击手势」中同步调用——不能跟在 await
+  // 或弹窗回调后面，否则 iOS 会报 fail can only be invoked by user TAP gesture。
+  // 所以这里只负责异步生成文件，真正的转发放到 onSharePrepared（由按钮点击直接触发）。
+  async prepareExport(kind) {
     if (this._exporting) return
     this._exporting = true
     // 云开发单次最多取 20 条，全量靠翻页，记录多时会慢，这里给个明确的等待态
@@ -106,27 +116,48 @@ Page({
       }
       const filePath = await exportSvc.writeTemp(fileName, content)
       wx.hideLoading()
-      wx.shareFileMessage({
-        filePath,
-        fileName,
-        success: () => {
-          wx.showToast({ icon: 'success', title: '已发送' })
-        },
-        fail: (err) => {
-          // 用户主动取消转发不算失败
-          if (err && /cancel/i.test(err.errMsg || '')) return
-          console.error('[export] 转发失败', err)
-          wx.showToast({ icon: 'none', title: '转发失败，请稍后再试' })
-        },
+      this._exportFilePath = filePath
+      this.setData({
+        sharePanelVisible: true,
+        exportFileName: fileName,
+        exportCount: count,
+        exportKindText: kind === 'accounts' ? '账户清单' : '变动记录',
       })
     } catch (err) {
       wx.hideLoading()
-      console.error('[export] 导出失败', err)
+      console.error('[export] 生成失败', err)
       wx.showToast({ icon: 'none', title: '导出失败：' + (err.errMsg || err.message || '') })
     } finally {
       this._exporting = false
     }
   },
+
+  onCloseSharePanel() {
+    this.setData({ sharePanelVisible: false })
+  },
+
+  // 必须保持「同步」：本函数由按钮点击直接触发，调用 shareFileMessage 之前
+  // 不能有任何 await / 异步等待，否则会丢失点击手势上下文导致转发失败。
+  onSharePrepared() {
+    const filePath = this._exportFilePath
+    if (!filePath) return
+    wx.shareFileMessage({
+      filePath,
+      fileName: this.data.exportFileName,
+      success: () => {
+        this.setData({ sharePanelVisible: false })
+        wx.showToast({ icon: 'success', title: '已发送' })
+      },
+      fail: (err) => {
+        // 用户主动取消转发不算失败
+        if (err && /cancel/i.test(err.errMsg || '')) return
+        console.error('[export] 转发失败', err)
+        wx.showToast({ icon: 'none', title: '转发失败，请稍后再试' })
+      },
+    })
+  },
+
+  noop() {},
 
   onBack() {
     wx.navigateBack()

@@ -149,3 +149,55 @@
   color: var(--ink-20);
   letter-spacing: 0.22em;
 }
+
+/* ============ 导出 · 转发面板 ============ */
+.share-mask {
+  position: fixed; inset: 0; z-index: 90;
+  background: rgba(0, 0, 0, 0.55);
+  -webkit-backdrop-filter: blur(8rpx); backdrop-filter: blur(8rpx);
+  display: flex; align-items: flex-end;
+  animation: share-fade 0.22s ease;
+}
+@keyframes share-fade { from { opacity: 0; } to { opacity: 1; } }
+.share-sheet {
+  width: 100%;
+  background: linear-gradient(180deg, #14161d, #0c0d12);
+  border-top-left-radius: 40rpx; border-top-right-radius: 40rpx;
+  border-top: 1rpx solid var(--hairline-hi);
+  padding: 16rpx 32rpx calc(40rpx + env(safe-area-inset-bottom));
+  animation: share-rise 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+@keyframes share-rise { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.share-handle {
+  width: 64rpx; height: 8rpx; border-radius: 8rpx;
+  background: var(--hairline-hi); margin: 0 auto 24rpx;
+}
+.share-title { font-size: 32rpx; font-weight: 800; color: var(--ink-100); }
+.share-file {
+  display: flex; align-items: center; gap: 16rpx;
+  margin-top: 24rpx; padding: 22rpx 24rpx; border-radius: 22rpx;
+}
+.share-file-icon {
+  width: 60rpx; height: 60rpx; flex: 0 0 60rpx; border-radius: 16rpx;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.14);
+}
+.share-file-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6rpx; }
+.share-file-name {
+  font-size: 26rpx; color: var(--ink-100); font-weight: 600;
+  overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+}
+.share-file-meta { font-size: 20rpx; color: var(--ink-40); }
+.share-tip { font-size: 20rpx; color: var(--ink-60); line-height: 1.7; margin-top: 20rpx; }
+.share-btn {
+  margin-top: 28rpx; height: 96rpx; border-radius: 28rpx;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30rpx; font-weight: 800; color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.16);
+  border: 1rpx solid rgba(var(--accent-rgb), 0.45);
+}
+.share-btn-hover { opacity: 0.75; transform: scale(0.98); }
+.share-cancel { margin-top: 18rpx; text-align: center; font-size: 24rpx; color: var(--ink-40); padding: 12rpx; }
+
+.no-motion .share-mask, .no-motion .share-sheet { animation: none; }
