@@ -44,6 +44,7 @@ Page({
     editCount: 0,
     skipCount: 0,
     doneSub: '',
+    skipNote: '',
     netText: '',
     baseSymbol: '¥',
     hasDelta: false,
@@ -120,7 +121,7 @@ Page({
           symbol: symbolOf(ccy),
           balance: a.balance || 0,
           balanceText: formatMoney(a.balance || 0, ccy, { symbol: true }),
-          freshText: fresh.text,
+          freshAgo: fresh.agoText,
           freshStale: fresh.stale,
           checkedToday: fresh.days === 0,
           groupName: cat.name,
@@ -172,7 +173,7 @@ Page({
     try {
       await accountSvc.touchChecked(it._id)
       it.checkedToday = true
-      it.freshText = '今天更新'
+      it.freshAgo = '今天'
       it.freshStale = false
       this._stats.ok++
       this.setData({ submitting: false })
@@ -208,7 +209,7 @@ Page({
       it.balance = fenValue
       it.balanceText = formatMoney(fenValue, it.currency, { symbol: true })
       it.checkedToday = true
-      it.freshText = '今天更新'
+      it.freshAgo = '今天'
       it.freshStale = false
       const acc = (this._accounts || []).find(a => a._id === it._id)
       if (acc) acc.balance = fenValue
@@ -248,6 +249,8 @@ Page({
   async finish(partial) {
     const s = this._stats
     const seen = s.ok + s.edit
+    // 没核对的 = 跳过的 + 提前结束时还没轮到的
+    const unchecked = Math.max(0, this.data.total - seen)
     const lastTs = invSvc.lastInventoryTs()
 
     const baseCcy = baseCurrency()
@@ -260,7 +263,9 @@ Page({
       okCount: s.ok,
       editCount: s.edit,
       skipCount: s.skip,
-      doneSub: partial ? '本次过目 ' + seen + ' 个账户' : this.data.total + ' 个账户已全部过目',
+      doneSub: partial ? '本次核对了 ' + seen + ' 个账户' : this.data.total + ' 个账户已全部核对',
+      // 有账户没核对时说清楚：净资产里这些账户用的还是旧余额，别让用户误以为全是最新的
+      skipNote: unchecked > 0 ? '其中 ' + unchecked + ' 个账户这次没核对，用的仍是上次记录的余额' : '',
       netText,
       baseSymbol: symbolOf(baseCcy),
     })
@@ -287,9 +292,9 @@ Page({
     invSvc.markInventoryDone()
   },
 
-  // 订阅提醒：占位入口（云函数下发能力随 V2.0.1 上线）
+  // 订阅提醒：占位入口（云函数下发能力随 V2.0.1 上线，这里明确告知还不能订阅）
   onSubscribeTap() {
-    wx.showToast({ icon: 'none', title: '盘点提醒即将上线，敬请期待' })
+    wx.showToast({ icon: 'none', title: '提醒功能还在开发中，暂时无法订阅' })
   },
 
   onDone() {

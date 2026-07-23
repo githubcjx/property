@@ -37,17 +37,19 @@ function calendarDaysAgo(ms) {
   return Math.max(0, Math.floor((b.getTime() - a.getTime()) / 86400000))
 }
 
-// { days, stale, text }：days=null 表示无时间信息（text 为空）
+// { days, stale, text, agoText }：days=null 表示无时间信息（文案为空）
+//   text    首页账户行用，含「核对」字样，避免被误读成 App 会自动同步余额
+//   agoText 盘点页用，只有时间部分（「今天 / 昨天 / X 天前」），由页面自行组句
 function freshInfo(acc) {
   const ms = freshnessMs(acc)
   const days = calendarDaysAgo(ms)
-  if (days == null) return { days: null, stale: false, text: '' }
-  let text
-  if (days === 0) text = '今天更新'
-  else if (days === 1) text = '昨天更新'
-  else if (days < STALE_DAYS) text = days + ' 天前更新'
-  else text = days + ' 天未更新'
-  return { days, stale: days >= STALE_DAYS, text }
+  if (days == null) return { days: null, stale: false, text: '', agoText: '' }
+  let agoText
+  if (days === 0) agoText = '今天'
+  else if (days === 1) agoText = '昨天'
+  else agoText = days + ' 天前'
+  const text = days >= STALE_DAYS ? (days + ' 天没核对了') : ('上次核对 ' + agoText)
+  return { days, stale: days >= STALE_DAYS, text, agoText }
 }
 
 function staleCount(accounts) {

@@ -86,7 +86,7 @@
         <view class="ivb-ico"><view class="ic ic-sm ic-checklist"></view></view>
         <view class="ivb-txt">
           <view class="ivb-title">该盘点了</view>
-          <view class="ivb-sub">{{invBannerSub}} · 花 5 分钟过一遍 →</view>
+          <view class="ivb-sub">{{invBannerSub}} · 逐个核对一遍 →</view>
         </view>
         <view class="ivb-x" catchtap="onDismissInvBanner"><view class="ic ic-xs ic-close"></view></view>
       </view>

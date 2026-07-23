@@ -34,15 +34,17 @@
         <text>{{cur.name}}</text>
         <text wx:if="{{cur.currency !== 'CNY'}}" class="wiz-ccy">{{cur.currency}}</text>
       </view>
-      <view class="wiz-lab">{{cur.isDebt ? '当前欠款' : '当前余额'}}</view>
+      <view class="wiz-lab">{{cur.isDebt ? '记录中的欠款' : '记录中的余额'}}</view>
       <view class="wiz-bal {{cur.isDebt ? 'is-debt' : ''}} num">{{hideAmount ? cur.symbol + ' ••••' : cur.balanceText}}</view>
-      <view wx:if="{{cur.checkedToday}}" class="wiz-fresh is-today">✓ 今天更新</view>
-      <view wx:elif="{{cur.freshText}}" class="wiz-fresh {{cur.freshStale ? 'is-stale' : ''}}">{{cur.freshText}}</view>
+      <view wx:if="{{cur.checkedToday}}" class="wiz-fresh is-today">✓ 今天已核对</view>
+      <view wx:elif="{{cur.freshAgo}}" class="wiz-fresh {{cur.freshStale ? 'is-stale' : ''}}">上次核对 {{cur.freshAgo}}</view>
+      <view class="wiz-ask">和你现在看到的{{cur.isDebt ? '欠款' : '余额'}}一致吗？</view>
     </view>
 
     <view class="wiz-actions">
-      <view class="wiz-btn primary tap {{submitting ? 'is-busy' : ''}}" hover-class="wiz-btn-hover" bindtap="onConfirmSame">没变，确认</view>
-      <view class="wiz-btn ghost tap" hover-class="wiz-btn-hover" bindtap="onOpenEdit">{{cur.isDebt ? '欠款变了，修改' : '余额变了，修改'}}</view>
+      <view class="wiz-btn primary tap {{submitting ? 'is-busy' : ''}}" hover-class="wiz-btn-hover" bindtap="onConfirmSame">一致，确认</view>
+      <view class="wiz-btn ghost tap" hover-class="wiz-btn-hover" bindtap="onOpenEdit">不一致，改成新{{cur.isDebt ? '欠款' : '余额'}}</view>
+      <view class="wiz-hint">确认只记录核对时间，不会产生变动记录</view>
       <view class="wiz-sub">
         <text class="wiz-link {{idx === 0 ? 'is-disabled' : ''}}" bindtap="onPrev">‹ 上一个</text>
         <text class="wiz-link" bindtap="onSkip">跳过 ›</text>
@@ -59,28 +61,29 @@
         <view class="done-sub entry-up d1">{{doneSub}}</view>
 
         <view class="done-chips entry-up d2">
-          <view class="done-chip">确认 <text class="num strong">{{okCount}}</text></view>
-          <view class="done-chip">调整 <text class="num strong">{{editCount}}</text></view>
+          <view class="done-chip">核对 <text class="num strong">{{okCount}}</text></view>
+          <view class="done-chip">改过 <text class="num strong">{{editCount}}</text></view>
           <view class="done-chip">跳过 <text class="num strong">{{skipCount}}</text></view>
         </view>
 
         <view class="done-card glass entry-up d3">
-          <view class="done-lab">本次净值</view>
+          <view class="done-lab">当前净资产</view>
           <view class="done-net num">{{hideAmount ? baseSymbol + ' ••••' : netText}}</view>
           <view wx:if="{{hasDelta}}" class="done-delta {{deltaPositive ? 'pos' : 'neg'}}">
             较上次盘点 {{hideAmount ? '••••' : deltaText}}
             <text class="done-delta-when">· {{lastDaysText}}</text>
           </view>
-          <view wx:else class="done-delta-none">首次盘点已记录，下次盘点即可看到变化对比</view>
+          <view wx:else class="done-delta-none">这是第一次盘点，暂时没有可对比的上次记录；下次盘点就能看到变化了</view>
+          <view wx:if="{{skipNote}}" class="done-skip-note">{{skipNote}}</view>
         </view>
 
-        <view class="done-remind tap entry-up d4" hover-class="btn-hover" bindtap="onSubscribeTap">
+        <view class="done-remind entry-up d4" bindtap="onSubscribeTap">
           <view class="done-remind-ico"><view class="ic ic-sm ic-bell"></view></view>
           <view class="done-remind-txt">
             <view class="done-remind-t">下月初提醒我盘点</view>
-            <view class="done-remind-s">微信服务通知 · 即将上线</view>
+            <view class="done-remind-s">微信服务通知，正在开发中</view>
           </view>
-          <view class="ic ic-xs ic-chevron-right done-remind-go"></view>
+          <text class="done-remind-soon">即将上线</text>
         </view>
 
         <view class="done-cta tap entry-up d4" hover-class="wiz-btn-hover" bindtap="onDone">完成</view>

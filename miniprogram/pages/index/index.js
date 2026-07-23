@@ -22,6 +22,10 @@ const BANNER_WINDOW_DAYS = 3
 const STORAGE_BANNER_DISMISS = 'report_banner_dismissed_month'  // 值为 'YYYY-M'
 const STORAGE_INV_BANNER_DISMISS = 'inv_banner_dismissed_month' // 盘点横幅按月关闭，值为 'YYYY-M'
 
+// ⚠️ 临时预览开关：true = 无论账户新鲜与否都强制显示盘点横幅，方便在开发者工具里看效果。
+// 发布前必须改回 false，否则新用户一进首页就被提示「该盘点了」。
+const PREVIEW_INV_BANNER = true
+
 // 当前月份键（用于按月判断横幅是否已被关闭）
 function currentMonthKey() {
   const d = new Date()
@@ -174,18 +178,23 @@ Page({
     wx.navigateTo({ url: '/pages/report/report' })
   },
 
-  // 盘点横幅：任一账户超 30 天未更新 / 距上次盘点超 30 天时提示。
+  // 盘点横幅：任一账户超 30 天没核对 / 距上次盘点超 30 天时提示。
   // 月报横幅优先（其窗口期只有月初几天）；本月手动关闭后不再出现。
   updateInventoryBanner(accounts) {
     const dismissed = wx.getStorageSync(STORAGE_INV_BANNER_DISMISS) === currentMonthKey()
     const info = invSvc.bannerInfo(accounts)
-    if (!info.show || dismissed || this.data.monthlyBannerVisible) {
+    if ((!info.show && !PREVIEW_INV_BANNER) || dismissed || this.data.monthlyBannerVisible) {
       this.setData({ invBannerVisible: false })
       return
     }
-    const sub = info.staleCount > 0
-      ? info.staleCount + ' 个账户超过 ' + invSvc.STALE_DAYS + ' 天没更新了'
-      : '上次盘点已是 ' + info.lastDays + ' 天前'
+    let sub
+    if (info.staleCount > 0) {
+      sub = info.staleCount + ' 个账户超过 ' + invSvc.STALE_DAYS + ' 天没核对了'
+    } else if (info.lastDays != null) {
+      sub = '上次盘点已是 ' + info.lastDays + ' 天前'
+    } else {
+      sub = '花几分钟核对一遍各账户余额'   // 预览开关下的兜底文案
+    }
     this.setData({ invBannerVisible: true, invBannerSub: sub })
   },
 
