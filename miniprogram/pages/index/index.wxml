@@ -81,6 +81,16 @@
         <view class="mrb-x" catchtap="onDismissReportBanner"><view class="ic ic-xs ic-close"></view></view>
       </view>
 
+      <!-- 盘点横幅（账户太久没更新时提示；月报横幅优先） -->
+      <view wx:if="{{invBannerVisible}}" class="inv-banner entry-up" bindtap="onOpenInventory">
+        <view class="ivb-ico"><view class="ic ic-sm ic-checklist"></view></view>
+        <view class="ivb-txt">
+          <view class="ivb-title">该盘点了</view>
+          <view class="ivb-sub">{{invBannerSub}} · 花 5 分钟过一遍 →</view>
+        </view>
+        <view class="ivb-x" catchtap="onDismissInvBanner"><view class="ic ic-xs ic-close"></view></view>
+      </view>
+
       <view class="groups">
         <view
           wx:for="{{groups}}"
@@ -130,6 +140,7 @@
                 <view class="acc-sub">
                   <text wx:if="{{acc.note}}" class="acc-note">{{acc.note}}</text>
                   <text wx:if="{{!acc.includeInChart}}" class="acc-badge">未计入</text>
+                  <text wx:if="{{acc.freshText}}" class="acc-fresh {{acc.freshStale ? 'is-stale' : ''}}">{{acc.freshText}}</text>
                 </view>
               </view>
               <text class="acc-amount cat-{{item.colorClass}} num">{{hideAmount ? (acc.symbol || '¥') + ' ••••' : acc.balanceText}}</text>
@@ -165,6 +176,17 @@
         <text class="sheet-title">工具<text class="sheet-sub">分析中心</text></text>
         <view class="sheet-close tap" hover-class="btn-hover" catchtap="onCloseTools">
           <view class="ic ic-xs ic-close"></view>
+        </view>
+      </view>
+
+      <view class="tool-group-label">记录</view>
+      <view class="tool-grid">
+        <view class="tool-cell tap" hover-class="tool-cell-hover" data-url="/pages/inventory/inventory" data-badge="inventory" bindtap="onToolTap">
+          <view class="tool-chip chip-inv">
+            <view class="ic ic-sm ic-checklist"></view>
+            <view wx:if="{{toolBadges.inventory}}" class="tool-dot"></view>
+          </view>
+          <text class="tool-label">一键盘点</text>
         </view>
       </view>
 

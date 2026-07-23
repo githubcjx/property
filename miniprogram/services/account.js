@@ -74,6 +74,15 @@ async function softDeleteAccount(id) {
   })
 }
 
+// 盘点「没变，确认」：余额未变，只刷新确认时间，不写交易（不变量 3 只约束余额变动；
+// 没有变动就不造一笔假记录）。checkedAt = 余额最后一次被人确认的时间，供「新鲜度」展示。
+async function touchChecked(accountId) {
+  const now = cloud.serverDate()
+  await cloud.accounts().doc(accountId).update({
+    data: { checkedAt: now, updatedAt: now },
+  })
+}
+
 // 修改余额：直接设定新余额，自动计算差值
 async function setBalance(accountId, newBalance, note, date) {
   const acc = await getAccount(accountId)
@@ -83,7 +92,7 @@ async function setBalance(accountId, newBalance, note, date) {
   const createdAt = date || cloud.serverDate()
 
   await cloud.accounts().doc(accountId).update({
-    data: { balance: target, updatedAt: createdAt },
+    data: { balance: target, updatedAt: createdAt, checkedAt: createdAt },
   })
   await cloud.transactions().add({
     data: Object.assign({
@@ -107,7 +116,7 @@ async function deltaBalance(accountId, deltaFen, note, date) {
   const createdAt = date || cloud.serverDate()
 
   await cloud.accounts().doc(accountId).update({
-    data: { balance: target, updatedAt: createdAt },
+    data: { balance: target, updatedAt: createdAt, checkedAt: createdAt },
   })
   await cloud.transactions().add({
     data: Object.assign({
@@ -128,6 +137,7 @@ module.exports = {
   addAccount,
   updateAccount,
   softDeleteAccount,
+  touchChecked,
   setBalance,
   deltaBalance,
 }

@@ -421,6 +421,11 @@
   font-size: 20rpx;
   color: var(--ink-40);
 }
+.acc-fresh {
+  font-size: 20rpx;
+  color: var(--ink-40);
+}
+.acc-fresh.is-stale { color: var(--warn); }
 .acc-badge {
   font-size: 18rpx;
   padding: 2rpx 10rpx;
@@ -648,6 +653,8 @@
 .chip-teal::after  { background: radial-gradient(circle, rgba(var(--fixed-rgb), 0.38), transparent 70%); }
 .chip-report { background: rgba(255, 207, 138, 0.16); border-color: rgba(255, 207, 138, 0.32); }
 .chip-report::after { background: radial-gradient(circle, rgba(255, 207, 138, 0.36), transparent 70%); }
+.chip-inv  { background: rgba(var(--good-rgb), 0.16); border-color: rgba(var(--good-rgb), 0.32); }
+.chip-inv::after  { background: radial-gradient(circle, rgba(var(--good-rgb), 0.38), transparent 70%); }
 
 /* ============ 月报横幅 ============ */
 .mreport-banner {
@@ -674,6 +681,36 @@
 .mrb-title { font-size: 30rpx; font-weight: 800; color: var(--ink-100); }
 .mrb-sub { font-size: 24rpx; color: var(--ink-80); margin-top: 6rpx; }
 .mrb-x {
+  position: absolute; top: 12rpx; right: 14rpx;
+  width: 40rpx; height: 40rpx; display: flex; align-items: center; justify-content: center;
+  opacity: 0.5;
+}
+
+/* ============ 盘点横幅 ============ */
+.inv-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 22rpx;
+  margin: 0 0 24rpx;
+  padding: 28rpx 26rpx;
+  border-radius: 28rpx;
+  overflow: hidden;
+  background:
+    radial-gradient(130% 120% at 0% 0%, rgba(var(--good-rgb), 0.20), transparent 60%),
+    linear-gradient(180deg, rgba(var(--good-rgb), 0.13), rgba(var(--good-rgb), 0.05));
+  border: 1rpx solid rgba(var(--good-rgb), 0.38);
+  box-shadow: 0 12rpx 36rpx rgba(var(--good-rgb), 0.10);
+}
+.ivb-ico {
+  width: 80rpx; height: 80rpx; flex: 0 0 80rpx; border-radius: 24rpx;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(160deg, rgba(var(--good-rgb), 0.38), rgba(var(--good-rgb), 0.10));
+}
+.ivb-txt { flex: 1; min-width: 0; }
+.ivb-title { font-size: 30rpx; font-weight: 800; color: var(--ink-100); }
+.ivb-sub { font-size: 24rpx; color: var(--ink-80); margin-top: 6rpx; }
+.ivb-x {
   position: absolute; top: 12rpx; right: 14rpx;
   width: 40rpx; height: 40rpx; display: flex; align-items: center; justify-content: center;
   opacity: 0.5;

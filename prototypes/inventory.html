@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>一键盘点 · 原型</title>
+<style>
+  :root {
+    --bg-0:#050507; --glass-1:rgba(255,255,255,0.05); --glass-2:rgba(255,255,255,0.08);
+    --hairline:rgba(255,255,255,0.08); --hairline-hi:rgba(255,255,255,0.16);
+    --ink-100:#f5f8ff; --ink-80:rgba(245,248,255,0.78); --ink-60:rgba(245,248,255,0.55); --ink-40:rgba(245,248,255,0.36);
+    --ice-blue:#a7d3ff; --investment:#c8b5ff; --fixed:#b7e8f0; --good:#9ee6c1; --warn:#f6d68a; --debt:#ffb3b3;
+    --inv:#9ee6c1; --inv-rgb:158,230,193; --accent-rgb:167,211,255;
+  }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; padding:0; }
+  body { min-height:100vh; background:#0a0b10; color:var(--ink-100);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",system-ui,sans-serif; font-size:14px; line-height:1.4;
+    display:flex; flex-wrap:wrap; gap:28px; justify-content:center; align-items:flex-start; padding:28px 14px 80px; }
+
+  /* inline svg icons */
+  .i { display:inline-flex; align-items:center; justify-content:center; }
+  .i svg { width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; display:block; }
+
+  .phone { position:relative; width:340px; height:730px; border-radius:44px;
+    background:radial-gradient(120% 70% at 12% 0%, rgba(167,211,255,0.13), transparent 55%),
+               radial-gradient(120% 70% at 95% 10%, rgba(var(--inv-rgb),0.10), transparent 55%), #08090c;
+    border:1px solid var(--hairline-hi); box-shadow:0 40px 90px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06);
+    overflow:hidden; display:flex; flex-direction:column; }
+  .ptitle { position:absolute; top:-26px; left:8px; font-size:12px; color:var(--ink-60); }
+  .pwrap { position:relative; margin-top:26px; }
+  .statusbar { height:44px; flex:0 0 44px; display:flex; align-items:center; justify-content:space-between; padding:0 22px; font-size:13px; color:var(--ink-80); font-weight:600; }
+  .capsule { display:flex; align-items:center; border:1px solid var(--hairline-hi); border-radius:16px; height:28px; background:var(--glass-1); overflow:hidden; }
+  .capsule .dots { padding:0 11px; font-size:16px; color:var(--ink-80); } .capsule .sep { width:1px; height:16px; background:var(--hairline-hi);} .capsule .o { padding:0 10px; font-size:14px; color:var(--ink-60);}
+
+  .screen { flex:1; overflow-y:auto; padding:4px 16px 24px; position:relative; display:flex; flex-direction:column; }
+  .screen::-webkit-scrollbar { width:0; }
+
+  .topbar { display:flex; align-items:center; padding:6px 4px 12px; }
+  .topbar .app { font-size:18px; font-weight:800; }
+  .topbar .sp { flex:1; }
+  .topbar .ico { width:32px; height:32px; border-radius:10px; background:var(--glass-1); display:flex; align-items:center; justify-content:center; margin-left:8px; cursor:pointer; color:var(--ink-80); }
+  .topbar .ico .i { width:16px; height:16px; }
+
+  /* ===== ① 首页：hero + 盘点横幅 + 新鲜度 ===== */
+  .hero { border-radius:22px; padding:20px 18px; background:var(--glass-1); border:1px solid var(--hairline); }
+  .hero .lab { font-size:12px; color:var(--ink-60); }
+  .hero .nv { font-size:36px; font-weight:800; letter-spacing:-1px; margin-top:6px; }
+  .hero .dl { font-size:13px; color:var(--good); margin-top:8px; font-weight:600; }
+
+  .ibanner { margin-top:14px; border-radius:20px; padding:15px 14px 15px 16px; position:relative; overflow:hidden;
+    display:flex; align-items:center; gap:13px; cursor:pointer;
+    background:radial-gradient(130% 120% at 0% 0%, rgba(var(--inv-rgb),0.20), transparent 60%),
+              linear-gradient(180deg, rgba(var(--inv-rgb),0.14), rgba(var(--inv-rgb),0.05));
+    border:1px solid rgba(var(--inv-rgb),0.38); box-shadow:0 10px 30px rgba(var(--inv-rgb),0.10); }
+  .ibanner .mi { width:46px; height:46px; flex:0 0 46px; border-radius:14px; display:flex; align-items:center; justify-content:center; color:var(--inv);
+    background:linear-gradient(160deg, rgba(var(--inv-rgb),0.38), rgba(var(--inv-rgb),0.10)); }
+  .ibanner .mi .i { width:24px; height:24px; }
+  .ibanner .mtxt { flex:1; min-width:0; }
+  .ibanner .mt { font-size:15px; font-weight:800; }
+  .ibanner .ms { font-size:12px; color:var(--ink-80); margin-top:3px; }
+  .ibanner .ms b { color:var(--warn); font-weight:700; }
+  .ibanner .mgo { font-size:12px; color:var(--inv); font-weight:700; flex:0 0 auto; }
+  .ibanner .mx { position:absolute; top:8px; right:10px; width:22px; height:22px; color:var(--ink-40); padding:4px; cursor:pointer; }
+
+  .cgroup { margin-top:18px; }
+  .cglabel { font-size:12px; color:var(--ink-60); margin:0 4px 10px; }
+  .crow { display:flex; align-items:center; gap:12px; padding:13px 14px; border-radius:16px; background:var(--glass-1); border:1px solid var(--hairline); margin-bottom:10px; }
+  .crow .ci { width:34px; height:34px; flex:0 0 34px; border-radius:11px; display:flex; align-items:center; justify-content:center; }
+  .crow .ci .i { width:18px; height:18px; }
+  .ci.liq{background:rgba(167,211,255,0.18); color:var(--ice-blue);} .ci.inv2{background:rgba(200,181,255,0.18); color:var(--investment);} .ci.debt{background:rgba(255,179,179,0.16); color:var(--debt);}
+  .crow .cmid { flex:1; min-width:0; }
+  .crow .cn { font-size:14px; font-weight:600; }
+  .crow .fresh { font-size:10px; margin-top:3px; color:var(--ink-40); }
+  .crow .fresh.stale { color:var(--warn); }
+  .crow .cv { font-size:14px; color:var(--ink-80); letter-spacing:0.5px; text-align:right; }
+
+  .fab { position:absolute; left:20px; bottom:24px; display:flex; flex-direction:column; align-items:center; gap:5px; cursor:pointer; z-index:5; }
+  .fab .fc { width:54px; height:54px; border-radius:18px; background:var(--glass-2); border:1px solid var(--hairline-hi); display:flex; align-items:center; justify-content:center; position:relative; color:var(--ink-80); }
+  .fab .fc .i { width:22px; height:22px; }
+  .fab .fl { font-size:11px; color:var(--ink-60); }
+  .fab .fdot { position:absolute; top:8px; right:8px; width:9px; height:9px; border-radius:50%; background:var(--inv); box-shadow:0 0 8px var(--inv); }
+
+  .tmask { position:absolute; inset:0; background:rgba(0,0,0,0.55); backdrop-filter:blur(4px); opacity:0; pointer-events:none; transition:opacity .28s ease; z-index:20; }
+  .tmask.show { opacity:1; pointer-events:auto; }
+  .tsheet { position:absolute; left:0; right:0; bottom:0; z-index:21; background:linear-gradient(180deg,#14161d,#0c0d12);
+    border-top-left-radius:28px; border-top-right-radius:28px; border-top:1px solid var(--hairline-hi); padding:12px 20px 28px;
+    transform:translateY(102%); transition:transform .34s cubic-bezier(0.25,1,0.5,1); }
+  .tsheet.show { transform:translateY(0); }
+  .thandle { width:40px; height:4px; border-radius:4px; background:var(--hairline-hi); margin:4px auto 14px; }
+  .thead { display:flex; align-items:baseline; margin-bottom:16px; }
+  .thead .tt { font-size:18px; font-weight:800; } .thead .ts { font-size:12px; color:var(--ink-60); margin-left:8px; }
+  .tgrid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px 8px; }
+  .tcell { display:flex; flex-direction:column; align-items:center; gap:8px; cursor:pointer; position:relative; }
+  .tchip { width:50px; height:50px; border-radius:16px; display:flex; align-items:center; justify-content:center; }
+  .tchip .i { width:22px; height:22px; }
+  .chip-mint{background:rgba(158,230,193,0.16); color:var(--good);} .chip-ice{background:rgba(167,211,255,0.16); color:var(--ice-blue);} .chip-teal{background:rgba(183,232,240,0.16); color:var(--fixed);} .chip-gold{background:rgba(246,214,138,0.16); color:var(--warn);} .chip-vio{background:rgba(200,181,255,0.16); color:var(--investment);}
+  .chip-invt{ background:linear-gradient(160deg, rgba(var(--inv-rgb),0.34), rgba(var(--inv-rgb),0.12)); border:1px solid rgba(var(--inv-rgb),0.4); color:var(--inv); }
+  .tcell .tlb { font-size:11px; color:var(--ink-80); }
+  .tcell .cnew { position:absolute; top:-3px; right:8px; font-size:8px; font-weight:800; color:#07130c; background:var(--inv); border-radius:6px; padding:1px 5px; }
+
+  /* ===== ② 盘点流程 ===== */
+  .whead { display:flex; align-items:center; padding:6px 0 10px; }
+  .whead .wx { width:32px; height:32px; border-radius:10px; background:var(--glass-1); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--ink-80); }
+  .whead .wx .i { width:15px; height:15px; }
+  .whead .wt { flex:1; text-align:center; font-size:16px; font-weight:800; }
+  .whead .wc { width:44px; text-align:right; font-size:12px; color:var(--ink-60); font-variant-numeric:tabular-nums; }
+  .pbar { height:5px; border-radius:5px; background:var(--glass-1); overflow:hidden; margin:2px 2px 6px; }
+  .pbar .pfill { height:100%; border-radius:5px; background:linear-gradient(90deg, rgba(var(--inv-rgb),0.55), var(--inv)); width:20%; transition:width .3s ease; }
+  .wgroup { font-size:11px; color:var(--ink-60); margin:10px 4px 8px; }
+  .wgroup b { color:var(--ink-80); }
+
+  .wcard { border-radius:22px; padding:22px 18px 18px; background:var(--glass-1); border:1px solid var(--hairline); text-align:center; margin-top:6px; }
+  .wcard .wic { width:52px; height:52px; border-radius:16px; margin:0 auto; display:flex; align-items:center; justify-content:center; }
+  .wcard .wic .i { width:26px; height:26px; }
+  .wcard .wn { font-size:16px; font-weight:800; margin-top:12px; }
+  .wcard .wccy { display:inline-block; font-size:10px; color:var(--ink-60); border:1px solid var(--hairline-hi); border-radius:6px; padding:1px 6px; margin-left:6px; vertical-align:2px; }
+  .wcard .wlab { font-size:11px; color:var(--ink-60); margin-top:14px; }
+  .wcard .wbal { font-size:30px; font-weight:800; letter-spacing:-0.5px; margin-top:4px; }
+  .wcard .wbal.debtv { color:var(--debt); }
+  .wcard .wfresh { font-size:11px; color:var(--ink-40); margin-top:8px; }
+  .wcard .wfresh.stale { color:var(--warn); }
+  .wcard .wchecked { font-size:11px; color:var(--good); margin-top:8px; }
+
+  .wactions { margin-top:auto; padding-top:16px; }
+  .wbtn { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; height:52px; border-radius:18px; font-size:15px; font-weight:800; cursor:pointer; border:1px solid var(--hairline-hi); }
+  .wbtn .i { width:18px; height:18px; }
+  .wbtn.primary { background:linear-gradient(160deg, rgba(var(--inv-rgb),0.9), rgba(var(--inv-rgb),0.68)); color:#07130c; border:none; box-shadow:0 10px 28px rgba(var(--inv-rgb),0.22); }
+  .wbtn.ghost { background:var(--glass-1); color:var(--ink-100); margin-top:10px; }
+  .wsub { display:flex; justify-content:space-between; margin-top:12px; padding:0 6px; }
+  .wsub .wl { font-size:13px; color:var(--ink-60); cursor:pointer; padding:6px; }
+  .wsub .wl.dis { opacity:0.3; pointer-events:none; }
+
+  /* 半屏改余额面板 */
+  .amask { position:absolute; inset:0; background:rgba(0,0,0,0.55); backdrop-filter:blur(4px); opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:30; }
+  .amask.show { opacity:1; pointer-events:auto; }
+  .asheet { position:absolute; left:0; right:0; bottom:0; z-index:31; background:linear-gradient(180deg,#14161d,#0c0d12);
+    border-top-left-radius:28px; border-top-right-radius:28px; border-top:1px solid var(--hairline-hi); padding:12px 18px 22px;
+    transform:translateY(102%); transition:transform .3s cubic-bezier(0.25,1,0.5,1); }
+  .asheet.show { transform:translateY(0); }
+  .asheet .ah { display:flex; align-items:center; margin-bottom:6px; }
+  .asheet .ah .at { flex:1; font-size:15px; font-weight:800; }
+  .asheet .ah .ac { font-size:12px; color:var(--ink-60); cursor:pointer; padding:6px; }
+  .asheet .acur { font-size:11px; color:var(--ink-60); margin-bottom:8px; }
+  .asheet .aval { display:flex; align-items:baseline; gap:6px; border-radius:14px; background:var(--glass-1); border:1px solid var(--hairline); padding:12px 14px; }
+  .asheet .aval .sym { font-size:16px; color:var(--ink-60); }
+  .asheet .aval .num { font-size:26px; font-weight:800; letter-spacing:0.5px; min-height:32px; }
+  .asheet .aval .num .plc { color:var(--ink-40); font-weight:600; }
+  .akeys { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px; }
+  .akey { height:46px; border-radius:12px; background:var(--glass-1); border:1px solid var(--hairline); display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:700; cursor:pointer; }
+  .akey:active { background:var(--glass-2); }
+  .akey.ok { background:linear-gradient(160deg, rgba(var(--inv-rgb),0.9), rgba(var(--inv-rgb),0.68)); color:#07130c; border:none; font-size:15px; }
+
+  /* ===== ③ 完成页 ===== */
+  .done { flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; padding-top:46px; }
+  .done .dic { width:74px; height:74px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--inv);
+    background:radial-gradient(circle at 32% 28%, rgba(var(--inv-rgb),0.36), rgba(var(--inv-rgb),0.10));
+    border:1px solid rgba(var(--inv-rgb),0.45); box-shadow:0 0 44px rgba(var(--inv-rgb),0.25); }
+  .done .dic .i { width:34px; height:34px; }
+  .done .dt { font-size:21px; font-weight:800; margin-top:18px; }
+  .done .ds { font-size:12px; color:var(--ink-60); margin-top:6px; }
+  .dchips { display:flex; gap:8px; margin-top:18px; }
+  .dchip { font-size:11px; padding:6px 11px; border-radius:20px; background:var(--glass-1); border:1px solid var(--hairline); color:var(--ink-80); }
+  .dchip b { color:var(--ink-100); }
+  .dcard { width:100%; margin-top:20px; border-radius:20px; background:var(--glass-1); border:1px solid var(--hairline); padding:18px 16px; }
+  .dcard .lab { font-size:11px; color:var(--ink-60); }
+  .dcard .nv { font-size:30px; font-weight:800; margin-top:5px; letter-spacing:-0.5px; }
+  .dcard .dl { font-size:12px; margin-top:8px; color:var(--good); font-weight:700; }
+  .dcard .dl .muted { color:var(--ink-40); font-weight:400; }
+  .dcard .dl.na { color:var(--ink-40); font-weight:400; }
+  .dsub { width:100%; margin-top:12px; border-radius:18px; padding:13px 14px; display:flex; align-items:center; gap:11px; cursor:pointer;
+    background:linear-gradient(180deg, rgba(167,211,255,0.10), rgba(167,211,255,0.04)); border:1px solid rgba(167,211,255,0.28); }
+  .dsub .si { width:34px; height:34px; border-radius:11px; flex:0 0 34px; display:flex; align-items:center; justify-content:center; background:rgba(167,211,255,0.16); color:var(--ice-blue); }
+  .dsub .si .i { width:17px; height:17px; }
+  .dsub .stx { flex:1; text-align:left; }
+  .dsub .st1 { font-size:13px; font-weight:700; }
+  .dsub .st2 { font-size:11px; color:var(--ink-60); margin-top:2px; }
+  .dsub .sgo { font-size:11px; color:var(--ice-blue); font-weight:700; }
+  .done .dok { margin-top:auto; width:100%; }
+
+  .toast { position:absolute; left:50%; top:42%; transform:translate(-50%,-50%) scale(0.9); background:rgba(20,22,28,0.96); border:1px solid var(--hairline-hi); padding:14px 20px; border-radius:14px; z-index:40; text-align:center; opacity:0; pointer-events:none; transition:all .2s ease; max-width:80%; }
+  .toast.show { opacity:1; transform:translate(-50%,-50%) scale(1); }
+  .toast .tt{font-size:13px; color:var(--ink-80);}
+
+  /* 退出确认弹窗 */
+  .qmask { position:absolute; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); display:none; align-items:center; justify-content:center; z-index:35; }
+  .qmask.show { display:flex; }
+  .qbox { width:78%; border-radius:20px; background:linear-gradient(180deg,#171921,#0e0f14); border:1px solid var(--hairline-hi); padding:20px 18px 14px; text-align:center; }
+  .qbox .qt { font-size:15px; font-weight:800; }
+  .qbox .qs { font-size:12px; color:var(--ink-60); margin-top:8px; line-height:1.6; }
+  .qbox .qbtns { display:flex; gap:10px; margin-top:16px; }
+  .qbox .qb { flex:1; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; cursor:pointer; background:var(--glass-1); border:1px solid var(--hairline); }
+  .qbox .qb.p { background:rgba(var(--inv-rgb),0.85); color:#07130c; border:none; }
+
+  /* notes */
+  .notes { width:380px; max-width:92vw; color:var(--ink-80); }
+  .notes h2 { font-size:17px; margin:0 0 4px; color:#fff; } .notes .lead { font-size:12px; color:var(--ink-60); margin-bottom:16px; }
+  .demo { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+  .demo button { font-size:12px; padding:8px 12px; border-radius:10px; border:1px solid var(--hairline-hi); background:var(--glass-1); color:var(--ink-100); cursor:pointer; }
+  .demo button:active { transform:scale(0.96); }
+  .step { background:var(--glass-1); border:1px solid var(--hairline); border-radius:14px; padding:13px 15px; margin-bottom:11px; }
+  .step .h { font-size:13px; font-weight:700; color:#fff; }
+  .step .h .n { display:inline-flex; width:20px; height:20px; border-radius:50%; background:rgba(var(--inv-rgb),0.22); color:var(--inv); font-size:11px; font-weight:700; align-items:center; justify-content:center; margin-right:8px; }
+  .step p { margin:7px 0 0; font-size:12px; color:var(--ink-60); line-height:1.7; }
+  .step code { background:rgba(255,255,255,0.08); padding:1px 6px; border-radius:5px; font-size:11px; color:var(--inv); }
+  .step b { color:var(--ink-80); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ ① 入口与新鲜度 ═══════════ -->
+<div class="pwrap">
+  <div class="ptitle">① 入口：首页横幅 + 新鲜度标签 + 工具面板</div>
+  <div class="phone">
+    <div class="statusbar"><span>9:41</span><div class="capsule"><span class="dots">•••</span><span class="sep"></span><span class="o">◎</span></div></div>
+    <div class="screen">
+      <div class="topbar"><span class="app">净值本</span><span class="sp"></span>
+        <div class="ico"><span class="i"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+      </div>
+      <div class="hero">
+        <div class="lab">净资产（CNY）</div>
+        <div class="nv">¥1,268,430.12</div>
+        <div class="dl">近 30 天 +¥8,420.55 · +0.67%</div>
+      </div>
+
+      <!-- 盘点横幅：有账户超过 30 天未更新时出现 -->
+      <div class="ibanner" id="ibanner" onclick="toast('进入盘点页（见 ② 号机）')">
+        <div class="mi"><span class="i"><svg viewBox="0 0 24 24"><path d="M9 5h6M9 5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/><path d="M9.5 13.5l2 2 3.5-4"/></svg></span></div>
+        <div class="mtxt">
+          <div class="mt">该盘点了</div>
+          <div class="ms"><b>2 个账户</b>超过 30 天没更新 · 上次盘点 32 天前</div>
+        </div>
+        <div class="mgo">去盘点 ›</div>
+        <span class="mx i" onclick="event.stopPropagation();dismissBanner()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
+      </div>
+
+      <div class="cgroup">
+        <div class="cglabel">流动资金 · 3 个账户</div>
+        <div class="crow">
+          <div class="ci liq"><span class="i"><svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="2.5"/><path d="M2.5 10h19"/></svg></span></div>
+          <div class="cmid"><div class="cn">招行储蓄卡</div><div class="fresh">3 天前更新</div></div>
+          <div class="cv">¥58,230.45</div>
+        </div>
+        <div class="crow">
+          <div class="ci liq"><span class="i"><svg viewBox="0 0 24 24"><rect x="4" y="2.5" width="16" height="19" rx="3"/><path d="M9 17h6"/></svg></span></div>
+          <div class="cmid"><div class="cn">支付宝</div><div class="fresh">15 天前更新</div></div>
+          <div class="cv">¥12,001.00</div>
+        </div>
+        <div class="crow">
+          <div class="ci liq"><span class="i"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg></span></div>
+          <div class="cmid"><div class="cn">美元现汇 <span style="font-size:10px;color:var(--ink-40)">USD</span></div><div class="fresh">8 天前更新</div></div>
+          <div class="cv">$2,300.00</div>
+        </div>
+      </div>
+      <div class="cgroup">
+        <div class="cglabel">投资理财 · 1 个账户</div>
+        <div class="crow">
+          <div class="ci inv2"><span class="i"><svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 3 6-8"/><path d="M14 6h4v4"/></svg></span></div>
+          <div class="cmid"><div class="cn">沪深基金</div><div class="fresh stale">34 天未更新</div></div>
+          <div class="cv">¥86,540.00</div>
+        </div>
+      </div>
+      <div class="cgroup" style="margin-bottom:70px;">
+        <div class="cglabel">负债 · 1 个账户</div>
+        <div class="crow">
+          <div class="ci debt"><span class="i"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg></span></div>
+          <div class="cmid"><div class="cn">房贷</div><div class="fresh stale">41 天未更新</div></div>
+          <div class="cv" style="color:var(--debt)">-¥1,120,000.00</div>
+        </div>
+      </div>
+
+      <div class="fab" onclick="openTools()">
+        <div class="fc"><span class="i"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/></svg></span><span class="fdot"></span></div>
+        <div class="fl">工具</div>
+      </div>
+    </div>
+
+    <div class="tmask" id="tmask" onclick="closeTools()"></div>
+    <div class="tsheet" id="tsheet">
+      <div class="thandle"></div>
+      <div class="thead"><span class="tt">工具</span><span class="ts">分析中心</span></div>
+      <div class="tgrid">
+        <div class="tcell"><div class="tchip chip-ice"><span class="i"><svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 3 6-8"/></svg></span></div><div class="tlb">趋势</div></div>
+        <div class="tcell"><div class="tchip chip-mint"><span class="i"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg></span></div><div class="tlb">体检</div></div>
+        <div class="tcell"><div class="tchip chip-gold"><span class="i"><svg viewBox="0 0 24 24"><path d="M6 3h12v4a6 6 0 0 1-12 0V3z"/><path d="M12 13v5M8 21h8"/></svg></span></div><div class="tlb">里程碑</div></div>
+        <div class="tcell"><div class="tchip chip-vio"><span class="i"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5V12l6 3"/></svg></span></div><div class="tlb">洞察</div></div>
+        <div class="tcell"><div class="tchip chip-gold"><span class="i"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></span></div><div class="tlb">月报</div></div>
+        <div class="tcell" onclick="toast('进入盘点页（见 ② 号机）')">
+          <div class="tchip chip-invt"><span class="i"><svg viewBox="0 0 24 24"><path d="M9 5h6M9 5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/><path d="M9.5 13.5l2 2 3.5-4"/></svg></span></div>
+          <div class="tlb">盘点</div><span class="cnew">NEW</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast1"><div class="tt"></div></div>
+  </div>
+</div>
+
+<!-- ═══════════ ② 盘点流程（可交互） ═══════════ -->
+<div class="pwrap">
+  <div class="ptitle">② 盘点流程：逐个账户「没变 / 改余额 / 跳过」→ 完成页（可点击体验）</div>
+  <div class="phone">
+    <div class="statusbar"><span>9:41</span><div class="capsule"><span class="dots">•••</span><span class="sep"></span><span class="o">◎</span></div></div>
+
+    <!-- 盘点进行中 -->
+    <div class="screen" id="wizard">
+      <div class="whead">
+        <div class="wx" onclick="askQuit()"><span class="i"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></span></div>
+        <div class="wt">盘点</div>
+        <div class="wc" id="wcount">1/5</div>
+      </div>
+      <div class="pbar"><div class="pfill" id="pfill"></div></div>
+      <div class="wgroup" id="wgroup">流动资金 · 第 <b>1</b> 个，共 3 个</div>
+
+      <div class="wcard" id="wcard">
+        <div class="wic" id="wic"></div>
+        <div class="wn"><span id="wname"></span><span class="wccy" id="wccy" style="display:none"></span></div>
+        <div class="wlab" id="wlab">当前余额</div>
+        <div class="wbal" id="wbal"></div>
+        <div class="wfresh" id="wfresh"></div>
+      </div>
+
+      <div class="wactions">
+        <div class="wbtn primary" onclick="confirmSame()"><span class="i"><svg viewBox="0 0 24 24"><path d="M5 13l4.5 4.5L19 8"/></svg></span>没变，确认</div>
+        <div class="wbtn ghost" onclick="openAmount()"><span class="i"><svg viewBox="0 0 24 24"><path d="M4 20h4L19.5 8.5a2.1 2.1 0 0 0-3-3L5 17v3z"/></svg></span>余额变了，修改</div>
+        <div class="wsub">
+          <span class="wl" id="wprev" onclick="prevAcc()">‹ 上一个</span>
+          <span class="wl" onclick="skipAcc()">跳过 ›</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 完成页 -->
+    <div class="screen" id="doneview" style="display:none">
+      <div class="done">
+        <div class="dic"><span class="i"><svg viewBox="0 0 24 24"><path d="M5 13l4.5 4.5L19 8"/></svg></span></div>
+        <div class="dt">盘点完成</div>
+        <div class="ds" id="donesub">5 个账户已全部过目</div>
+        <div class="dchips" id="dchips"></div>
+        <div class="dcard">
+          <div class="lab">本次净值（CNY）</div>
+          <div class="nv" id="dnet">¥1,268,430.12</div>
+          <div class="dl" id="ddelta">较上次盘点 +¥8,420.55 <span class="muted">· 32 天前</span></div>
+        </div>
+        <div class="dsub" onclick="toast2('调起 wx.requestSubscribeMessage（V2.0.1）')">
+          <div class="si"><span class="i"><svg viewBox="0 0 24 24"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 20a2.5 2.5 0 0 0 4 0"/></svg></span></div>
+          <div class="stx"><div class="st1">下月初提醒我盘点</div><div class="st2">微信服务通知 · 每次盘点后需重新订阅</div></div>
+          <div class="sgo">订阅 ›</div>
+        </div>
+        <div class="dok"><div class="wbtn primary" onclick="resetDemo()">完成</div></div>
+      </div>
+    </div>
+
+    <!-- 改余额半屏 -->
+    <div class="amask" id="amask" onclick="closeAmount()"></div>
+    <div class="asheet" id="asheet">
+      <div class="ah"><span class="at">修改余额</span><span class="ac" onclick="closeAmount()">取消</span></div>
+      <div class="acur" id="acur">当前 ¥86,540.00 · 输入新的余额</div>
+      <div class="aval"><span class="sym" id="asym">¥</span><span class="num" id="anum"><span class="plc">0.00</span></span></div>
+      <div class="akeys">
+        <div class="akey" onclick="key('1')">1</div><div class="akey" onclick="key('2')">2</div><div class="akey" onclick="key('3')">3</div>
+        <div class="akey" onclick="key('4')">4</div><div class="akey" onclick="key('5')">5</div><div class="akey" onclick="key('6')">6</div>
+        <div class="akey" onclick="key('7')">7</div><div class="akey" onclick="key('8')">8</div><div class="akey" onclick="key('9')">9</div>
+        <div class="akey" onclick="key('.')">.</div><div class="akey" onclick="key('0')">0</div><div class="akey" onclick="key('back')">⌫</div>
+      </div>
+      <div class="akeys" style="grid-template-columns:1fr; margin-top:8px;">
+        <div class="akey ok" onclick="confirmAmount()">确认新余额</div>
+      </div>
+    </div>
+
+    <!-- 退出确认 -->
+    <div class="qmask" id="qmask">
+      <div class="qbox">
+        <div class="qt">结束本次盘点？</div>
+        <div class="qs" id="qsub">已确认的 2 个账户已保存，<br/>剩下的下次可以接着盘。</div>
+        <div class="qbtns">
+          <div class="qb" onclick="hideQuit()">继续盘点</div>
+          <div class="qb p" onclick="quitToDone()">结束</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast2"><div class="tt"></div></div>
+  </div>
+</div>
+
+<!-- ═══════════ 交互说明 ═══════════ -->
+<div class="notes">
+  <h2>一键盘点 · 交互说明</h2>
+  <div class="lead">V2.0 P0-1 · 新页面 <code>pages/inventory/</code> · 强调「5 分钟过一遍所有账户」的月度仪式感</div>
+
+  <div class="demo">
+    <button onclick="openTools()">① 打开工具面板</button>
+    <button onclick="resetDemo()">② 重置盘点流程</button>
+    <button onclick="jumpToDone()">② 直接看完成页</button>
+  </div>
+
+  <div class="step"><div class="h"><span class="n">1</span>入口（三处，优先级从高到低）</div>
+    <p><b>首页横幅</b>：任一账户「新鲜度」超过 30 天，或距上次完成盘点超过 30 天时出现；点 × 本月内不再出现（复用月报横幅的 <code>STORAGE_BANNER_DISMISS</code> 模式，key 独立）。<b>工具面板</b>：常驻格子「盘点」，上线首月带 NEW 红点（<code>toolBadges.js</code> 加 <code>inventory: 1</code>）。<b>账户卡片</b>：名称下加新鲜度小字，≤7 天不显示，8–30 天灰字「X 天前更新」，>30 天琥珀色「X 天未更新」。</p>
+  </div>
+
+  <div class="step"><div class="h"><span class="n">2</span>新鲜度的定义（数据诚实）</div>
+    <p>新鲜度 = 该账户<b>余额最后一次被确认</b>的时间：取「最新一笔 transaction 的 <code>createdAt</code>」与新增字段 <code>account.checkedAt</code> 的较大者。「没变，确认」只写 <code>checkedAt</code>（余额没变就<b>不造一笔假交易</b>，守住不变量 3）；改余额走现有 <code>setBalance</code>，交易照常落库，同时也刷 <code>checkedAt</code>。老数据没有 <code>checkedAt</code> 时回退到最新交易时间，再回退 <code>createdAt</code>。注意<b>不能</b>直接用 <code>updatedAt</code>——改名/改备注也会刷它，会虚报新鲜度。</p>
+  </div>
+
+  <div class="step"><div class="h"><span class="n">3</span>盘点流程（核心）</div>
+    <p>逐账户卡片式向导，顺序与首页一致（分类顺序 → 组内创建顺序），含 <code>includeInChart=false</code> 的账户。每张卡：分类色图标、名称（外币带币种角标）、当前余额大数字、新鲜度。三个动作：<b>「没变，确认」</b>（主按钮，写 <code>checkedAt</code>，下一个）；<b>「余额变了，修改」</b>（调起现有 <code>amount-input</code> 组件 mode=set，外币按原币种输入，确认即 <code>setBalance</code> 落库，下一个）；<b>「跳过」</b>（不写任何数据）。可回「上一个」改判。负债账户余额红色、文案「当前欠款」，输入的是欠款额。<b>今天已更新过</b>的账户卡片上显示绿字「今日已更新」，主按钮仍可点（等于再确认一次）。</p>
+  </div>
+
+  <div class="step"><div class="h"><span class="n">4</span>中途退出 = 安全</div>
+    <p>每个动作即时落库，没有「提交」环节。点 × 弹确认：「已确认的 X 个账户已保存，剩下的下次可以接着盘」。已过半（确认+修改 ≥ 1 个）时「结束」直接进完成页（按已过目数展示）；一个都没动过则直接返回，不弹完成页。杀进程同理无损。</p>
+  </div>
+
+  <div class="step"><div class="h"><span class="n">5</span>完成页</div>
+    <p>轻庆祝（reduceMotion 时去掉动效，只静态显示）。三枚统计 chip：确认 X · 调整 Y · 跳过 Z。主卡：本次净值（按本位币，走标准净值规则）+「较上次盘点 ±¥…」。上次盘点时间存 storage <code>inv_last_ts</code>，对比值用不变量 5 的快照重建法回算当时净值；<b>没有上次记录（首次盘点/换设备）就只显示本次净值，不显示对比</b>——降级不造数（同 <code>health.evaluateAt</code> 返回 null 的处理）。完成时写入 <code>inv_last_ts</code>。订阅提醒入口见第 7 条。</p>
+  </div>
+
+  <div class="step"><div class="h"><span class="n">6</span>全局状态适配</div>
+    <p><b>hideAmount</b>：盘点页跟随全局打码，右上角同款小眼睛可临时切换（走 <code>app.toggleHideAmount()</code>）；打码时改余额面板输入区仍明文（用户正在输入）。<b>主题</b>：页面根和 canvas-bg 都绑 <code>theme-{{theme}}</code>，onShow 调 <code>applyThemeChrome()</code>；盘点强调色用 <code>var(--good)</code> 系，不新增硬编码色值。<b>空态</b>：无账户时不展示盘点入口（横幅、工具格置灰并提示「先添加一个账户」）。</p>
+  </div>
+
+  <div class="step"><div class="h"><span class="n">7</span>订阅提醒（P1，可随 V2.0.1）</div>
+    <p>完成页尾部入口「下月初提醒我盘点」→ <code>wx.requestSubscribeMessage</code>（一次性模板，微信限制一次订阅只能发一条）。云函数 <code>remindSend</code> 定时器每月 1 日 09:00（cron 写 UTC 01:00）给已订阅用户下发。因为是一次性订阅，<b>每次盘点完成后都引导重新订阅</b>，形成月度闭环。V2.0 先出静态入口占位（点了先 toast「即将上线」）也可接受。</p>
+  </div>
+
+  <div class="step"><div class="h"><span class="n">8</span>发布清单</div>
+    <p><code>APP_VERSION</code> → V2.0；<code>releases.js</code> 加条目（用户视角文案）；<code>toolBadges.js</code> 加 <code>inventory: 1</code>；首页工具面板加格子；账户卡片新鲜度小字。分支 <code>feat/inventory</code>。</p>
+  </div>
+</div>
+
+<script>
+  // ── ① 号机 ──
+  function openTools(){ document.getElementById('tmask').classList.add('show'); document.getElementById('tsheet').classList.add('show'); }
+  function closeTools(){ document.getElementById('tmask').classList.remove('show'); document.getElementById('tsheet').classList.remove('show'); }
+  function dismissBanner(){ document.getElementById('ibanner').style.display='none'; toast('本月内不再提示（下月满足条件再出现）'); }
+  let t1;
+  function toast(msg){ const el=document.getElementById('toast1'); el.querySelector('.tt').textContent=msg; el.classList.add('show'); clearTimeout(t1); t1=setTimeout(()=>el.classList.remove('show'),1800); }
+
+  // ── ② 号机：盘点状态机 ──
+  const ACCS = [
+    { name:'招行储蓄卡', group:'流动资金', gi:1, gn:3, cls:'liq',  ccy:'CNY', sym:'¥', bal:'¥58,230.45',  fresh:'3 天前更新',  stale:false, today:false, debt:false,
+      icon:'<svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="2.5"/><path d="M2.5 10h19"/></svg>' },
+    { name:'支付宝', group:'流动资金', gi:2, gn:3, cls:'liq', ccy:'CNY', sym:'¥', bal:'¥12,001.00', fresh:'15 天前更新', stale:false, today:false, debt:false,
+      icon:'<svg viewBox="0 0 24 24"><rect x="4" y="2.5" width="16" height="19" rx="3"/><path d="M9 17h6"/></svg>' },
+    { name:'美元现汇', group:'流动资金', gi:3, gn:3, cls:'liq', ccy:'USD', sym:'$', bal:'$2,300.00', fresh:'8 天前更新', stale:false, today:false, debt:false,
+      icon:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg>' },
+    { name:'沪深基金', group:'投资理财', gi:1, gn:1, cls:'inv2', ccy:'CNY', sym:'¥', bal:'¥86,540.00', fresh:'34 天未更新', stale:true, today:false, debt:false,
+      icon:'<svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 3 6-8"/><path d="M14 6h4v4"/></svg>' },
+    { name:'房贷', group:'负债', gi:1, gn:1, cls:'debt', ccy:'CNY', sym:'¥', bal:'¥1,120,000.00', fresh:'41 天未更新', stale:true, today:false, debt:true,
+      icon:'<svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>' },
+  ]
+  let idx=0, stats={ok:0, edit:0, skip:0}
+  const $=id=>document.getElementById(id)
+
+  function render(){
+    const a=ACCS[idx]
+    $('wcount').textContent=(idx+1)+'/'+ACCS.length
+    $('pfill').style.width=((idx)/ACCS.length*100)+'%'
+    $('wgroup').innerHTML=a.group+' · 第 <b>'+a.gi+'</b> 个，共 '+a.gn+' 个'
+    $('wic').className='wic ci '+a.cls
+    $('wic').innerHTML='<span class="i">'+a.icon+'</span>'
+    $('wname').textContent=a.name
+    const ccyEl=$('wccy')
+    if(a.ccy!=='CNY'){ ccyEl.style.display='inline-block'; ccyEl.textContent=a.ccy } else ccyEl.style.display='none'
+    $('wlab').textContent=a.debt?'当前欠款':'当前余额'
+    $('wbal').textContent=a.bal
+    $('wbal').className='wbal'+(a.debt?' debtv':'')
+    const f=$('wfresh')
+    if(a.today){ f.className='wchecked'; f.textContent='✓ 今日已更新' }
+    else { f.className='wfresh'+(a.stale?' stale':''); f.textContent=a.fresh }
+    $('wprev').className='wl'+(idx===0?' dis':'')
+  }
+  function advance(){
+    if(idx<ACCS.length-1){ idx++; render() } else finish()
+  }
+  function confirmSame(){ stats.ok++; ACCS[idx].today=true; advance() }
+  function skipAcc(){ stats.skip++; advance() }
+  function prevAcc(){ if(idx>0){ idx--; render() } }
+
+  // 改余额半屏
+  let raw=''
+  function openAmount(){
+    const a=ACCS[idx]; raw=''
+    $('acur').textContent='当前 '+a.bal+' · 输入新的'+(a.debt?'欠款额':'余额')+(a.ccy!=='CNY'?'（'+a.ccy+'，按原币种）':'')
+    $('asym').textContent=a.sym
+    renderNum()
+    $('amask').classList.add('show'); $('asheet').classList.add('show')
+  }
+  function closeAmount(){ $('amask').classList.remove('show'); $('asheet').classList.remove('show') }
+  function key(k){
+    if(k==='back'){ raw=raw.slice(0,-1) }
+    else if(k==='.'){ if(!raw.includes('.')) raw=(raw===''?'0.':raw+'.') }
+    else { if(raw==='0') raw=k; else if(!(raw.includes('.')&&raw.split('.')[1].length>=2)) raw+=k }
+    renderNum()
+  }
+  function renderNum(){
+    $('anum').innerHTML = raw==='' ? '<span class="plc">0.00</span>' : raw.replace(/\B(?=(\d{3})+(?!\d))/g,',')
+  }
+  function confirmAmount(){
+    if(raw===''||raw==='.'){ toast2('请输入金额'); return }
+    const a=ACCS[idx]
+    a.bal=a.sym+Number(raw).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})
+    a.today=true; stats.edit++
+    closeAmount(); setTimeout(advance, 250)
+  }
+
+  // 退出确认
+  function askQuit(){
+    const n=stats.ok+stats.edit
+    if(n===0){ toast2('未做任何改动，直接返回首页'); return }
+    $('qsub').innerHTML='已确认的 '+n+' 个账户已保存，<br/>剩下的下次可以接着盘。'
+    $('qmask').classList.add('show')
+  }
+  function hideQuit(){ $('qmask').classList.remove('show') }
+  function quitToDone(){ hideQuit(); finish(true) }
+
+  // 完成页
+  function finish(partial){
+    $('wizard').style.display='none'
+    $('doneview').style.display='flex'
+    const n=stats.ok+stats.edit+stats.skip
+    $('donesub').textContent= partial ? '本次过目 '+(stats.ok+stats.edit)+' 个账户' : ACCS.length+' 个账户已全部过目'
+    $('dchips').innerHTML =
+      '<span class="dchip">确认 <b>'+stats.ok+'</b></span>'+
+      '<span class="dchip">调整 <b>'+stats.edit+'</b></span>'+
+      '<span class="dchip">跳过 <b>'+stats.skip+'</b></span>'
+    // 演示：有历史盘点记录 → 显示对比；首次盘点应隐藏 ddelta（数据诚实降级）
+  }
+  function jumpToDone(){ stats={ok:3,edit:1,skip:1}; finish() }
+  function resetDemo(){
+    idx=0; stats={ok:0,edit:0,skip:0}
+    ACCS.forEach(a=>a.today=false)
+    ACCS[3].bal='¥86,540.00'
+    $('doneview').style.display='none'
+    $('wizard').style.display='flex'
+    render()
+  }
+  let t2
+  function toast2(msg){ const el=document.getElementById('toast2'); el.querySelector('.tt').textContent=msg; el.classList.add('show'); clearTimeout(t2); t2=setTimeout(()=>el.classList.remove('show'),1800) }
+
+  render()
+</script>
+</body>
+</html>

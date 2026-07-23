@@ -9,6 +9,7 @@ const { formatRelative } = require('../../utils/date.js')
 const { APP_VERSION } = require('../../utils/version.js')
 const { RELEASES } = require('../../utils/releases.js')
 const { TOOL_BADGES } = require('../../utils/toolBadges.js')
+const invSvc = require('../../services/inventory.js')
 
 const STORAGE_SEEN_UPDATE = 'seen_update_version'
 const STORAGE_TOOL_SEEN = 'tool_badge_seen'   // { 工具key: 已读到的功能版本号 }
@@ -19,6 +20,7 @@ const STORAGE_EXPANDED = 'idx_expanded_categories'
 const BANNER_WINDOW_DAYS = 3
 
 const STORAGE_BANNER_DISMISS = 'report_banner_dismissed_month'  // 值为 'YYYY-M'
+const STORAGE_INV_BANNER_DISMISS = 'inv_banner_dismissed_month' // 盘点横幅按月关闭，值为 'YYYY-M'
 
 // 当前月份键（用于按月判断横幅是否已被关闭）
 function currentMonthKey() {
@@ -78,6 +80,10 @@ Page({
     // 月报横幅
     monthlyBannerVisible: false,
     monthlyBanner: null,
+
+    // 盘点横幅（有账户太久没更新时提示去盘点）
+    invBannerVisible: false,
+    invBannerSub: '',
 
     // 版本更新提醒（每个版本首次进入首页提示一次）
     updateNoticeVisible: false,
@@ -168,6 +174,30 @@ Page({
     wx.navigateTo({ url: '/pages/report/report' })
   },
 
+  // 盘点横幅：任一账户超 30 天未更新 / 距上次盘点超 30 天时提示。
+  // 月报横幅优先（其窗口期只有月初几天）；本月手动关闭后不再出现。
+  updateInventoryBanner(accounts) {
+    const dismissed = wx.getStorageSync(STORAGE_INV_BANNER_DISMISS) === currentMonthKey()
+    const info = invSvc.bannerInfo(accounts)
+    if (!info.show || dismissed || this.data.monthlyBannerVisible) {
+      this.setData({ invBannerVisible: false })
+      return
+    }
+    const sub = info.staleCount > 0
+      ? info.staleCount + ' 个账户超过 ' + invSvc.STALE_DAYS + ' 天没更新了'
+      : '上次盘点已是 ' + info.lastDays + ' 天前'
+    this.setData({ invBannerVisible: true, invBannerSub: sub })
+  },
+
+  onOpenInventory() {
+    wx.navigateTo({ url: '/pages/inventory/inventory' })
+  },
+
+  onDismissInvBanner() {
+    wx.setStorageSync(STORAGE_INV_BANNER_DISMISS, currentMonthKey())
+    this.setData({ invBannerVisible: false })
+  },
+
   onDismissReportBanner() {
     // 按月持久化：本月关闭后，重开也不再显示，直到下个月（记录过期）
     wx.setStorageSync(STORAGE_BANNER_DISMISS, currentMonthKey())
@@ -199,6 +229,7 @@ Page({
       const accounts = await accountSvc.listAccounts()
       this.buildGroups(accounts)
       this.updateMonthlyBanner(accounts)
+      this.updateInventoryBanner(accounts)
       statsSvc.getNetWorthDelta(30, accounts).then(({ delta, deltaPct }) => {
         this.applyDelta(delta, deltaPct)
       }).catch(() => {})
@@ -261,10 +292,14 @@ Page({
       g.accounts = g.accounts.map(a => {
         const ic = a.icon || ''
         const ccy = a.currency || 'CNY'
+        // 新鲜度小字：≤7 天不显示（减少噪音），超 30 天琥珀色警示（见 services/inventory.js）
+        const fresh = invSvc.freshInfo(a)
         return Object.assign({}, a, {
           icon: isIconKey(ic) ? ic : 'folder',
           symbol: symbolOf(ccy),
           balanceText: (g.isDebt ? '−' : '') + formatMoney(a.balance || 0, ccy, { symbol: true }),
+          freshText: fresh.days != null && fresh.days > invSvc.ROW_HIDE_DAYS ? fresh.text : '',
+          freshStale: fresh.stale,
         })
       })
     })

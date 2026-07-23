@@ -1,0 +1,122 @@
+<view class="canvas-bg theme-{{theme}}" wx:if="{{!reduceMotion}}"></view>
+
+<view class="page {{reduceMotion ? 'no-motion' : ''}} theme-{{theme}}">
+  <!-- 透明导航栏 -->
+  <view class="navbar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onClose">
+      <view class="ic ic-xs {{phase === 'wizard' && !empty && !loading ? 'ic-close' : 'ic-back'}}"></view>
+    </view>
+    <text class="nav-title">盘点</text>
+    <view class="nav-right">
+      <view class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onToggleHide">
+        <view class="ic ic-xs {{hideAmount ? 'ic-eye-off' : 'ic-eye'}}"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 加载 / 空态 -->
+  <view wx:if="{{loading}}" class="state-hint">正在加载账户…</view>
+  <view wx:elif="{{empty}}" class="state-hint">还没有账户数据，先去首页添加账户吧</view>
+
+  <!-- ============ 盘点进行中 ============ -->
+  <block wx:elif="{{phase === 'wizard' && cur}}">
+    <view class="wiz-meta">
+      <text class="wiz-counter num">{{idx + 1}} / {{total}}</text>
+      <text class="wiz-group">{{cur.groupName}} · 第 {{cur.groupIndex}} 个，共 {{cur.groupCount}} 个</text>
+    </view>
+    <view class="wiz-bar"><view class="wiz-fill" style="width: {{progressPct}}%;"></view></view>
+
+    <view class="wiz-card glass entry-up">
+      <view class="wiz-orb cat-tint-{{cur.colorClass}}">
+        <view class="ic ic-lg ic-{{cur.icon}}"></view>
+      </view>
+      <view class="wiz-name">
+        <text>{{cur.name}}</text>
+        <text wx:if="{{cur.currency !== 'CNY'}}" class="wiz-ccy">{{cur.currency}}</text>
+      </view>
+      <view class="wiz-lab">{{cur.isDebt ? '当前欠款' : '当前余额'}}</view>
+      <view class="wiz-bal {{cur.isDebt ? 'is-debt' : ''}} num">{{hideAmount ? cur.symbol + ' ••••' : cur.balanceText}}</view>
+      <view wx:if="{{cur.checkedToday}}" class="wiz-fresh is-today">✓ 今天更新</view>
+      <view wx:elif="{{cur.freshText}}" class="wiz-fresh {{cur.freshStale ? 'is-stale' : ''}}">{{cur.freshText}}</view>
+    </view>
+
+    <view class="wiz-actions">
+      <view class="wiz-btn primary tap {{submitting ? 'is-busy' : ''}}" hover-class="wiz-btn-hover" bindtap="onConfirmSame">没变，确认</view>
+      <view class="wiz-btn ghost tap" hover-class="wiz-btn-hover" bindtap="onOpenEdit">{{cur.isDebt ? '欠款变了，修改' : '余额变了，修改'}}</view>
+      <view class="wiz-sub">
+        <text class="wiz-link {{idx === 0 ? 'is-disabled' : ''}}" bindtap="onPrev">‹ 上一个</text>
+        <text class="wiz-link" bindtap="onSkip">跳过 ›</text>
+      </view>
+    </view>
+  </block>
+
+  <!-- ============ 完成页 ============ -->
+  <block wx:elif="{{phase === 'done'}}">
+    <scroll-view scroll-y class="scroll" enable-flex>
+      <view class="done">
+        <view class="done-orb entry-up"><text class="done-tick">✓</text></view>
+        <view class="done-title entry-up d1">盘点完成</view>
+        <view class="done-sub entry-up d1">{{doneSub}}</view>
+
+        <view class="done-chips entry-up d2">
+          <view class="done-chip">确认 <text class="num strong">{{okCount}}</text></view>
+          <view class="done-chip">调整 <text class="num strong">{{editCount}}</text></view>
+          <view class="done-chip">跳过 <text class="num strong">{{skipCount}}</text></view>
+        </view>
+
+        <view class="done-card glass entry-up d3">
+          <view class="done-lab">本次净值</view>
+          <view class="done-net num">{{hideAmount ? baseSymbol + ' ••••' : netText}}</view>
+          <view wx:if="{{hasDelta}}" class="done-delta {{deltaPositive ? 'pos' : 'neg'}}">
+            较上次盘点 {{hideAmount ? '••••' : deltaText}}
+            <text class="done-delta-when">· {{lastDaysText}}</text>
+          </view>
+          <view wx:else class="done-delta-none">首次盘点已记录，下次盘点即可看到变化对比</view>
+        </view>
+
+        <view class="done-remind tap entry-up d4" hover-class="btn-hover" bindtap="onSubscribeTap">
+          <view class="done-remind-ico"><view class="ic ic-sm ic-bell"></view></view>
+          <view class="done-remind-txt">
+            <view class="done-remind-t">下月初提醒我盘点</view>
+            <view class="done-remind-s">微信服务通知 · 即将上线</view>
+          </view>
+          <view class="ic ic-xs ic-chevron-right done-remind-go"></view>
+        </view>
+
+        <view class="done-cta tap entry-up d4" hover-class="wiz-btn-hover" bindtap="onDone">完成</view>
+        <view class="tail-space"></view>
+      </view>
+    </scroll-view>
+  </block>
+
+  <!-- 退出确认（玻璃弹窗） -->
+  <view wx:if="{{quitVisible}}" class="quit-mask" catchtap="onQuitContinue">
+    <view class="quit-card glass" catchtap="noop">
+      <view class="quit-title">结束本次盘点？</view>
+      <view class="quit-sub">已确认的 {{quitCount}} 个账户都已保存，剩下的下次可以接着盘。</view>
+      <view class="quit-actions">
+        <view class="quit-btn tap" hover-class="btn-hover" catchtap="onQuitContinue">继续盘点</view>
+        <view class="quit-btn primary tap" hover-class="btn-hover" catchtap="onQuitEnd">结束</view>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- 改余额半屏（复用账户详情同款组件） -->
+<amount-input
+  id="ai"
+  visible="{{showInput}}"
+  mode="set"
+  account-name="{{cur.name}}"
+  account-icon="{{cur.icon}}"
+  account-icon-key="{{cur.icon}}"
+  category-class="{{cur.colorClass}}"
+  category-rgb="{{inputRgb}}"
+  current-balance-fen="{{cur.balance}}"
+  current-balance-text="{{cur.balanceText}}"
+  currency="{{cur.currency}}"
+  currency-symbol="{{cur.symbol}}"
+  reduce-motion="{{reduceMotion}}"
+  bindcancel="onInputCancel"
+  bindconfirm="onInputConfirm"
+/>
