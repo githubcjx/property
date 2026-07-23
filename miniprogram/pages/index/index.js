@@ -22,9 +22,9 @@ const BANNER_WINDOW_DAYS = 3
 const STORAGE_BANNER_DISMISS = 'report_banner_dismissed_month'  // 值为 'YYYY-M'
 const STORAGE_INV_BANNER_DISMISS = 'inv_banner_dismissed_month' // 盘点横幅按月关闭，值为 'YYYY-M'
 
-// ⚠️ 临时预览开关：true = 无论账户新鲜与否都强制显示盘点横幅，方便在开发者工具里看效果。
-// 发布前必须改回 false，否则新用户一进首页就被提示「该盘点了」。
-const PREVIEW_INV_BANNER = true
+// 调试开关：true = 无论账户新鲜与否都强制显示盘点横幅，方便在开发者工具里看样式。
+// 正常必须保持 false，否则新用户一进首页就被提示「该盘点了」。
+const PREVIEW_INV_BANNER = false
 
 // 当前月份键（用于按月判断横幅是否已被关闭）
 function currentMonthKey() {

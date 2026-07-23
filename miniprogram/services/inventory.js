@@ -15,8 +15,9 @@ const { isDebtCategory } = require('../utils/categories.js')
 const { isIncluded } = require('../utils/networth.js')
 const { toDate } = require('../utils/date.js')
 
-const STALE_DAYS = 30      // 超过视为「太久没更新」（横幅触发 + 琥珀色警示）
+const STALE_DAYS = 30      // 超过视为「太久没核对」（横幅触发 + 琥珀色警示）
 const ROW_HIDE_DAYS = 7    // 首页账户行 ≤7 天不显示新鲜度小字，减少噪音
+const COOLDOWN_DAYS = 7    // 盘点后的冷静期：这期间不再弹横幅（见 bannerInfo）
 
 const STORAGE_LAST_TS = 'inv_last_ts'
 
@@ -72,11 +73,20 @@ function markInventoryDone() {
 
 // 首页盘点横幅条件：有账户，且（任一账户超期 或 距上次完成盘点超期）。
 // 从未盘点过且账户都新鲜时不打扰。
+//
+// 冷静期：刚盘过的 COOLDOWN_DAYS 天内一律不弹，哪怕还有账户没核对 —— 用户在盘点里
+// 主动「跳过」某个账户（比如房产估值一时查不到）是一个决定，回到首页立刻再催一遍
+// 等于无视这个决定。冷静期过后若仍超期，会重新提醒。
+// 注意：只有真的走过流程才会写 inv_last_ts（一个账户都没动就退出不写，见 pages/inventory），
+// 所以「点开看一眼就退」拿不到冷静期。
 function bannerInfo(accounts) {
-  if (!accounts || !accounts.length) return { show: false }
+  if (!accounts || !accounts.length) return { show: false, staleCount: 0, lastDays: null }
   const stale = staleCount(accounts)
   const lastTs = lastInventoryTs()
   const lastDays = lastTs ? calendarDaysAgo(lastTs) : null
+  if (lastDays != null && lastDays < COOLDOWN_DAYS) {
+    return { show: false, staleCount: stale, lastDays }
+  }
   const show = stale > 0 || (lastDays != null && lastDays >= STALE_DAYS)
   return { show, staleCount: stale, lastDays }
 }
@@ -103,6 +113,7 @@ async function netWorthAtCnyFen(ms, accounts) {
 module.exports = {
   STALE_DAYS,
   ROW_HIDE_DAYS,
+  COOLDOWN_DAYS,
   freshnessMs,
   freshInfo,
   staleCount,
