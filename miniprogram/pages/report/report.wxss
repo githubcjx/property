@@ -168,17 +168,6 @@
 .tile-v.tv-days     { color: var(--good); }
 .tile-k { font-size: 22rpx; color: var(--ink-60); margin-top: 8rpx; display: block; }
 
-/* ============ Health row ============ */
-.hrow { display: flex; align-items: center; gap: 20rpx; padding: 26rpx 28rpx; border-radius: 24rpx; }
-.hrow-score { font-size: 52rpx; font-weight: 800; color: var(--ink-100); }
-.hrow-score.stage-high { color: var(--good); }   /* > 80 绿 */
-.hrow-score.stage-mid  { color: var(--accent); } /* 60~80 蓝 */
-.hrow-score.stage-low  { color: var(--debt); }   /* < 60 红 */
-.hrow-k { font-size: 26rpx; color: var(--ink-80); }
-.hrow-d { margin-left: auto; font-size: 26rpx; font-weight: 700; color: var(--good); }
-.hrow-d.down { color: var(--debt); }
-.hrow-d.flat { color: var(--ink-60); }
-
 /* ============ Keyword ============ */
 .kw {
   border-radius: 28rpx; padding: 40rpx 30rpx; text-align: center;

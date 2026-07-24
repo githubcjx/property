@@ -200,10 +200,6 @@
 
       <view class="tool-group-label">洞察与成长</view>
       <view class="tool-grid">
-        <view class="tool-cell tap" hover-class="tool-cell-hover" data-url="/pages/health/health" bindtap="onToolTap">
-          <view class="tool-chip chip-mint"><view class="ic ic-sm ic-health-pulse"></view></view>
-          <text class="tool-label">财务体检</text>
-        </view>
         <view class="tool-cell tap" hover-class="tool-cell-hover" data-url="/subpackages/chart-pkg/pages/chart/chart" bindtap="onToolTap">
           <view class="tool-chip chip-ice"><view class="ic ic-sm ic-chart"></view></view>
           <text class="tool-label">净值趋势</text>
@@ -213,7 +209,7 @@
             <view class="ic ic-sm ic-pie"></view>
             <view wx:if="{{toolBadges.insights}}" class="tool-dot"></view>
           </view>
-          <text class="tool-label">资产洞察</text>
+          <text class="tool-label">资产配置</text>
         </view>
         <view class="tool-cell tap" hover-class="tool-cell-hover" data-url="/pages/milestones/milestones" data-badge="milestones" bindtap="onToolTap">
           <view class="tool-chip chip-gold">

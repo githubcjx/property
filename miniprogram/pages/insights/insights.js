@@ -1,8 +1,6 @@
 const app = getApp()
 const accountSvc = require('../../services/account.js')
 const allocationSvc = require('../../services/allocation.js')
-const attributionSvc = require('../../services/attribution.js')
-const realworthSvc = require('../../services/realworth.js')
 const { formatCNY } = require('../../utils/format.js')
 const { goBack } = require('../../utils/nav.js')
 
@@ -14,18 +12,9 @@ Page({
     hideAmount: false,
     loading: true,
     hasData: false,
-    tab: 'alloc', // 'alloc' 配置 | 'change' 变动
 
-    // 配置（处理后的展示对象）
+    // 资产配置（处理后的展示对象）
     alloc: null,
-
-    // 购买力（通胀调整后的真实增长）
-    real: null,
-
-    // 变动
-    periods: [],
-    periodKey: 'month',
-    change: null,
   },
 
   onLoad() {
@@ -53,21 +42,10 @@ Page({
     try {
       const accounts = await accountSvc.listAccounts()
       this._accounts = accounts
-      const hasData = accounts.length > 0
-
-      // 配置（同步计算）
       this.applyAlloc(allocationSvc.evaluate(accounts))
-
-      // 购买力（异步，固定近 12 个月窗口）
-      this.applyReal(await realworthSvc.evaluate(accounts))
-
-      // 变动（异步，按当前周期）
-      const changeRaw = await attributionSvc.evaluate(accounts, this.data.periodKey)
-      this.applyChange(changeRaw)
-
-      this.setData({ hasData })
+      this.setData({ hasData: accounts.length > 0 })
     } catch (err) {
-      console.error('资产洞察加载失败', err)
+      console.error('资产配置加载失败', err)
       wx.showToast({ icon: 'none', title: '加载失败：' + (err.errMsg || err.message || '') })
     } finally {
       this.setData({ loading: false })
@@ -108,106 +86,6 @@ Page({
         accountCount: r.accountCount,
       },
     })
-  },
-
-  applyReal(r) {
-    const hide = this.data.hideAmount
-    // 无账户 → 不显示卡片
-    if (!r || r.coverage === 'nodata') { this.setData({ real: null }); return }
-    // 降级态（历史不足 / CPI 未覆盖）：只带够渲染提示的字段
-    if (r.coverage !== 'ok') {
-      this.setData({ real: {
-        coverage: r.coverage,
-        nominalPctText: (r.nominalPct != null)
-          ? (r.nominalPct >= 0 ? '+' : '') + r.nominalPct.toFixed(1)
-          : '',
-      } })
-      return
-    }
-    const sp = (v) => (v >= 0 ? '+' : '') + v.toFixed(1)   // 带符号百分比
-    const up = r.realPct >= 0
-    // 「涨幅减法」文案：名义涨了多少 → 通胀占掉多少 → 真实增值多少。措辞随涨跌/通缩自适应。
-    const nomGain = r.current - r.baseline          // 名义涨幅(可负)
-    const infl = r.realBaseline - r.baseline        // 通胀占掉(通缩为负)
-    let inflationVerb, inflationBiteText
-    if (Math.round(infl / 100) > 0) {
-      inflationVerb = '通胀占掉约'; inflationBiteText = formatCNY(infl, { hide })
-    } else if (Math.round(infl / 100) < 0) {
-      inflationVerb = '通缩还帮你省了约'; inflationBiteText = formatCNY(-infl, { hide })
-    } else {
-      inflationVerb = '通胀几乎没影响'; inflationBiteText = ''
-    }
-    this.setData({ real: {
-      coverage: 'ok',
-      dir: up ? 'up' : 'down',
-      headline: up ? '真实增长' : '真实缩水',
-      verdict: up ? '跑赢通胀' : '未跑赢通胀',
-      realPctText: sp(r.realPct),
-      nominalPctText: sp(r.nominalPct),
-      inflationPctText: sp(r.inflationPct),
-      nominalVerb: nomGain >= 0 ? '涨了' : '少了',
-      nominalGainText: formatCNY(Math.abs(nomGain), { hide }),
-      inflationVerb,
-      inflationBiteText,
-      realVerb: r.realDeltaFen >= 0 ? '真实增值' : '真实缩水',
-      realDeltaText: formatCNY(Math.abs(r.realDeltaFen), { hide }),
-      cpiLatest: r.cpiLatest,
-    } })
-  },
-
-  applyChange(r) {
-    const hide = this.data.hideAmount
-    if (!r || !r.hasData) {
-      this.setData({ periods: (r && r.periods) || attributionSvc.PERIODS, change: null })
-      return
-    }
-    const sign = (fen) => formatCNY(fen, { hide, sign: true })
-    const contributors = r.contributors.map(c => Object.assign({}, c, {
-      contribText: sign(c.contribution),
-      dir: c.contribution > 0 ? 'pos' : 'neg',
-      barPct: Math.max(4, Math.min(100, c.pctOfChange)).toFixed(1),
-    }))
-    this.setData({
-      periods: r.periods,
-      periodKey: r.periodKey,
-      change: {
-        periodLabel: r.periodLabel,
-        baselineText: formatCNY(r.baseline, { hide }),
-        currentText: formatCNY(r.current, { hide }),
-        totalDeltaText: sign(r.totalDelta),
-        totalDir: r.totalDelta > 0 ? 'pos' : (r.totalDelta < 0 ? 'neg' : 'flat'),
-        totalDeltaPctText: (r.totalDeltaPct >= 0 ? '+' : '') + r.totalDeltaPct.toFixed(1) + '%',
-        gainText: sign(r.gainSum),
-        lossText: sign(r.lossSum),
-        fxText: sign(r.fxFen),
-        hasFx: !!r.fxFen,
-        contributors,
-        hasMovement: r.hasMovement,
-      },
-    })
-  },
-
-  onTab(e) {
-    const tab = e.currentTarget.dataset.tab
-    if (tab && tab !== this.data.tab) this.setData({ tab })
-  },
-
-  async onPeriod(e) {
-    const key = e.currentTarget.dataset.key
-    if (!key || key === this.data.periodKey) return
-    this.setData({ periodKey: key })
-    if (!this._accounts) return
-    try {
-      const changeRaw = await attributionSvc.evaluate(this._accounts, key)
-      this.applyChange(changeRaw)
-    } catch (err) {
-      console.error('切换周期失败', err)
-    }
-  },
-
-  onContribTap(e) {
-    const id = e.currentTarget.dataset.id
-    if (id) wx.navigateTo({ url: '/pages/account-detail/account-detail?id=' + id })
   },
 
   onBack() {

@@ -10,7 +10,6 @@
     "pages/base-currency/base-currency",
     "pages/rates/rates",
     "pages/changelog/changelog",
-    "pages/health/health",
     "pages/report/report",
     "pages/inventory/inventory",
     "pages/insights/insights",

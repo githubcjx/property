@@ -641,8 +641,6 @@
   opacity: 0.7;
   z-index: -1;
 }
-.chip-mint  { background: rgba(143, 230, 207, 0.16); border-color: rgba(143, 230, 207, 0.32); }
-.chip-mint::after  { background: radial-gradient(circle, rgba(143, 230, 207, 0.40), transparent 70%); }
 .chip-ice   { background: rgba(var(--accent-rgb), 0.16); border-color: rgba(var(--accent-rgb), 0.32); }
 .chip-ice::after   { background: radial-gradient(circle, rgba(var(--accent-rgb), 0.40), transparent 70%); }
 .chip-gold  { background: rgba(243, 223, 163, 0.16); border-color: rgba(243, 223, 163, 0.32); }

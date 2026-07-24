@@ -6,11 +6,10 @@
 //    演示数据不会展示给真实用户（页面 USE_DEMO 同步关闭即可）。
 //
 // 数据诚实（CLAUDE.md 不变量 10）：正式计算只能用真实存储/可算的数据
-//   —— 月报涨幅来自 stats.js、归因来自 attribution.js、体检分用 health.evaluateAt() 重算、
-//      坚持度数 transactions；无可比数据时降级，不脑补。
+//   —— 月报涨幅来自 stats.js、归因按 期末−月初 现算、坚持度数 transactions；
+//      无可比数据时降级，不脑补。
 
 const cloud = require('./cloud.js')
-const healthSvc = require('./health.js')
 const { isDebtCategory } = require('../utils/categories.js')
 const { valueCnyFen, snapshotCnyFen } = require('../utils/networth.js')
 
@@ -21,11 +20,10 @@ const TH = {
   monthDownPct: -1,       // 涨幅 ≤ 视为「跌」
   driverDominantPct: 45,  // 单一驱动占比 ≥ 视为「主导」，否则「均衡」
   recordsDiligent: 4,     // 月记录 ≥ 视为「自律」
-  healthUp: 5,            // 健康分提升 ≥ 视为「向好」
 }
 
 // ===================== 月报 · 单关键词 =====================
-// 输入 report 对象需含：coverage / milestoneName / allTimeHigh / nwPct / driver{key,sharePct} / health.delta / records
+// 输入 report 对象需含：coverage / milestoneName / allTimeHigh / nwPct / driver{key,sharePct} / records
 // driver.key ∈ 'investment' | 'liquid' | 'debtReduction' | 'fixed' | 'receivable' | 'balanced'
 function deriveMonthlyKeyword(r) {
   if (!r || r.coverage === 'insufficient') {
@@ -51,8 +49,6 @@ function deriveMonthlyKeyword(r) {
     return { word: '稳住阵脚', why: '本月净值有所回撤，但你依然如实记录、看清现状——这正是穿越波动的第一步。' }
   }
   // 持平
-  const hd = (r.health && r.health.delta) || 0
-  if (hd >= TH.healthUp) return { word: '稳中向好', why: `净值基本持平，但财务健康分提升了 ${hd} 分。` }
   if ((r.records || 0) >= TH.recordsDiligent) return { word: '自律复盘', why: `本月你记录了 ${r.records} 次，坚持复盘最难得。` }
   return { word: '波澜不惊', why: '本月净值平稳，没有大起大落。' }
 }
@@ -75,7 +71,6 @@ function getDemoMonthlyReport() {
     records: 8,
     accountsUpdated: 5,
     totalDays: 287,
-    health: { score: 82, status: 'good', delta: 3 },
     // 关键词派生输入
     milestoneName: null,
     allTimeHigh: false,
@@ -86,7 +81,7 @@ function getDemoMonthlyReport() {
 }
 
 // ===================== 真实月报编排 =====================
-// 口径与 stats.js / health.evaluateAt 一致（CLAUDE.md 不变量 5）：历史余额 = 该账户在某时点前最近一条 balanceAfter。
+// 口径与 stats.js 一致（CLAUDE.md 不变量 5）：历史余额 = 该账户在某时点前最近一条 balanceAfter。
 // 报告不存储，按需重算（区间参数化后，回看历史月份只需换 monthDate —— 见「历史月报」待办）。
 
 function toMs(v) {
@@ -275,14 +270,6 @@ async function buildMonthlyReport(accounts, monthDate) {
   }
   const netWorthFen = netWorthOf(included, endBal)
 
-  // 期末健康分：当前月直接用 live evaluate；过去月用期末余额伪账户重算
-  const curHealthR = isCurrentMonth
-    ? healthSvc.evaluate(accounts)
-    : healthSvc.evaluate(accounts.map(a => (
-        // 伪账户余额已是人民币口径，标 currency:'CNY' 避免 health 再次折算
-        a.includeInChart === false ? a : Object.assign({}, a, { balance: endBal[a._id] || 0, currency: 'CNY' })
-      )))
-
   // 无可比基线（月初前无任何记录）→ 降级，不脑补涨幅/归因
   if (!anySnapshot || included.length === 0) {
     const r = {
@@ -290,7 +277,6 @@ async function buildMonthlyReport(accounts, monthDate) {
       nwPct: 0, nwDeltaFen: 0, netWorthFen,
       spark: [], movers: [], driver: { key: 'balanced', sharePct: 0 },
       records, accountsUpdated, totalDays,
-      health: { score: curHealthR.overall.score, status: curHealthR.overall.status, delta: 0 },
       milestoneName: null, allTimeHigh: false,
     }
     r.keyword = deriveMonthlyKeyword(r)
@@ -342,15 +328,6 @@ async function buildMonthlyReport(accounts, monthDate) {
     driver = share >= TH.driverDominantPct ? { key: maxK, sharePct: share } : { key: 'balanced', sharePct: share }
   }
 
-  // 健康分环比：月初基线 vs 期末（均按余额快照重算，不额外查询、不存储）
-  let healthDelta = 0
-  const prevHealthR = healthSvc.evaluate(accounts.map(a => (
-    a.includeInChart === false ? a : Object.assign({}, a, { balance: baseBal[a._id] || 0, currency: 'CNY' })
-  )))
-  if (prevHealthR && prevHealthR.overall.score != null && curHealthR.overall.score != null) {
-    healthDelta = curHealthR.overall.score - prevHealthR.overall.score
-  }
-
   const spark = buildSparkReplay(included, baseBal, endBal, monthTx, monthStartMs, periodEndMs)
 
   const report = {
@@ -358,7 +335,6 @@ async function buildMonthlyReport(accounts, monthDate) {
     nwPct, nwDeltaFen, netWorthFen,
     spark, movers, driver,
     records, accountsUpdated, totalDays,
-    health: { score: curHealthR.overall.score, status: curHealthR.overall.status, delta: healthDelta },
     milestoneName: null,   // TODO: 接 milestones.js 判断本月是否跨过里程碑阈值
     allTimeHigh: false,    // TODO: 遍历历史净值节点判断是否创新高
   }

@@ -88,16 +88,6 @@
       <view class="tile glass"><text class="tile-v num tv-days">{{totalDays}}</text><text class="tile-k">累计天数</text></view>
     </view>
 
-    <!-- 月末财务体检 -->
-    <view class="sec-title entry-up"><text class="sec-name">月末财务体检</text></view>
-    <view class="hrow glass entry-up">
-      <text class="hrow-score {{health.score > 80 ? 'stage-high' : (health.score >= 60 ? 'stage-mid' : 'stage-low')}}">{{health.score}}</text>
-      <text class="hrow-k">健康分 · {{health.status === 'good' ? '良好' : (health.status === 'warn' ? '关注' : '需改善')}}</text>
-      <text wx:if="{{health.delta > 0}}" class="hrow-d">↑ {{health.delta}} 分</text>
-      <text wx:elif="{{health.delta < 0}}" class="hrow-d down">↓ {{health.deltaAbs}} 分</text>
-      <text wx:else class="hrow-d flat">持平</text>
-    </view>
-
     <!-- 月度关键词 -->
     <view class="sec-title entry-up"><text class="sec-name">月度关键词</text></view>
     <view class="kw glass entry-up">

@@ -51,7 +51,6 @@ Page({
     pctText: '',
     pctClass: 'up',
     keyword: null,
-    health: null,
     records: 0,
     accountsUpdated: 0,
     totalDays: 0,
@@ -175,10 +174,6 @@ Page({
       iconKey: MOVER_ICON[m.cat] || 'ic-cash',
     }))
 
-    const health = r.health
-      ? Object.assign({}, r.health, { deltaAbs: Math.abs(r.health.delta || 0) })
-      : r.health
-
     this.setData({
       isDemo: !!r.isDemo,
       coverage: r.coverage || 'full',
@@ -186,7 +181,6 @@ Page({
       pctText,
       pctClass,
       keyword: r.keyword,
-      health,
       records: r.records,
       accountsUpdated: r.accountsUpdated,
       totalDays: r.totalDays,
@@ -224,11 +218,6 @@ Page({
     // 主要推手：按驱动类型上色
     const d = r.driver || {}
     if (DRIVER_CHIP[d.key]) chips.push({ text: DRIVER_CHIP[d.key], tone: DRIVER_TONE[d.key] || 'neutral' })
-    // 体检分：上升绿、下降红
-    if (r.health) {
-      if (r.health.delta > 0) chips.push({ text: '体检分 ↑' + r.health.delta, tone: 'good' })
-      else if (r.health.delta < 0) chips.push({ text: '体检分 ↓' + Math.abs(r.health.delta), tone: 'bad' })
-    }
     if (r.totalDays) chips.push({ text: '已记录 ' + r.totalDays + ' 天', tone: 'liquid' })
 
     return {
