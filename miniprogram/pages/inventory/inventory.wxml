@@ -51,26 +51,20 @@
   <block wx:elif="{{phase === 'done'}}">
     <scroll-view scroll-y class="scroll" enable-flex>
       <view class="done">
-        <view class="done-orb entry-up"><text class="done-tick">✓</text></view>
-        <view class="done-title entry-up d1">盘点完成</view>
-        <view class="done-sub entry-up d1">{{doneSub}}</view>
+        <!-- 完成确认：退到最小，不与主角争 -->
+        <view class="done-confirm entry-up"><text class="dc-tick">✓</text> 盘点完成</view>
 
-        <view class="done-chips entry-up d2">
-          <view class="done-chip">核对 <text class="num strong">{{okCount}}</text></view>
-          <view class="done-chip">改过 <text class="num strong">{{editCount}}</text></view>
-          <view class="done-chip">跳过 <text class="num strong">{{skipCount}}</text></view>
+        <!-- HERO · 唯一主角：这次你的净值动了多少 -->
+        <view class="hero-eyebrow entry-up d1">{{heroEyebrow}}</view>
+        <view class="hero-big {{heroMode}} entry-up d1">
+          <text class="num">{{hideAmount ? heroBigMasked : heroBig}}</text>
         </view>
+        <view class="hero-sub entry-up d2">{{heroSub}}</view>
+        <view wx:if="{{heroNetShow}}" class="hero-net entry-up d2">现在 <text class="num">{{hideAmount ? baseSymbol + ' ••••' : netText}}</text></view>
+        <view wx:if="{{skipNote}}" class="hero-foot entry-up d2">{{skipNote}}</view>
 
-        <view class="done-card glass entry-up d3">
-          <view class="done-lab">当前净资产</view>
-          <view class="done-net num">{{hideAmount ? baseSymbol + ' ••••' : netText}}</view>
-          <view wx:if="{{hasDelta}}" class="done-delta {{deltaPositive ? 'pos' : 'neg'}}">
-            较上次盘点 {{hideAmount ? '••••' : deltaText}}
-            <text class="done-delta-when">· {{lastDaysText}}</text>
-          </view>
-          <view wx:else class="done-delta-none">这是第一次盘点，暂时没有可对比的上次记录；下次盘点就能看到变化了</view>
-          <view wx:if="{{skipNote}}" class="done-skip-note">{{skipNote}}</view>
-        </view>
+        <!-- 过程：压成一行安静的小字 -->
+        <view class="done-line entry-up d2">{{doneLine}}</view>
 
         <!-- 目标进度：盘点的回报 -->
         <view wx:if="{{goal.hasGoal}}" class="done-goal tap entry-up d3" hover-class="btn-hover" bindtap="onOpenGoal">

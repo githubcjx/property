@@ -42,18 +42,17 @@ Page({
     quitVisible: false,
     quitCount: 0,
 
-    // 完成页
-    okCount: 0,
-    editCount: 0,
-    skipCount: 0,
-    doneSub: '',
+    // 完成页 · HERO（唯一主角：这次净值动了多少）
+    heroMode: 'baseline',   // baseline 首次/无对比 | gain 涨 | loss 跌
+    heroEyebrow: '你的起点',
+    heroBig: '',            // 主角大字：gain/loss 为变动量，baseline 为当前净值本身
+    heroBigMasked: '',      // 隐藏金额时的占位
+    heroSub: '',
+    heroNetShow: false,     // gain/loss 时在主角下补一行「现在 ¥X」
+    doneLine: '',           // 过程压成一行：核对 X · 改 X · 跳过 X
     skipNote: '',
     netText: '',
     baseSymbol: '¥',
-    hasDelta: false,
-    deltaText: '',
-    deltaPositive: true,
-    lastDaysText: '',
 
     // 完成页的目标进度行（盘点的回报：看着目标更近一点）
     goal: { hasGoal: false },
@@ -267,7 +266,7 @@ Page({
     this.finish(true)
   },
 
-  // 完成：算本次净值 +「较上次盘点」对比（回算不出历史基线时隐藏对比，不造数）
+  // 完成：主角是「这次净值动了多少」。回算不出上次基线时降级为「起点」呈现，绝不造对比。
   async finish(partial) {
     const s = this._tally()
     const seen = s.seen
@@ -276,20 +275,32 @@ Page({
     const lastTs = invSvc.lastInventoryTs()
 
     const baseCcy = baseCurrency()
+    const baseSym = symbolOf(baseCcy)
     const netCny = sumNetCnyFen(this._accounts)
     const netText = formatMoney(cnyToBaseFen(netCny), baseCcy, { symbol: true })
+
+    // 过程压成一行；0 的部分不显示，避免「跳过 0」这类噪音
+    const parts = ['核对 ' + seen]
+    if (s.edit) parts.push('改 ' + s.edit)
+    if (s.skip) parts.push('跳过 ' + s.skip)
 
     this.setData({
       phase: 'done',
       progressPct: 100,
-      okCount: s.ok,
-      editCount: s.edit,
-      skipCount: s.skip,
-      doneSub: partial ? '本次核对了 ' + seen + ' 个账户' : this.data.total + ' 个账户已全部核对',
+      doneLine: parts.join(' · '),
+      // 默认按「起点」呈现：主角就是当前净值本身。拿到上次对比后（下面 async）再升级为涨/跌。
+      heroMode: 'baseline',
+      heroEyebrow: '你的起点',
+      heroBig: netText,
+      heroBigMasked: baseSym + ' ••••',
+      heroSub: lastTs
+        ? '这次暂时算不出与上次的对比，先记下现在的净值'
+        : '记住这个数 —— 下次盘点，就知道自己走了多远',
+      heroNetShow: false,
       // 有账户没核对时说清楚：净资产里这些账户用的还是旧余额，别让用户误以为全是最新的
       skipNote: unchecked > 0 ? '其中 ' + unchecked + ' 个账户这次没核对，用的仍是上次记录的余额' : '',
       netText,
-      baseSymbol: symbolOf(baseCcy),
+      baseSymbol: baseSym,
     })
 
     // 目标进度行：只显示进度与还差，不算预计达成时间 —— 那需要全量拉交易记录重建时间线，
@@ -305,15 +316,18 @@ Page({
           const deltaCny = netCny - baseline
           const positive = deltaCny >= 0
           const days = Math.max(0, Math.floor((Date.now() - lastTs) / 86400000))
+          // 主角升级为「这次动了多少」：涨发光、跌平静、金额下沉为副信息
           this.setData({
-            hasDelta: true,
-            deltaPositive: positive,
-            deltaText: (positive ? '+' : '-') + formatMoney(Math.abs(cnyToBaseFen(deltaCny)), baseCcy, { symbol: true }),
-            lastDaysText: days === 0 ? '今天早些时候' : days + ' 天前',
+            heroMode: positive ? 'gain' : 'loss',
+            heroEyebrow: '较上次盘点',
+            heroBig: (positive ? '+' : '−') + formatMoney(Math.abs(cnyToBaseFen(deltaCny)), baseCcy, { symbol: true }),
+            heroBigMasked: (positive ? '+ ' : '− ') + baseSym + ' ••••',
+            heroSub: '从 ' + (days === 0 ? '今天早些时候' : days + ' 天前') + ' 那次盘点算起',
+            heroNetShow: true,
           })
         }
       } catch (err) {
-        console.warn('[inventory] 回算上次盘点基线失败，隐藏对比', err)
+        console.warn('[inventory] 回算上次盘点基线失败，保留「起点」呈现', err)
       }
     }
     invSvc.markInventoryDone()
