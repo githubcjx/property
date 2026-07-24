@@ -432,7 +432,7 @@ Page({
   confirmDelete() {
     wx.showModal({
       title: '删除账户',
-      content: '账户将从首页隐藏，历史记录保留。确认删除？',
+      content: '账户即将删除。确认删除？',
       confirmColor: '#FF0000',
       success: async (res) => {
         if (!res.confirm) return

@@ -14,8 +14,8 @@
     </view>
   </view>
 
-  <!-- Hero · 净资产 -->
-  <view class="hero">
+  <!-- Hero · 净资产（无数据时整块隐藏 —— 不拿「¥0」当开场，等有账户再长出来） -->
+  <view class="hero" wx:if="{{hasData}}">
     <view class="hero-halo"></view>
 
     <view class="hero-eyebrow entry-up">YOUR NET WORTH · 此刻</view>

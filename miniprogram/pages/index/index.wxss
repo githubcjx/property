@@ -194,7 +194,7 @@
 
 /* ============ Empty state ============ */
 .empty-stage {
-  margin-top: 60rpx;
+  margin-top: 160rpx;
   text-align: center;
   padding: 60rpx 32rpx;
 }
