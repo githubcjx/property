@@ -4,6 +4,7 @@ const goalSvc = require('../../services/goal.js')
 const { formatMoney, unitToFen, fenToUnit } = require('../../utils/format.js')
 const { baseCurrency, cnyToBaseFen } = require('../../utils/networth.js')
 const { symbolOf } = require('../../utils/currency.js')
+const { goBack } = require('../../utils/nav.js')
 
 Page({
   data: {
@@ -235,6 +236,6 @@ Page({
   noop() {},
 
   onBack() {
-    wx.navigateBack()
+    goBack()
   },
 })

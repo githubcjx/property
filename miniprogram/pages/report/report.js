@@ -2,6 +2,7 @@ const app = getApp()
 const reportSvc = require('../../services/report.js')
 const accountSvc = require('../../services/account.js')
 const { formatCNY } = require('../../utils/format.js')
+const { goBack } = require('../../utils/nav.js')
 
 // 演示开关：true = 写死示例数据；false = 用真实账户数据计算（当前为真实计算预览）。
 const USE_DEMO = false
@@ -246,7 +247,7 @@ Page({
   },
 
   onBack() {
-    wx.navigateBack({ fail: () => wx.reLaunch({ url: '/pages/index/index' }) })
+    goBack()
   },
 
   // 隐私眼：与全局 hideAmount 联动

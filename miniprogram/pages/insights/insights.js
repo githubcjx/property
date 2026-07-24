@@ -4,6 +4,7 @@ const allocationSvc = require('../../services/allocation.js')
 const attributionSvc = require('../../services/attribution.js')
 const realworthSvc = require('../../services/realworth.js')
 const { formatCNY } = require('../../utils/format.js')
+const { goBack } = require('../../utils/nav.js')
 
 Page({
   data: {
@@ -210,6 +211,6 @@ Page({
   },
 
   onBack() {
-    wx.navigateBack()
+    goBack()
   },
 })

@@ -13,6 +13,7 @@ const { symbolOf } = require('../../utils/currency.js')
 const { formatMoney } = require('../../utils/format.js')
 const { sumNetCnyFen, cnyToBaseFen, baseCurrency } = require('../../utils/networth.js')
 const { TOOL_BADGES } = require('../../utils/toolBadges.js')
+const { goBack } = require('../../utils/nav.js')
 
 const STORAGE_TOOL_SEEN = 'tool_badge_seen'   // 与首页约定一致（utils/toolBadges.js）
 
@@ -254,7 +255,7 @@ Page({
         return
       }
     }
-    wx.navigateBack()
+    goBack()
   },
 
   onQuitContinue() {
@@ -380,7 +381,7 @@ Page({
   },
 
   onDone() {
-    wx.navigateBack()
+    goBack()
   },
 
   noop() {},

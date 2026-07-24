@@ -2,6 +2,7 @@ const app = getApp()
 const accountSvc = require('../../services/account.js')
 const healthSvc = require('../../services/health.js')
 const { formatCNY } = require('../../utils/format.js')
+const { goBack } = require('../../utils/nav.js')
 
 // 描述当前日期 → "05/25 更新"
 function fmtUpdateDate(d) {
@@ -207,7 +208,7 @@ Page({
   },
 
   onBack() {
-    wx.navigateBack()
+    goBack()
   },
 
   // ===== 分享 =====
