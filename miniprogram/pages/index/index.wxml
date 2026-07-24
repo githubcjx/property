@@ -4,10 +4,8 @@
   <!-- 顶栏 -->
   <view class="topbar" style="padding-top: {{statusBarHeight}}px;">
     <view class="top-left">
+      <image class="brand-logo" src="/assets/logo.png" mode="aspectFit"></image>
       <text class="brand">净值本</text>
-      <view wx:if="{{hasData}}" class="eye-btn tap" hover-class="btn-hover" bindtap="onToggleHide">
-        <view class="ic ic-xs {{hideAmount ? 'ic-eye-off' : 'ic-eye'}}"></view>
-      </view>
     </view>
     <view class="add-btn tap" hover-class="btn-hover" bindtap="onAdd">
       <view class="ic ic-xs ic-plus"></view>
@@ -20,18 +18,23 @@
 
     <view class="hero-eyebrow entry-up">此刻净资产</view>
 
-    <view class="hero-amount entry-up d1">
-      <block wx:if="{{hideAmount}}">
-        <text class="amt-prefix">{{baseSymbol}}</text>
-        <text class="amt-int">••••••</text>
-      </block>
-      <block wx:else>
-        <text class="amt-prefix">{{baseSymbol}}</text>
-        <text class="amt-sign" wx:if="{{netSign}}">{{netSign}}</text>
-        <text class="amt-int">{{netInt}}</text>
-        <text class="amt-frac" wx:if="{{netHasFrac}}">.{{netFrac}}</text>
-      </block>
-      <view class="amt-shine"></view>
+    <view class="hero-amount-row entry-up d1">
+      <view class="hero-amount">
+        <block wx:if="{{hideAmount}}">
+          <text class="amt-prefix">{{baseSymbol}}</text>
+          <text class="amt-int">••••••</text>
+        </block>
+        <block wx:else>
+          <text class="amt-prefix">{{baseSymbol}}</text>
+          <text class="amt-sign" wx:if="{{netSign}}">{{netSign}}</text>
+          <text class="amt-int">{{netInt}}</text>
+          <text class="amt-frac" wx:if="{{netHasFrac}}">.{{netFrac}}</text>
+        </block>
+        <view class="amt-shine"></view>
+      </view>
+      <view class="eye-btn tap" hover-class="btn-hover" bindtap="onToggleHide">
+        <view class="ic ic-xs {{hideAmount ? 'ic-eye-off' : 'ic-eye'}}"></view>
+      </view>
     </view>
 
     <view class="hero-delta entry-up d2" wx:if="{{hasDelta}}">
