@@ -7,6 +7,12 @@
 // 再取 **中位数** 作为月均增速。用中位数而不是首尾两点相减，是因为一笔年终奖 / 一次大额
 // 买房支出就能把首尾差拉飞，据此外推出的达成时间会离谱地乐观或悲观。
 //
+// ⚠️ 关键：**当月一笔记录都没有的月份不计入样本**。「没有记录」不等于「没有变化」——
+// 用户那个月只是没打开 App，钱照样在动。早期版本把这种月份当成净增 0 塞进样本，
+// 真实用户（半年才更一次余额）12 个月里有 7 个空月，中位数被一堆假 0 拖到 0，
+// 于是判成 nonPositive、页面显示「你在远离目标」，而其实那 12 个月净值涨了近 20 万。
+// 空月一律跳过，样本因此不足时如实降级成 'short'（「再记录 X 个月」），不猜。
+//
 // 输入 timeline 为 [{ time: ms, net: 人民币分 }] 升序（由 services/milestones.js
 // buildNetWorthTimeline 重建，遵循不变量 5 的快照口径）。本模块是纯计算，不碰数据库。
 
@@ -36,6 +42,16 @@ function netAt(timeline, ms) {
   return net
 }
 
+// 该自然月内是否有过记录。timeline 的每个点都对应一次真实的余额变动，
+// 所以「区间内有点」== 用户当月确实更新过数据。timeline 升序，可提前跳出。
+function hasActivity(timeline, startMs, endMs) {
+  for (const p of timeline) {
+    if (p.time >= endMs) return false
+    if (p.time >= startMs) return true
+  }
+  return false
+}
+
 function median(nums) {
   const s = nums.slice().sort((a, b) => a - b)
   const mid = s.length >> 1
@@ -44,9 +60,9 @@ function median(nums) {
 
 // 返回 { monthlyFen, coverage, months, volatile }
 //   coverage: 'ok'          可以预测
-//             'short'       完整月样本不足 MIN_MONTHS 个 → 页面只显示进度，不给日期
+//             'short'       **有记录的**完整月不足 MIN_MONTHS 个 → 页面只显示进度，不给日期
 //             'nonPositive' 中位数 <= 0（在远离目标）→ 页面如实说明，不给日期
-//   months:   实际拿到的完整月样本数（'short' 时用于文案「再记录 X 个月」）
+//   months:   实际拿到的样本月数（'short' 时用于文案「再记录 X 个月」）
 //   volatile: 月度变化波动大，预测只作粗略参考
 function estimateMonthlyGrowth(timeline) {
   if (!timeline || timeline.length < 2) {
@@ -59,6 +75,8 @@ function estimateMonthlyGrowth(timeline) {
   const deltas = []
   for (let i = 1; i < nets.length; i++) {
     if (nets[i] == null || nets[i - 1] == null) continue
+    // 整月无记录 → 这个 0 是缺数据的假象，不是真的没变，跳过（见文件头说明）
+    if (!hasActivity(timeline, bounds[i - 1], bounds[i])) continue
     deltas.push(nets[i] - nets[i - 1])
   }
 
