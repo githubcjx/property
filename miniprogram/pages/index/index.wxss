@@ -593,12 +593,6 @@
   color: var(--ink-100);
   letter-spacing: 0.5rpx;
 }
-.sheet-sub {
-  font-size: 24rpx;
-  font-weight: 400;
-  color: var(--ink-60);
-  margin-left: 14rpx;
-}
 .sheet-close {
   width: 60rpx; height: 60rpx;
   border-radius: 50%;
@@ -607,12 +601,26 @@
   display: flex; align-items: center; justify-content: center;
 }
 
-.tool-group-label {
-  font-size: 22rpx;
-  color: var(--ink-40);
-  letter-spacing: 2rpx;
-  margin: 36rpx 8rpx 24rpx;
+/* 盘点：唯一的「动作」，占满一行、绿色强调、置于分析镜头之上 */
+.tool-action {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  margin: 24rpx 0 12rpx;
+  padding: 22rpx 26rpx;
+  border-radius: 28rpx;
+  background: linear-gradient(180deg, rgba(var(--good-rgb), 0.12), rgba(var(--good-rgb), 0.04));
+  border: 1rpx solid rgba(var(--good-rgb), 0.30);
 }
+.tool-action-hover { transform: scale(0.99); opacity: 0.9; }
+.ta-chip { width: 88rpx; height: 88rpx; border-radius: 26rpx; flex: 0 0 88rpx; }
+.ta-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6rpx; }
+.ta-title { font-size: 30rpx; font-weight: 700; color: var(--ink-100); }
+.ta-sub { font-size: 22rpx; color: var(--ink-60); }
+.ta-arrow { color: var(--ink-40); flex: 0 0 auto; }
+.ta-dot { position: absolute; top: 20rpx; right: 20rpx; }
+
 .tool-grid {
   display: flex;
   flex-wrap: wrap;

@@ -168,38 +168,34 @@
     </view>
   </view>
 
-  <!-- 工具 · 分析中心 面板 -->
+  <!-- 工具面板：盘点(动作) 置顶 + 四个分析镜头一行铺满 -->
   <view wx:if="{{toolsVisible}}" class="tools-mask {{toolsClosing ? 'closing' : ''}}" bindtap="onCloseTools">
     <view class="tools-sheet {{toolsClosing ? 'closing' : ''}}" catchtap="onSheetNoop">
       <view class="sheet-handle"></view>
       <view class="sheet-head">
-        <text class="sheet-title">工具<text class="sheet-sub">分析中心</text></text>
+        <text class="sheet-title">工具</text>
         <view class="sheet-close tap" hover-class="btn-hover" catchtap="onCloseTools">
           <view class="ic ic-xs ic-close"></view>
         </view>
       </view>
 
-      <view class="tool-group-label">记录</view>
-      <view class="tool-grid">
-        <view class="tool-cell tap" hover-class="tool-cell-hover" data-url="/pages/inventory/inventory" data-badge="inventory" bindtap="onToolTap">
-          <view class="tool-chip chip-inv">
-            <view class="ic ic-sm ic-checklist"></view>
-            <view wx:if="{{toolBadges.inventory}}" class="tool-dot"></view>
-          </view>
-          <text class="tool-label">一键盘点</text>
+      <!-- 盘点：唯一的「动作」，占满一行、突出 -->
+      <view class="tool-action tap" hover-class="tool-action-hover" data-url="/pages/inventory/inventory" data-badge="inventory" bindtap="onToolTap">
+        <view class="tool-chip chip-inv ta-chip"><view class="ic ic-sm ic-checklist"></view></view>
+        <view class="ta-text">
+          <text class="ta-title">一键盘点</text>
+          <text class="ta-sub">逐个核对余额，几分钟全部更新</text>
         </view>
+        <view wx:if="{{toolBadges.inventory}}" class="tool-dot ta-dot"></view>
+        <view class="ic ic-xs ic-chevron-right ta-arrow"></view>
       </view>
 
-      <view class="tool-group-label">回顾</view>
+      <!-- 四个分析镜头：一行铺满，不分组 -->
       <view class="tool-grid">
         <view class="tool-cell tap" hover-class="tool-cell-hover" data-url="/pages/report/report" bindtap="onToolTap">
           <view class="tool-chip chip-report"><view class="ic ic-sm ic-report"></view></view>
           <text class="tool-label">月度小结</text>
         </view>
-      </view>
-
-      <view class="tool-group-label">洞察与成长</view>
-      <view class="tool-grid">
         <view class="tool-cell tap" hover-class="tool-cell-hover" data-url="/subpackages/chart-pkg/pages/chart/chart" bindtap="onToolTap">
           <view class="tool-chip chip-ice"><view class="ic ic-sm ic-chart"></view></view>
           <text class="tool-label">净值趋势</text>
