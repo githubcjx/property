@@ -388,6 +388,10 @@ Page({
     wx.navigateTo({ url: '/pages/add-account/add-account' })
   },
 
+  onStartOnboarding() {
+    wx.navigateTo({ url: '/pages/onboarding/onboarding' })
+  },
+
   // 工具 · 分析中心面板
   onOpenTools() {
     this.setData({ toolsVisible: true, toolsClosing: false })

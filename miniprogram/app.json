@@ -13,7 +13,8 @@
     "pages/report/report",
     "pages/inventory/inventory",
     "pages/insights/insights",
-    "pages/milestones/milestones"
+    "pages/milestones/milestones",
+    "pages/onboarding/onboarding"
   ],
   "window": {
     "backgroundColor": "#050507",

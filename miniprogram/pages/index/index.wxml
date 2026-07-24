@@ -61,12 +61,12 @@
     <block wx:if="{{!loading && !hasData}}">
       <view class="empty-stage">
         <view class="empty-orb"></view>
-        <view class="empty-title">还没有账户</view>
-        <view class="empty-desc">点击右上角「＋」添加你的第一个账户</view>
-        <view class="empty-cta tap" bindtap="onAdd">
-          <view class="ic ic-xs ic-plus"></view>
-          <text>添加账户</text>
+        <view class="empty-title">看清你此刻值多少</view>
+        <view class="empty-desc">花 2 分钟，挑出你有的账户、估个大概就好</view>
+        <view class="empty-cta tap" bindtap="onStartOnboarding">
+          <text>快速开始</text>
         </view>
+        <view class="empty-manual tap" bindtap="onAdd">手动添加账户</view>
       </view>
     </block>
 
