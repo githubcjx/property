@@ -601,26 +601,6 @@
   display: flex; align-items: center; justify-content: center;
 }
 
-/* 盘点：唯一的「动作」，占满一行、绿色强调、置于分析镜头之上 */
-.tool-action {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 24rpx;
-  margin: 24rpx 0 12rpx;
-  padding: 22rpx 26rpx;
-  border-radius: 28rpx;
-  background: linear-gradient(180deg, rgba(var(--good-rgb), 0.12), rgba(var(--good-rgb), 0.04));
-  border: 1rpx solid rgba(var(--good-rgb), 0.30);
-}
-.tool-action-hover { transform: scale(0.99); opacity: 0.9; }
-.ta-chip { width: 88rpx; height: 88rpx; border-radius: 26rpx; flex: 0 0 88rpx; }
-.ta-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6rpx; }
-.ta-title { font-size: 30rpx; font-weight: 700; color: var(--ink-100); }
-.ta-sub { font-size: 22rpx; color: var(--ink-60); }
-.ta-arrow { color: var(--ink-40); flex: 0 0 auto; }
-.ta-dot { position: absolute; top: 20rpx; right: 20rpx; }
-
 .tool-grid {
   display: flex;
   flex-wrap: wrap;
@@ -690,35 +670,45 @@
   opacity: 0.5;
 }
 
-/* ============ 盘点横幅 ============ */
-.inv-banner {
+/* ============ 盘点入口（常驻，随新鲜度变脸）============ */
+.inv-entry {
   position: relative;
   display: flex;
   align-items: center;
   gap: 22rpx;
   margin: 0 0 24rpx;
-  padding: 28rpx 26rpx;
+  padding: 22rpx 26rpx;
   border-radius: 28rpx;
   overflow: hidden;
-  background:
-    radial-gradient(130% 120% at 0% 0%, rgba(var(--good-rgb), 0.20), transparent 60%),
-    linear-gradient(180deg, rgba(var(--good-rgb), 0.13), rgba(var(--good-rgb), 0.05));
-  border: 1rpx solid rgba(var(--good-rgb), 0.38);
-  box-shadow: 0 12rpx 36rpx rgba(var(--good-rgb), 0.10);
+  background: var(--glass-1);
+  border: 1rpx solid var(--hairline);
 }
-.ivb-ico {
-  width: 80rpx; height: 80rpx; flex: 0 0 80rpx; border-radius: 24rpx;
+.inv-entry-hover { transform: scale(0.99); opacity: 0.9; }
+.ive-ico {
+  width: 76rpx; height: 76rpx; flex: 0 0 76rpx; border-radius: 22rpx;
   display: flex; align-items: center; justify-content: center;
-  background: linear-gradient(160deg, rgba(var(--good-rgb), 0.38), rgba(var(--good-rgb), 0.10));
+  background: var(--glass-2);
+  border: 1rpx solid var(--hairline);
 }
-.ivb-txt { flex: 1; min-width: 0; }
-.ivb-title { font-size: 30rpx; font-weight: 800; color: var(--ink-100); }
-.ivb-sub { font-size: 24rpx; color: var(--ink-80); margin-top: 6rpx; }
-.ivb-x {
-  position: absolute; top: 12rpx; right: 14rpx;
-  width: 40rpx; height: 40rpx; display: flex; align-items: center; justify-content: center;
-  opacity: 0.5;
+.ive-txt { flex: 1; min-width: 0; }
+.ive-title { font-size: 28rpx; font-weight: 700; color: var(--ink-100); }
+.ive-sub { font-size: 22rpx; color: var(--ink-60); margin-top: 4rpx; }
+.ive-arrow { flex: 0 0 auto; opacity: 0.45; }
+
+/* 发霉：变响。用 warn 琥珀（与账户行「N 天没核对」的 stale 色一致），不是财务负向的红 */
+.inv-entry.is-stale {
+  background:
+    radial-gradient(130% 120% at 0% 0%, rgba(var(--warn-rgb), 0.20), transparent 60%),
+    linear-gradient(180deg, rgba(var(--warn-rgb), 0.13), rgba(var(--warn-rgb), 0.05));
+  border-color: rgba(var(--warn-rgb), 0.40);
+  box-shadow: 0 12rpx 36rpx rgba(var(--warn-rgb), 0.10);
 }
+.inv-entry.is-stale .ive-ico {
+  background: linear-gradient(160deg, rgba(var(--warn-rgb), 0.36), rgba(var(--warn-rgb), 0.10));
+  border-color: rgba(var(--warn-rgb), 0.30);
+}
+.inv-entry.is-stale .ive-title { font-weight: 800; }
+.inv-entry.is-stale .ive-arrow { opacity: 0.9; }
 .tool-label {
   font-size: 24rpx;
   color: var(--ink-80);

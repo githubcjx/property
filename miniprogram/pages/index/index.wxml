@@ -81,14 +81,14 @@
         <view class="mrb-x" catchtap="onDismissReportBanner"><view class="ic ic-xs ic-close"></view></view>
       </view>
 
-      <!-- 盘点横幅（账户太久没更新时提示；月报横幅优先） -->
-      <view wx:if="{{invBannerVisible}}" class="inv-banner entry-up" bindtap="onOpenInventory">
-        <view class="ivb-ico"><view class="ic ic-sm ic-checklist"></view></view>
-        <view class="ivb-txt">
-          <view class="ivb-title">该盘点了</view>
-          <view class="ivb-sub">{{invBannerSub}} · 逐个核对一遍 →</view>
+      <!-- 盘点入口：常驻门口，随新鲜度变脸 —— 新鲜时安静，发霉时(is-stale)变响 -->
+      <view wx:if="{{invEntry}}" class="inv-entry {{invEntry.stale ? 'is-stale' : ''}} entry-up" hover-class="inv-entry-hover" bindtap="onOpenInventory">
+        <view class="ive-ico"><view class="ic ic-sm ic-checklist"></view></view>
+        <view class="ive-txt">
+          <view class="ive-title">{{invEntry.title}}</view>
+          <view class="ive-sub">{{invEntry.sub}}</view>
         </view>
-        <view class="ivb-x" catchtap="onDismissInvBanner"><view class="ic ic-xs ic-close"></view></view>
+        <view class="ic ic-xs ic-chevron-right ive-arrow"></view>
       </view>
 
       <view class="groups">
@@ -179,18 +179,7 @@
         </view>
       </view>
 
-      <!-- 盘点：唯一的「动作」，占满一行、突出 -->
-      <view class="tool-action tap" hover-class="tool-action-hover" data-url="/pages/inventory/inventory" data-badge="inventory" bindtap="onToolTap">
-        <view class="tool-chip chip-inv ta-chip"><view class="ic ic-sm ic-checklist"></view></view>
-        <view class="ta-text">
-          <text class="ta-title">一键盘点</text>
-          <text class="ta-sub">逐个核对余额，几分钟全部更新</text>
-        </view>
-        <view wx:if="{{toolBadges.inventory}}" class="tool-dot ta-dot"></view>
-        <view class="ic ic-xs ic-chevron-right ta-arrow"></view>
-      </view>
-
-      <!-- 四个分析镜头：一行铺满，不分组 -->
+      <!-- 四个分析镜头：一行铺满，不分组（盘点已移到首页门口） -->
       <view class="tool-grid">
         <view class="tool-cell tap" hover-class="tool-cell-hover" data-url="/pages/report/report" bindtap="onToolTap">
           <view class="tool-chip chip-report"><view class="ic ic-sm ic-report"></view></view>

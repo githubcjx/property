@@ -7,8 +7,6 @@
 // key 需与 pages/index/index.wxml 里对应 tool-cell 的 data-badge 一致。
 // 已读版本持久化在 storage 'tool_badge_seen'（{ key: 已读到的版本号 }）。
 const TOOL_BADGES = {
-  insights: 1,   // 资产洞察：新增「购买力 / 真实净值」（V1.9）
-  inventory: 1,  // 一键盘点：新工具上线（V2.0）
   milestones: 1, // 净值目标：里程碑页新增「我的目标」（V2.0）
 }
 

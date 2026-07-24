@@ -18,7 +18,6 @@ const STORAGE_EXPANDED = 'idx_expanded_categories'
 const BANNER_WINDOW_DAYS = 3
 
 const STORAGE_BANNER_DISMISS = 'report_banner_dismissed_month'  // 值为 'YYYY-M'
-const STORAGE_INV_BANNER_DISMISS = 'inv_banner_dismissed_month' // 盘点横幅按月关闭，值为 'YYYY-M'
 
 // 调试开关：true = 无论账户新鲜与否都强制显示盘点横幅，方便在开发者工具里看样式。
 // 正常必须保持 false，否则新用户一进首页就被提示「该盘点了」。
@@ -83,9 +82,8 @@ Page({
     monthlyBannerVisible: false,
     monthlyBanner: null,
 
-    // 盘点横幅（有账户太久没更新时提示去盘点）
-    invBannerVisible: false,
-    invBannerSub: '',
+    // 盘点入口：常驻内容顶部，随新鲜度变脸。{ stale, title, sub }；无账户时 null
+    invEntry: null,
   },
 
   onLoad() {
@@ -148,33 +146,39 @@ Page({
     wx.navigateTo({ url: '/pages/report/report' })
   },
 
-  // 盘点横幅：任一账户超 30 天没核对 / 距上次盘点超 30 天时提示。
-  // 月报横幅优先（其窗口期只有月初几天）；本月手动关闭后不再出现。
-  updateInventoryBanner(accounts) {
-    const dismissed = wx.getStorageSync(STORAGE_INV_BANNER_DISMISS) === currentMonthKey()
-    const info = invSvc.bannerInfo(accounts)
-    if ((!info.show && !PREVIEW_INV_BANNER) || dismissed || this.data.monthlyBannerVisible) {
-      this.setData({ invBannerVisible: false })
+  // 盘点入口：常驻首页内容顶部（有账户即显示），随新鲜度变脸，不可关闭 —— 这是主动作，不是打扰。
+  //   发霉(stale)：任一账户超 STALE_DAYS / 距上次盘点超期（bannerInfo.show 已含冷静期逻辑）→ 强调色催一下
+  //   新鲜(calm)：数据都还新 → 安静一条，只报「最久 X 天前核对」
+  updateInvEntry(accounts) {
+    if (!accounts || !accounts.length) {
+      this.setData({ invEntry: null })
       return
     }
-    let sub
-    if (info.staleCount > 0) {
-      sub = info.staleCount + ' 个账户超过 ' + invSvc.STALE_DAYS + ' 天没核对了'
-    } else if (info.lastDays != null) {
-      sub = '上次盘点已是 ' + info.lastDays + ' 天前'
-    } else {
-      sub = '花几分钟核对一遍各账户余额'   // 预览开关下的兜底文案
+    const info = invSvc.bannerInfo(accounts)
+    const stale = info.show || PREVIEW_INV_BANNER
+    // 最久未核对的账户天数（calm 态文案用）
+    let oldest = null
+    for (const a of accounts) {
+      const d = invSvc.freshInfo(a).days
+      if (d != null && (oldest == null || d > oldest)) oldest = d
     }
-    this.setData({ invBannerVisible: true, invBannerSub: sub })
+    let title, sub
+    if (stale) {
+      title = '该盘点了'
+      if (info.staleCount > 0) sub = info.staleCount + ' 个账户超过 ' + invSvc.STALE_DAYS + ' 天没更新'
+      else if (info.lastDays != null) sub = '上次盘点已是 ' + info.lastDays + ' 天前'
+      else sub = '花几分钟核对各账户余额'
+    } else {
+      title = '盘点账户'
+      if (oldest == null) sub = '核对各账户余额，几分钟更新完'
+      else if (oldest === 0) sub = '今天刚核对过 · 都是最新'
+      else sub = '最久 ' + oldest + ' 天前核对 · 都还新鲜'
+    }
+    this.setData({ invEntry: { stale, title, sub } })
   },
 
   onOpenInventory() {
     wx.navigateTo({ url: '/pages/inventory/inventory' })
-  },
-
-  onDismissInvBanner() {
-    wx.setStorageSync(STORAGE_INV_BANNER_DISMISS, currentMonthKey())
-    this.setData({ invBannerVisible: false })
   },
 
   onDismissReportBanner() {
@@ -208,7 +212,7 @@ Page({
       const accounts = await accountSvc.listAccounts()
       this.buildGroups(accounts)
       this.updateMonthlyBanner(accounts)
-      this.updateInventoryBanner(accounts)
+      this.updateInvEntry(accounts)
       statsSvc.getNetWorthDelta(30, accounts).then(({ delta, deltaPct }) => {
         this.applyDelta(delta, deltaPct)
       }).catch(() => {})
