@@ -5,7 +5,7 @@
   <view class="topbar" style="padding-top: {{statusBarHeight}}px;">
     <view class="top-left">
       <text class="brand">NetWorth · 净值本</text>
-      <view class="eye-btn tap" hover-class="btn-hover" bindtap="onToggleHide">
+      <view wx:if="{{hasData}}" class="eye-btn tap" hover-class="btn-hover" bindtap="onToggleHide">
         <view class="ic ic-xs {{hideAmount ? 'ic-eye-off' : 'ic-eye'}}"></view>
       </view>
     </view>
@@ -152,8 +152,8 @@
     </block>
   </scroll-view>
 
-  <!-- 左下：工具入口（单一入口 → 分析中心面板） -->
-  <view class="fab-cluster fab-cluster-left">
+  <!-- 左下：工具入口（无数据时隐藏 —— 分析工具对着空数据毫无意义） -->
+  <view wx:if="{{hasData}}" class="fab-cluster fab-cluster-left">
     <view class="tools-entry tap" hover-class="tools-entry-hover" bindtap="onOpenTools">
       <view class="ic ic-sm ic-apps"></view>
       <text class="tools-entry-label">工具</text>
