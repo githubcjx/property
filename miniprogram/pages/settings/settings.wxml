@@ -17,8 +17,8 @@
     <view class="hero-orb">
       <image class="hero-icon" src="/assets/logo.png" mode="aspectFill" />
     </view>
-    <text class="hero-title">净值本 · NetWorth</text>
-    <text class="hero-sub">PERSONAL ASSET JOURNAL · {{version}}</text>
+    <text class="hero-title">净值本</text>
+    <text class="hero-sub">{{version}}</text>
   </view>
 
   <view class="sec-card glass entry-up d1">
@@ -26,7 +26,6 @@
       <view class="row-icon"><view class="ic ic-sm ic-coin"></view></view>
       <view class="row-main">
         <text class="row-title">本位币</text>
-        <text class="row-sub">所有账户汇总折算到的货币</text>
       </view>
       <text class="row-trailing">{{baseCurrencyText}}</text>
       <view class="row-arrow"><view class="ic ic-xs ic-chevron-right"></view></view>
@@ -35,7 +34,6 @@
       <view class="row-icon"><view class="ic ic-sm ic-exchange"></view></view>
       <view class="row-main">
         <text class="row-title">汇率</text>
-        <text class="row-sub">每天早上 9:00 自动更新 · 只读</text>
       </view>
       <text class="row-trailing">{{fxDate}}</text>
       <view class="row-arrow"><view class="ic ic-xs ic-chevron-right"></view></view>
@@ -44,7 +42,6 @@
       <view class="row-icon"><view class="ic ic-sm ic-palette"></view></view>
       <view class="row-main">
         <text class="row-title">主题</text>
-        <text class="row-sub">换一种强调色与背景气质</text>
       </view>
       <text class="row-trailing">{{themeName}}</text>
       <view class="row-arrow"><view class="ic ic-xs ic-chevron-right"></view></view>
@@ -53,7 +50,6 @@
       <view class="row-icon"><view class="ic ic-sm ic-settings"></view></view>
       <view class="row-main">
         <text class="row-title">简化动效</text>
-        <text class="row-sub">关闭模糊与持续动画，省电降温</text>
       </view>
       <switch checked="{{reduceMotion}}" bindchange="onReduceMotionChange" color="{{accentColor}}" />
     </view>
@@ -61,7 +57,6 @@
       <view class="row-icon"><view class="ic ic-sm ic-export"></view></view>
       <view class="row-main">
         <text class="row-title">导出数据</text>
-        <text class="row-sub">导出 CSV 转发到微信 · 数据始终是你的</text>
       </view>
       <view class="row-arrow"><view class="ic ic-xs ic-chevron-right"></view></view>
     </view>
@@ -69,7 +64,6 @@
       <view class="row-icon"><view class="ic ic-sm ic-edit"></view></view>
       <view class="row-main">
         <text class="row-title">反馈</text>
-        <text class="row-sub">欢迎提建议 · 开发者会读每一条</text>
       </view>
       <view class="row-arrow"><view class="ic ic-xs ic-chevron-right"></view></view>
     </button>
@@ -77,7 +71,6 @@
       <view class="row-icon"><view class="ic ic-sm ic-clock"></view></view>
       <view class="row-main">
         <text class="row-title">更新日志</text>
-        <text class="row-sub">看看每个版本更新了什么</text>
       </view>
       <view class="row-arrow"><view class="ic ic-xs ic-chevron-right"></view></view>
     </view>
@@ -85,13 +78,12 @@
       <view class="row-icon"><view class="ic ic-sm ic-info"></view></view>
       <view class="row-main">
         <text class="row-title">关于小程序</text>
-        <text class="row-sub">数据 / 隐私 / 使用提示</text>
       </view>
       <view class="row-arrow"><view class="ic ic-xs ic-chevron-right"></view></view>
     </view>
   </view>
 
-  <view class="foot">{{version}} · MADE WITH CARE</view>
+  <view class="foot">{{version}} · 用心打磨</view>
 
   <!-- 转发面板：文件已生成，由用户点按钮同步触发转发（满足 shareFileMessage 的点击手势要求） -->
   <view wx:if="{{sharePanelVisible}}" class="share-mask" bindtap="onCloseSharePanel">

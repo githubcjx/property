@@ -19,7 +19,7 @@
       <view class="ic ic-{{iconKey}}"></view>
     </view>
     <text class="hero-name">{{accountName}}</text>
-    <text class="hero-type" style="color: var(--{{categoryClass}});">{{typeText === '修改余额' ? 'SET BALANCE · 修改余额' : 'DELTA · 增减金额'}}</text>
+    <text class="hero-type" style="color: var(--{{categoryClass}});">{{typeText === '修改余额' ? '修改余额' : '增减金额'}}</text>
   </view>
 
   <view class="hero-amount entry-up d1" style="color: {{positive ? 'var(--ice-blue)' : 'var(--debt)'}}; text-shadow: 0 0 56rpx {{positive ? 'rgba(var(--accent-rgb), 0.55)' : 'rgba(var(--debt-rgb), 0.5)'}};">
@@ -71,7 +71,7 @@
       </view>
 
       <!-- 金额行 -->
-      <view class="edit-label">AMOUNT · 变动金额（{{ccy}}）</view>
+      <view class="edit-label">变动金额（{{ccy}}）</view>
       <view class="edit-amount-wrap glass">
         <text class="edit-amount-cny">{{ccySymbol}}</text>
         <input
@@ -93,7 +93,7 @@
       </view>
 
       <!-- 时间行 -->
-      <view class="edit-label">TIME · 发生时间</view>
+      <view class="edit-label">发生时间</view>
       <view class="edit-time-row">
         <picker mode="date" value="{{editDate}}" bindchange="onEditDateChange">
           <view class="edit-pick glass tap">{{editDate}}</view>
@@ -104,7 +104,7 @@
       </view>
 
       <!-- 备注 -->
-      <view class="edit-label">NOTE · 备注</view>
+      <view class="edit-label">备注</view>
       <view class="edit-note-wrap glass">
         <input
           class="edit-note-input"

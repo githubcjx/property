@@ -4,7 +4,7 @@
   <!-- 顶栏 -->
   <view class="topbar" style="padding-top: {{statusBarHeight}}px;">
     <view class="top-left">
-      <text class="brand">NetWorth · 净值本</text>
+      <text class="brand">净值本</text>
       <view wx:if="{{hasData}}" class="eye-btn tap" hover-class="btn-hover" bindtap="onToggleHide">
         <view class="ic ic-xs {{hideAmount ? 'ic-eye-off' : 'ic-eye'}}"></view>
       </view>
@@ -18,7 +18,7 @@
   <view class="hero" wx:if="{{hasData}}">
     <view class="hero-halo"></view>
 
-    <view class="hero-eyebrow entry-up">YOUR NET WORTH · 此刻</view>
+    <view class="hero-eyebrow entry-up">此刻净资产</view>
 
     <view class="hero-amount entry-up d1">
       <block wx:if="{{hideAmount}}">
@@ -147,7 +147,7 @@
             </view>
           </view>
         </view>
-        <view class="footer-tip">{{version}} · made with care</view>
+        <view class="footer-tip">{{version}} · 用心打磨</view>
       </view>
     </block>
   </scroll-view>

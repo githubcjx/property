@@ -14,7 +14,7 @@
 
   <view class="hero entry-up">
     <text class="hero-title">更新日志</text>
-    <text class="hero-sub">CHANGELOG · {{version}}</text>
+    <text class="hero-sub">{{version}}</text>
   </view>
 
   <view
@@ -38,5 +38,5 @@
     </view>
   </view>
 
-  <view class="foot">净值本 · MADE WITH CARE</view>
+  <view class="foot">净值本 · 用心打磨</view>
 </view>

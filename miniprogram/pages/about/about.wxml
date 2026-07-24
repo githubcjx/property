@@ -17,7 +17,7 @@
       <image class="hero-icon" src="/assets/logo.png" mode="aspectFill" />
     </view>
     <text class="hero-title">净值本</text>
-    <text class="hero-sub">DATA IS YOURS · {{version}}</text>
+    <text class="hero-sub">数据归你所有 · {{version}}</text>
   </view>
 
   <view class="sec entry-up d{{index + 1}}" wx:for="{{sections}}" wx:for-item="sec" wx:key="title">
@@ -30,5 +30,5 @@
     </view>
   </view>
 
-  <view class="foot">DATA IS YOURS · 数据归你所有</view>
+  <view class="foot">数据归你所有</view>
 </view>

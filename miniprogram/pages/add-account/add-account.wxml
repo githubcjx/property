@@ -88,7 +88,7 @@
 
       <!-- name -->
       <view class="field entry-up d1">
-        <text class="field-label">ACCOUNT NAME · 账户名</text>
+        <text class="field-label">账户名</text>
         <view class="field-input-wrap glass">
           <input class="field-input"
                  type="text"
@@ -103,7 +103,7 @@
 
       <!-- currency: 新建可选；编辑只读（币种创建后不可改） -->
       <view class="field entry-up d1">
-        <text class="field-label">CURRENCY · 货币</text>
+        <text class="field-label">货币</text>
         <picker wx:if="{{!editId}}" mode="selector" range="{{currencyOptions}}" value="{{currencyIndex}}" bindchange="onCurrencyChange">
           <view class="field-input-wrap glass" style="display:flex;align-items:center;">
             <text class="field-input">{{currencyOptions[currencyIndex]}}</text>
@@ -119,7 +119,7 @@
 
       <!-- balance -->
       <view class="field entry-up d2" wx:if="{{!editId}}">
-        <text class="field-label">INITIAL BALANCE · 初始余额</text>
+        <text class="field-label">初始余额</text>
         <view class="field-input-wrap glass field-input-mono">
           <text class="field-prefix">{{currencySymbol}}</text>
           <input class="field-input mono"
@@ -146,7 +146,7 @@
 
       <!-- note -->
       <view class="field entry-up d4">
-        <text class="field-label">NOTE · 备注</text>
+        <text class="field-label">备注</text>
         <view class="field-input-wrap glass">
           <textarea class="field-textarea"
                     maxlength="100"

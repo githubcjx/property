@@ -14,7 +14,7 @@
   <view class="preview entry-up">
     <view class="hero glass">
       <view class="hero-halo"></view>
-      <text class="hero-eyebrow">YOUR NET WORTH · 此刻</text>
+      <text class="hero-eyebrow">此刻净资产</text>
       <view class="hero-amount num"><text class="cur">¥</text>645,200</view>
       <view class="hero-delta">↑ +¥31,905 · +5.2%</view>
     </view>

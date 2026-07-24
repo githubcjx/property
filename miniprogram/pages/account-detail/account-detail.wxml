@@ -49,12 +49,12 @@
         </block>
       </view>
       <text class="hero-approx entry-up d2" wx:if="{{approxText && !hideAmount}}">{{approxText}}</text>
-      <text class="hero-updated entry-up d2">current balance · {{updatedText}}</text>
+      <text class="hero-updated entry-up d2">更新于 {{updatedText}}</text>
     </view>
 
     <!-- mini sparkline -->
     <view class="spark glass entry-up d4">
-      <text class="spark-label">RECENT · 近期曲线</text>
+      <text class="spark-label">近期曲线</text>
       <view wx:if="{{sparkEmpty}}" class="spark-empty">· 新账户 · 暂无生长曲线 ·</view>
       <view wx:else class="spark-chart">
         <canvas type="2d" id="sparkCanvas" class="spark-canvas"></canvas>
@@ -63,7 +63,7 @@
 
     <!-- 变动记录标题 -->
     <view class="tx-head entry-up d5">
-      <text class="tx-head-title">CHANGE LOG · 变动记录</text>
+      <text class="tx-head-title">变动记录</text>
       <text class="tx-head-hint">左滑可删除</text>
     </view>
 

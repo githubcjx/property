@@ -14,7 +14,7 @@
 
   <!-- 文字摘要 -->
   <view class="summary glass entry-up" wx:if="{{summary.rangeText}}">
-    <text class="sum-label">PERIOD · {{summary.rangeText}}</text>
+    <text class="sum-label">{{summary.rangeText}}</text>
     <view class="sum-lines">
       <text class="sum-line" wx:for="{{summary.lines}}" wx:key="*this">{{item}}</text>
     </view>
