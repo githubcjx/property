@@ -18,10 +18,11 @@
 3. **对齐字段**：按所选模板「详情」里的 `{{xxx.DATA}}` 改写 `index.js` 的 `buildData()`。
    字段名对不上微信会返回 **47003 参数不匹配**。
 
-   当前模板用的是：`thing19` 项目名称 / `thing16` 提醒时间 / `thing2` 提醒内容。
-   **编号不连续是常态，不要按出现顺序猜成 1/2/3。** 另外这个模板的「提醒时间」
-   是 `thing` 类而不是 `time` 类，不要求日期格式，但同样限 20 个字符；
-   `thing` 类对符号挑剔，值尽量只用中文与数字。
+   当前模板用的是：`thing19` 项目名称 / `time16` 提醒时间 / `thing2` 提醒内容。
+   **编号不连续是常态，不要按出现顺序猜成 1/2/3；类型前缀也是字段名的一部分**，
+   把 `time16` 写成 `thing16` 微信会报 `47003 data.time16.value is empty`。
+   `time` 类要求日期时间格式（`2026年8月1日 09:00`）；`thing` 类 ≤ 20 个字符
+   且对符号挑剔，值尽量只用中文与数字。
 
 ## 部署
 
@@ -49,5 +50,7 @@ cd cloudfunctions/inventoryRemind && npm install
 ## 手动验证
 
 云开发控制台 → 云函数 → inventoryRemind → **测试运行**（空参数即可）。
-返回 `{ ok, total, sent, failed }`；`skipped` 说明 `TEMPLATE_ID` 还没填。
+返回 `{ ok, total, sent, failed, errors }`；`skipped` 说明 `TEMPLATE_ID` 还没填。
+`failed > 0` 时看 `errors[0].errCode`：`47003` 字段名/类型对不上，`43101` 用户没有可用额度，
+`-501001` 云调用拿不到 access_token（多为调用入口不在微信侧）。
 自己先在小程序里盘点一次并同意订阅，就能收到那条提醒。

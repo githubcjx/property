@@ -8,8 +8,8 @@
 // 填进 TEMPLATE_ID 即自动启用；未配置时完成页显示「即将上线」且不调订阅接口
 // （与 utils/theme.js 的 THEME_AD_UNIT_ID / isAdConfigured 同一套写法）。
 //
-// ⚠️ 选定模板后，模板的字段名（thing1 / time2 …）必须与云函数 inventoryRemind
-//    里 buildData() 的键一一对应，否则微信会报 47003 参数不匹配。
+// ⚠️ 选定模板后，模板的字段名（thing19 / time16 …）必须与云函数 inventoryRemind
+//    里 buildData() 的键一一对应 —— 连 thing/time 前缀都要照抄，否则微信报 47003。
 
 const TEMPLATE_ID = 'ER_yTytW0B13nJQfeULlPy0EA85jYS2Z2IKw1fRV3H8'
 

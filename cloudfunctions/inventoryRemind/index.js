@@ -28,19 +28,20 @@ const LANDING_PAGE = 'pages/inventory/inventory'
 // 单次执行最多发多少条，避免异常情况下把额度打满
 const MAX_PER_RUN = 500
 
-// 模板字段（键名取自「我的模板 → 详情」，编号不连续是微信模板的常态，别按顺序猜）：
-//   thing19 项目名称
-//   thing16 提醒时间 —— 注意是 thing 类而非 time 类，不要求日期格式，但同样限 20 字符
-//   thing2  提醒内容
-// 三者都是 thing 类：≤ 20 个字符，且尽量只用中文/数字（部分符号会被微信拒掉，
-// 所以日期不写成「8月1日 09:00」这种带冒号的形式）。改动前先核对模板详情，
-// 键名对不上微信直接返回 47003。
+// 模板字段（键名与类型取自「我的模板 → 详情」，编号不连续是微信模板的常态，别按顺序猜）：
+//   thing19 项目名称  —— thing 类，≤ 20 字符，尽量只用中文/数字
+//   time16  提醒时间  —— time 类，必须是日期时间格式（「2026年8月1日 09:00」），
+//                        写成 thing16 微信会报 47003 data.time16.value is empty
+//   thing2  提醒内容  —— thing 类
+// 改动前先核对模板详情，键名或类型对不上微信直接返回 47003。
 function buildData(nowMs) {
   const d = new Date(nowMs + 8 * 3600 * 1000)   // 云函数跑在 UTC，+8h 得北京时间
-  const dateText = d.getUTCFullYear() + '年' + (d.getUTCMonth() + 1) + '月' + d.getUTCDate() + '日'
+  const pad = (n) => (n < 10 ? '0' + n : String(n))
+  const timeText = d.getUTCFullYear() + '年' + (d.getUTCMonth() + 1) + '月' + d.getUTCDate() + '日 '
+    + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes())
   return {
     thing19: { value: '净值本月度盘点' },
-    thing16: { value: dateText },
+    time16:  { value: timeText },
     thing2:  { value: '花几分钟核对各账户余额' },
   }
 }
@@ -111,5 +112,6 @@ exports.main = async () => {
     },
   }).catch(() => {})
 
-  return { ok: true, total: targets.length, sent, failed }
+  // errors 一并回传：控制台「测试运行」直接能看到错误码，不必再去翻 remindLogs
+  return { ok: true, total: targets.length, sent, failed, errors }
 }
