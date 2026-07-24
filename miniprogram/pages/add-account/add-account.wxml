@@ -160,7 +160,7 @@
       <view class="submit-btn tap entry-up d5"
             hover-class="submit-hover"
             bindtap="onSubmit"
-            style="background:linear-gradient(135deg,var(--{{selectedColorClass}}),rgba(var(--{{selectedColorClass}}-rgb),0.5));box-shadow:0 16rpx 40rpx rgba(var(--{{selectedColorClass}}-rgb),0.45),inset 0 2rpx 0 rgba(255,255,255,0.5);">
+            style="background:linear-gradient(135deg,var(--{{selectedColorClass}}),rgba(var(--{{selectedColorClass}}-rgb),0.5));">
         <text>{{editId ? '保存修改' : '✓ 添加账户'}}</text>
         <view class="submit-shine"></view>
       </view>

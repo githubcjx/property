@@ -48,7 +48,7 @@
   <view class="edit-cta tap entry-up d4"
         hover-class="edit-cta-hover"
         bindtap="onOpenEdit"
-        style="background:linear-gradient(135deg,var(--{{categoryClass}}),rgba(var(--{{categoryClass}}-rgb),0.5));box-shadow:0 16rpx 40rpx rgba(var(--{{categoryClass}}-rgb),0.35),inset 0 2rpx 0 rgba(255,255,255,0.5);">
+        style="background:linear-gradient(135deg,var(--{{categoryClass}}),rgba(var(--{{categoryClass}}-rgb),0.5));">
     <view class="ic ic-xs ic-edit" style="filter:invert(0.95);"></view>
     <text>编辑此条记录</text>
   </view>

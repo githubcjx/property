@@ -218,21 +218,4 @@
     </view>
   </view>
 
-  <!-- 版本更新提醒（玻璃弹窗，每版首次进入提示一次） -->
-  <view wx:if="{{updateNoticeVisible}}" class="upd-mask" catchtap="dismissUpdateNotice">
-    <view class="upd-card glass" catchtap="noop">
-      <view class="upd-badge">新版本 · {{updateNotice.version}}</view>
-      <view class="upd-title">{{updateNotice.title}}</view>
-      <view class="upd-items">
-        <view class="upd-item" wx:for="{{updateNotice.items}}" wx:key="*this">
-          <view class="upd-dot"></view>
-          <text class="upd-text">{{item}}</text>
-        </view>
-      </view>
-      <view class="upd-actions">
-        <view class="upd-btn upd-btn-ghost tap" hover-class="upd-btn-hover" catchtap="onViewUpdateChangelog">查看更新日志</view>
-        <view class="upd-btn upd-btn-primary tap" hover-class="upd-btn-hover" catchtap="dismissUpdateNotice">知道了</view>
-      </view>
-    </view>
-  </view>
 </view>

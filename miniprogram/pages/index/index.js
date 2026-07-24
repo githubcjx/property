@@ -7,11 +7,9 @@ const { symbolOf, digitsOf } = require('../../utils/currency.js')
 const { formatYuan, formatMoney } = require('../../utils/format.js')
 const { formatRelative } = require('../../utils/date.js')
 const { APP_VERSION } = require('../../utils/version.js')
-const { RELEASES } = require('../../utils/releases.js')
 const { TOOL_BADGES } = require('../../utils/toolBadges.js')
 const invSvc = require('../../services/inventory.js')
 
-const STORAGE_SEEN_UPDATE = 'seen_update_version'
 const STORAGE_TOOL_SEEN = 'tool_badge_seen'   // { 工具key: 已读到的功能版本号 }
 
 const STORAGE_EXPANDED = 'idx_expanded_categories'
@@ -88,10 +86,6 @@ Page({
     // 盘点横幅（有账户太久没更新时提示去盘点）
     invBannerVisible: false,
     invBannerSub: '',
-
-    // 版本更新提醒（每个版本首次进入首页提示一次）
-    updateNoticeVisible: false,
-    updateNotice: null,
   },
 
   onLoad() {
@@ -105,7 +99,6 @@ Page({
       expandedMap: stored,
     })
     this._refreshToolBadges()
-    this.checkUpdateNotice()
   },
 
   // 工具红点：读已读记录，算出每个工具是否有未读新功能 + 是否有任意未读。
@@ -120,29 +113,6 @@ Page({
     })
     this.setData({ toolBadges: badges, toolBadgeAny: any })
   },
-
-  // 版本更新提醒：当前版本与已读版本不一致时，弹一次玻璃弹窗；关闭后记下版本，不再展示。
-  checkUpdateNotice() {
-    const seen = wx.getStorageSync(STORAGE_SEEN_UPDATE)
-    if (seen === APP_VERSION) return
-    const latest = RELEASES && RELEASES[0]
-    if (!latest) return
-    // 弹窗只摘前 3 条，保持简约；完整列表走「查看更新日志」
-    const notice = Object.assign({}, latest, { items: (latest.items || []).slice(0, 3) })
-    this.setData({ updateNotice: notice, updateNoticeVisible: true })
-  },
-
-  dismissUpdateNotice() {
-    wx.setStorageSync(STORAGE_SEEN_UPDATE, APP_VERSION)
-    this.setData({ updateNoticeVisible: false })
-  },
-
-  onViewUpdateChangelog() {
-    this.dismissUpdateNotice()
-    wx.navigateTo({ url: '/pages/changelog/changelog' })
-  },
-
-  noop() {},
 
   onShow() {
     app.applyThemeChrome()

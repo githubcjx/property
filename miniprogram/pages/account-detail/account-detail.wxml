@@ -114,7 +114,7 @@
       <text>增减金额</text>
     </view>
     <view class="op-btn op-primary tap" hover-class="op-hover" bindtap="onOpenSet"
-          style="background:linear-gradient(135deg,{{accountColor}},rgba({{burstColor}},0.55));box-shadow:0 16rpx 40rpx rgba({{burstColor}},0.35),inset 0 2rpx 0 rgba(255,255,255,0.5);">
+          style="background:linear-gradient(135deg,{{accountColor}},rgba({{burstColor}},0.55));">
       <view class="ic ic-xs ic-edit" style="filter:invert(0.95);"></view>
       <text>修改余额</text>
     </view>
