@@ -383,10 +383,5 @@ Page({
     wx.navigateBack()
   },
 
-  onToggleHide() {
-    const next = app.toggleHideAmount()
-    this.setData({ hideAmount: next })
-  },
-
   noop() {},
 })

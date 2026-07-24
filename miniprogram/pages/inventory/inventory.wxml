@@ -7,11 +7,6 @@
       <view class="ic ic-xs {{phase === 'wizard' && !empty && !loading ? 'ic-close' : 'ic-back'}}"></view>
     </view>
     <text class="nav-title">盘点</text>
-    <view class="nav-right">
-      <view class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onToggleHide">
-        <view class="ic ic-xs {{hideAmount ? 'ic-eye-off' : 'ic-eye'}}"></view>
-      </view>
-    </view>
   </view>
 
   <!-- 加载 / 空态 -->

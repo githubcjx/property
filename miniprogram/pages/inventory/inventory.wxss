@@ -27,7 +27,6 @@
   font-size: 26rpx; font-weight: 500; color: var(--ink-100);
   text-align: center; letter-spacing: 0.5rpx;
 }
-.nav-right { margin-left: auto; position: relative; z-index: 1; }
 .btn-hover { opacity: 0.75; transform: scale(0.96); }
 
 .state-hint { margin-top: 120rpx; text-align: center; font-size: 26rpx; color: var(--ink-60); }
