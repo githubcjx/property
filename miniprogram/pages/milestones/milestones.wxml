@@ -49,7 +49,7 @@
           <text class="goal-pct-unit">%</text>
           <view class="goal-target">
             <view>目标 {{goal.targetText}}</view>
-            <view class="goal-target-ccy">本位币 {{goal.currency}}</view>
+            <view class="goal-target-ccy">目标币种 {{goal.currency}}</view>
           </view>
         </view>
 
@@ -80,7 +80,7 @@
           <block wx:elif="{{goal.state === 'short'}}">
             <view class="goal-eta-lab">还不能估算达成时间</view>
             <view class="goal-eta-val small">再记录 {{goal.monthsNeeded}} 个月，就能按你的真实增速估算</view>
-            <view class="goal-basis">需要至少 6 个完整月的记录才能算出稳定的月均增速，目前有 {{goal.months}} 个月。</view>
+            <view class="goal-basis">至少要有 6 个月的记录才能算出稳定的月均增速，目前有 {{goal.months}} 个月。整月没更新过余额的月份不计入。</view>
           </block>
 
           <!-- 增速为负 -->

@@ -70,7 +70,6 @@ Page({
       reduceMotion: app.globalData.reduceMotion,
       theme: app.globalData.theme,
     })
-    this._stats = { ok: 0, edit: 0, skip: 0 }
     this._markBadgeSeen()
     this.load()
   },
@@ -153,6 +152,19 @@ Page({
     })
   },
 
+  // 统计按账户上的 result 现算，而不是边走边累加计数器 ——
+  // 用户可以「上一个」回退后重新确认同一个账户，累加会把同一个账户算成两次。
+  _tally() {
+    const t = { ok: 0, edit: 0, skip: 0, seen: 0 }
+    for (const it of this._items || []) {
+      if (it.result === 'ok') t.ok++
+      else if (it.result === 'edit') t.edit++
+      else if (it.result === 'skip') t.skip++
+    }
+    t.seen = t.ok + t.edit
+    return t
+  },
+
   advance() {
     if (this.data.idx < this.data.total - 1) {
       this.setData({ idx: this.data.idx + 1 })
@@ -170,7 +182,7 @@ Page({
 
   onSkip() {
     if (this.data.submitting) return
-    this._stats.skip++
+    this._items[this.data.idx].result = 'skip'
     this.advance()
   },
 
@@ -184,7 +196,7 @@ Page({
       it.checkedToday = true
       it.freshAgo = '今天'
       it.freshStale = false
-      this._stats.ok++
+      it.result = 'ok'
       this.setData({ submitting: false })
       this.advance()
     } catch (err) {
@@ -220,9 +232,9 @@ Page({
       it.checkedToday = true
       it.freshAgo = '今天'
       it.freshStale = false
+      it.result = 'edit'
       const acc = (this._accounts || []).find(a => a._id === it._id)
       if (acc) acc.balance = fenValue
-      this._stats.edit++
       if (ai) ai.finishSubmit()
       this.setData({ showInput: false })
       this.advance()
@@ -236,7 +248,7 @@ Page({
   // 关闭：盘点中且动过账户时先确认（已确认的都已落库，退出无损）；其余情形直接返回
   onClose() {
     if (this.data.phase === 'wizard' && !this.data.empty && !this.data.loading) {
-      const touched = this._stats.ok + this._stats.edit
+      const touched = this._tally().seen
       if (touched > 0) {
         this.setData({ quitVisible: true, quitCount: touched })
         return
@@ -256,8 +268,8 @@ Page({
 
   // 完成：算本次净值 +「较上次盘点」对比（回算不出历史基线时隐藏对比，不造数）
   async finish(partial) {
-    const s = this._stats
-    const seen = s.ok + s.edit
+    const s = this._tally()
+    const seen = s.seen
     // 没核对的 = 跳过的 + 提前结束时还没轮到的
     const unchecked = Math.max(0, this.data.total - seen)
     const lastTs = invSvc.lastInventoryTs()
