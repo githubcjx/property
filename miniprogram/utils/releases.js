@@ -1,9 +1,20 @@
 // 更新日志数据·单一来源。
-// 更新日志页（pages/changelog）与首页「版本更新提醒」弹窗都从这里取，
+// 更新日志页（pages/changelog）从这里取（首页版本弹窗已于 V2.1 移除）。
 // 发布新版本时：在数组最前面追加一条，并把 utils/version.js 的 APP_VERSION 改成对应版本。
 // 约定见 CLAUDE.md。自新到旧排列，RELEASES[0] 即当前最新版。
 
 const RELEASES = [
+  {
+    version: 'V2.1',
+    date: '2026-07',
+    title: '盘点搬到首页',
+    highlight: true,
+    items: [
+      '「盘点」入口搬到首页，随时一点就更新',
+      '盘点完成后，一眼看清这次涨了多少',
+      '账户页「修改余额」移到底部，更顺手',
+    ],
+  },
   {
     version: 'V2.0',
     date: '2026-07',
