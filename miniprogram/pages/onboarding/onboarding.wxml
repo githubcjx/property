@@ -53,7 +53,7 @@
 
     <view class="wiz-actions">
       <view class="pbtn tap" hover-class="pbtn-hover" bindtap="onFillOpen">填余额</view>
-      <view class="wiz-skip tap" bindtap="onSkip">跳过这个 ›</view>
+      <view class="wiz-skip tap" bindtap="onSkip">先跳过，账户先建好、稍后再填 ›</view>
     </view>
   </block>
 

@@ -103,7 +103,22 @@ Page({
     }
   },
 
-  onSkip() { this.advance() },
+  // 跳过 = 只跳过「数字」，账户照建（余额 0，以后再填）—— 与盘点「跳过不删账户」一致。
+  async onSkip() {
+    const it = this._fill[this.data.idx]
+    try {
+      await accountSvc.addAccount({
+        categoryId: it.categoryId,
+        subType: it.subType,
+        name: it.name,
+        icon: it.icon,
+        balance: 0,
+      })
+    } catch (err) {
+      console.error('创建账户失败(跳过)', err)
+    }
+    this.advance()
+  },
 
   advance() {
     if (this.data.idx < this.data.total - 1) {
