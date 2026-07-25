@@ -194,8 +194,14 @@ Page({
     const paint = (canvas, ctx, W, H) => {
       // chartAccent 优先：浅色主题(硬核粗野)的信号黄画在纸底上几乎看不见，
       // 该主题已为 canvas 备了一版高对比强调色，趋势图也是这么取的。
+      // muted：这条入口在催盘点(is-stale)时，树褪色睡下 —— 别让它得意洋洋地
+      // 抵消那句「该盘点了」（褪色逻辑在 utils/treeArt.js）。
       const th = getTheme(this.data.theme)
-      const opt = { accent: th.chartAccent || th.accent, light: isLight(this.data.theme) }
+      const opt = {
+        accent: th.chartAccent || th.accent,
+        light: isLight(this.data.theme),
+        muted: !!(this.data.invEntry && this.data.invEntry.stale),
+      }
       const key = this.data.tree && this.data.tree.key
       if (!key) return
       if (this._treeRaf && canvas.cancelAnimationFrame) {

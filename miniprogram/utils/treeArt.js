@@ -159,6 +159,21 @@ function leafPath(ctx, lf, k) {
   ctx.closePath()
 }
 
+// 「睡着」的树：把叶色大幅去饱和、略微暖化 —— 不掉一片叶（永不枯萎），
+// 只是当首页那条入口在催盘点(is-stale)时安静下来、褪成暖灰调，好让那句
+// 提醒立得住（否则一棵得意洋洋的树会把责备的力气卸掉一半）。
+function muteRgb(rgbStr) {
+  const p = rgbStr.split(',').map((n) => parseInt(n, 10))
+  const luma = 0.3 * p[0] + 0.59 * p[1] + 0.11 * p[2]
+  const mix = (c, t, k) => Math.round(c + (t - c) * k)
+  // 先 78% 去饱和到自身灰度，再往暖灰(dusty taupe)偏一点
+  return [
+    mix(mix(p[0], luma, 0.78), 150, 0.22),
+    mix(mix(p[1], luma, 0.78), 140, 0.22),
+    mix(mix(p[2], luma, 0.78), 122, 0.26),
+  ].join(', ')
+}
+
 // ---------- 主绘制 ----------
 
 /**
@@ -166,13 +181,15 @@ function leafPath(ctx, lf, k) {
  * @param W,H     CSS 像素尺寸
  * @param stageKey seed|sprout|sapling|young|tree
  * @param p       生长进度 0..1（1 = 静止终帧）
- * @param opt     { accent: '#rrggbb', light: bool }
+ * @param opt     { accent: '#rrggbb', light: bool, muted: bool }
+ *                muted=true → 睡着：褪色、去掉外发光与光点（催盘点时用）
  */
 function drawStage(ctx, W, H, stageKey, p, opt) {
   const S = SHAPES[stageKey] || SHAPES.seed
   const o = opt || {}
   const accent = o.accent || '#a7d3ff'
-  const rgb = hexToRgb(accent)
+  const rgb = o.muted ? muteRgb(hexToRgb(accent)) : hexToRgb(accent)
+  const gb = o.muted ? 0 : 1   // 睡着时关掉一切外发光（shadowBlur 归零）
   const fol = (a) => 'rgba(' + rgb + ',' + a + ')'
   const bark = o.light ? '#6b543f' : '#8b7360'
   const soilInk = o.light ? 'rgba(60,44,30,0.16)' : 'rgba(255,255,255,0.07)'
@@ -214,7 +231,7 @@ function drawStage(ctx, W, H, stageKey, p, opt) {
       g.addColorStop(1, fol(0.5))
       ctx.fillStyle = g
       ctx.shadowColor = fol(0.45)
-      ctx.shadowBlur = 10 * s
+      ctx.shadowBlur = 10 * s * gb
       ctx.beginPath()
       ctx.ellipse(0, 0, sd.rx, sd.ry, 0, 0, TAU)
       ctx.fill()
@@ -269,7 +286,7 @@ function drawStage(ctx, W, H, stageKey, p, opt) {
     g.addColorStop(1, fol(0.98))
     ctx.fillStyle = g
     ctx.shadowColor = fol(0.4)
-    ctx.shadowBlur = 8 * s
+    ctx.shadowBlur = 8 * s * gb
     leafPath(ctx, lf, k)
     ctx.fill()
     ctx.shadowBlur = 0
@@ -297,7 +314,7 @@ function drawStage(ctx, W, H, stageKey, p, opt) {
     // 底色 + 外发光（与全站玻璃/光晕语言一致）
     ctx.fillStyle = fol(0.62)
     ctx.shadowColor = fol(0.42)
-    ctx.shadowBlur = 14 * s
+    ctx.shadowBlur = 14 * s * gb
     union()
     ctx.fill()
     ctx.shadowBlur = 0
@@ -321,7 +338,8 @@ function drawStage(ctx, W, H, stageKey, p, opt) {
   }
 
   // —— 光点：树冠里透进来的几粒光，只有大树才有，是「长成了」的犒赏 ——
-  for (const sp of (S.sparks || [])) {
+  // 睡着时收起来：被催盘点的当口，不该还挂着庆祝的光。
+  for (const sp of (o.muted ? [] : (S.sparks || []))) {
     const k = pop(prog, sp.d, 0.2)
     if (k <= 0) continue
     ctx.globalAlpha = clamp01(k)
