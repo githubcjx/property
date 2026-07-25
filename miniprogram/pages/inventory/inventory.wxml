@@ -51,9 +51,6 @@
   <block wx:elif="{{phase === 'done'}}">
     <scroll-view scroll-y class="scroll" enable-flex>
       <view class="done">
-        <!-- 完成确认：退到最小，不与主角争 -->
-        <view class="done-confirm entry-up"><text class="dc-tick">✓</text> 盘点完成</view>
-
         <!-- HERO · 唯一主角：这次你的净值动了多少。
              与上次的比对要等回算完，没算完就先占位空着 —— 宁可空一下，
              也不先亮一个待会儿要被改写的数字（那是改口，不是加载）。 -->
@@ -68,9 +65,6 @@
         </block>
         <!-- 占位高度与成稿主角一致，落地时下面的内容不跳 -->
         <view wx:else class="hero-hold"><view class="hero-skel"></view></view>
-
-        <!-- 过程：压成一行安静的小字 -->
-        <view class="done-line entry-up d2">{{doneLine}}</view>
 
         <!-- 你的小树：每次盘点都露一面（回应"你刚做完事"，也让功能被看见），
              只有这次真跨了阶段线才高亮 + 播生长动画（is-grew）。

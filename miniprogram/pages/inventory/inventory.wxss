@@ -130,13 +130,6 @@
 
 .done { display: flex; flex-direction: column; align-items: center; padding-top: 72rpx; }
 
-/* 完成确认：退到最小，只做一句安静的回执，不与主角争 */
-.done-confirm {
-  display: flex; align-items: center; gap: 8rpx;
-  font-size: 24rpx; font-weight: 700; letter-spacing: 1rpx; color: var(--good);
-}
-.done-confirm .dc-tick { font-size: 26rpx; }
-
 /* ============ HERO · 唯一主角：这次净值动了多少 ============ */
 /* 全系统唯一的一处「抬升」：主角数字的光晕（涨/起点才发光，跌不庆祝） */
 .hero-eyebrow { margin-top: 56rpx; font-size: 24rpx; letter-spacing: 2rpx; color: var(--ink-60); }
@@ -173,14 +166,12 @@
 }
 .no-motion .hero-skel { animation: none; }
 
-/* 过程压成一行安静的小字 */
-.done-line { margin-top: 44rpx; font-size: 22rpx; letter-spacing: 0.5rpx; color: var(--ink-40); }
-
 /* ============ 完成页 · 你的小树（每次都在，跨线才高亮）============ */
-/* 平时：一条安静的玻璃行，和目标行 / 提醒行同一重量，不与净值主角争。 */
+/* 平时：一条安静的玻璃行，和目标行 / 提醒行同一重量，不与净值主角争。
+   紧随主角，多留一档间距，把主角和下面的陪伴清楚分开。 */
 .done-tree {
   width: 100%; box-sizing: border-box;
-  margin-top: 24rpx; padding: 20rpx 26rpx;
+  margin-top: 48rpx; padding: 20rpx 26rpx;
   border-radius: 28rpx; text-align: left;
   display: flex; align-items: center; gap: 20rpx;
   background: var(--glass-1);

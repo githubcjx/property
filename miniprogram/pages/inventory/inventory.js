@@ -55,7 +55,6 @@ Page({
     heroBigMasked: '',      // 隐藏金额时的占位
     heroSub: '',
     heroNetShow: false,     // gain/loss 时在主角下补一行「现在 ¥X」
-    doneLine: '',           // 过程压成一行：核对 X · 改 X · 跳过 X
     skipNote: '',
     netText: '',
     baseSymbol: '¥',
@@ -299,11 +298,6 @@ Page({
     const netCny = sumNetCnyFen(this._accounts)
     const netText = formatMoney(cnyToBaseFen(netCny), baseCcy, { symbol: true })
 
-    // 过程压成一行；0 的部分不显示，避免「跳过 0」这类噪音
-    const parts = ['核对 ' + seen]
-    if (s.edit) parts.push('改 ' + s.edit)
-    if (s.skip) parts.push('跳过 ' + s.skip)
-
     // 「起点」呈现：没有上次可比时这就是终局；有上次但回算失败时它也是兜底。
     const baselineHero = {
       heroMode: 'baseline',
@@ -323,7 +317,6 @@ Page({
     this.setData(Object.assign({
       phase: 'done',
       progressPct: 100,
-      doneLine: parts.join(' · '),
       // 有账户没核对时说清楚：净资产里这些账户用的还是旧余额，别让用户误以为全是最新的
       skipNote: unchecked > 0 ? '其中 ' + unchecked + ' 个账户这次没核对，用的仍是上次记录的余额' : '',
       netText,
