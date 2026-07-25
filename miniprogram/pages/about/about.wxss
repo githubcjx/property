@@ -44,10 +44,8 @@
 }
 
 .hero-icon {
-  width: 128rpx;
-  height: 128rpx;
-  border-radius: 50%;
-  background-color: #1C1C1E;
+  width: 144rpx;
+  height: 144rpx;
   overflow: hidden;
 }
 

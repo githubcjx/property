@@ -14,7 +14,7 @@
 
   <!-- Brand -->
   <view class="hero entry-up">
-    <view class="hero-orb">
+    <view>
       <image class="hero-icon" src="/assets/logo.png" mode="aspectFill" />
     </view>
     <text class="hero-title">净值本</text>

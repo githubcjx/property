@@ -13,7 +13,7 @@
   </view>
 
   <view class="hero entry-up">
-    <view class="hero-orb">
+    <view class="hero-orb1">
       <image class="hero-icon" src="/assets/logo.png" mode="aspectFill" />
     </view>
     <text class="hero-title">净值本</text>

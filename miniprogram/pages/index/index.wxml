@@ -16,7 +16,12 @@
   <view class="hero" wx:if="{{hasData}}">
     <view class="hero-halo"></view>
 
-    <view class="hero-eyebrow entry-up">此刻净资产</view>
+    <view class="hero-eyebrow entry-up">
+      <view>此刻净资产</view>
+      <view class="eye-btn tap" hover-class="btn-hover" bindtap="onToggleHide">
+        <view class="ic ic-xs {{hideAmount ? 'ic-eye-off' : 'ic-eye'}}"></view>
+      </view>
+    </view>
 
     <view class="hero-amount-row entry-up d1">
       <view class="hero-amount">
@@ -32,9 +37,7 @@
         </block>
         <view class="amt-shine"></view>
       </view>
-      <view class="eye-btn tap" hover-class="btn-hover" bindtap="onToggleHide">
-        <view class="ic ic-xs {{hideAmount ? 'ic-eye-off' : 'ic-eye'}}"></view>
-      </view>
+      
     </view>
 
     <view class="hero-delta entry-up d2" wx:if="{{hasDelta}}">
@@ -64,7 +67,7 @@
     <block wx:if="{{!loading && !hasData}}">
       <view class="empty-stage">
         <view class="empty-orb"></view>
-        <view class="empty-title">看清你此刻值多少</view>
+        <view class="empty-title">看清你此刻拥有多少</view>
         <view class="empty-desc">花 2 分钟，挑出你有的账户、估个大概就好</view>
         <view class="empty-cta tap" bindtap="onStartOnboarding">
           <text>快速开始</text>
@@ -109,7 +112,7 @@
             <view class="cat-meta">
               <view class="cat-line">
                 <text class="cat-name">{{item.name}}</text>
-                <text class="cat-tag">{{item.colorClass}}</text>
+                <!-- <text class="cat-tag">{{item.colorClass}}</text> -->
               </view>
               <view class="cat-sub">
                 <text>{{item.accounts.length}} 项</text>
