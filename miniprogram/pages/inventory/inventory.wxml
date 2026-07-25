@@ -72,13 +72,14 @@
         <!-- 过程：压成一行安静的小字 -->
         <view class="done-line entry-up d2">{{doneLine}}</view>
 
-        <!-- 小树长大了：只在真的升级时出现。不升级就不占位 —— 它是事件，不是家具。
+        <!-- 你的小树：每次盘点都露一面（回应"你刚做完事"，也让功能被看见），
+             只有这次真跨了阶段线才高亮 + 播生长动画（is-grew）。
              文案一律回望（走过多久、更新过多少次），绝不写「再更新 N 次就…」：
              把进度摆成任务，会有人为了刷树而记假账（数据诚实，见 CLAUDE.md 不变量 10）。 -->
-        <view wx:if="{{treeGrew}}" class="done-tree entry-up d2">
+        <view wx:if="{{treeShow}}" class="done-tree entry-up d2 {{treeGrew ? 'is-grew' : ''}}">
           <canvas type="2d" id="doneTree" class="done-tree-canvas"></canvas>
           <view class="done-tree-txt">
-            <view class="done-tree-t">小树长大了</view>
+            <view class="done-tree-t">{{treeGrew ? '小树长大了' : '你的小树'}}</view>
             <view class="done-tree-s">{{treeName}} · 相伴 {{treeDays}} 天，更新过 {{treeUpdates}} 次</view>
           </view>
         </view>

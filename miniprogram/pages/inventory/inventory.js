@@ -63,7 +63,8 @@ Page({
     // 完成页的目标进度行（盘点的回报：看着目标更近一点）
     goal: { hasGoal: false },
 
-    // 小树：仅当这次盘点让它升级时才为 true，整块才出现
+    // 小树：treeShow 有账户就为 true（每次盘点都显示）；treeGrew 仅这次跨阶段线时为 true（庆祝）
+    treeShow: false,
     treeGrew: false,
     treeName: '',
     treeDays: 0,
@@ -364,25 +365,28 @@ Page({
     invSvc.markInventoryDone()
   },
 
-  // 小树是否因这次盘点升级了。这是它唯一需要被看见的时刻：你刚做完事，它立刻回应你 ——
-  // 用户不必读任何说明，做一次就懂了。没升级则整块不出现，完成页保持原样。
-  // 失败静默：一棵装饰性的树不该挡住盘点结果。
+  // 完成页的小树：每次盘点都显示（让"你刚做完事"这一刻总有回应，且功能可被发现），
+  // 但只有这次真跨了阶段线才庆祝 —— 播生长动画 + 标题改「长大了」。没跨线就静静立着，
+  // 底下一行只回望"相伴多久、更新过多少次"，绝不写"再更新 N 次"那种任务式前瞻文案。
+  // takeGrowth 决定"是否庆祝"并落戳，保证同一次成长首页不会再恭喜一遍。失败静默。
   async checkTreeGrowth() {
     try {
       const info = growthTree.evaluate(this._accounts, await txSvc.growthStats())
-      if (!growthTree.takeGrowth(info)) return   // 落戳在此，首页便不会重复恭喜
+      const grew = growthTree.takeGrowth(info)
       this.setData({
-        treeGrew: true,
+        treeShow: true,
+        treeGrew: grew,
         treeName: info.name,
         treeDays: info.days,
         treeUpdates: info.updates,
-      }, () => this._drawDoneTree(info.key))
+      }, () => this._drawDoneTree(info.key, grew))
     } catch (err) {
       console.warn('[inventory] 小树阶段判定失败，跳过', err)
     }
   },
 
-  _drawDoneTree(key) {
+  // animate=true（跨线庆祝）才播一次生长动画；否则直接落静止终帧。
+  _drawDoneTree(key, animate) {
     wx.createSelectorQuery().in(this)
       .select('#doneTree').fields({ node: true, size: true }).exec((res) => {
         const item = res && res[0]
@@ -395,7 +399,7 @@ Page({
         ctx.scale(dpr, dpr)
         const th = getTheme(this.data.theme)
         const opt = { accent: th.chartAccent || th.accent, light: isLight(this.data.theme) }
-        if (this.data.reduceMotion) {
+        if (!animate || this.data.reduceMotion) {
           treeArt.drawStage(ctx, item.width, item.height, key, 1, opt)
           return
         }

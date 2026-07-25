@@ -176,18 +176,25 @@
 /* 过程压成一行安静的小字 */
 .done-line { margin-top: 44rpx; font-size: 22rpx; letter-spacing: 0.5rpx; color: var(--ink-40); }
 
-/* ============ 完成页 · 小树长大了（仅升级时出现）============ */
+/* ============ 完成页 · 你的小树（每次都在，跨线才高亮）============ */
+/* 平时：一条安静的玻璃行，和目标行 / 提醒行同一重量，不与净值主角争。 */
 .done-tree {
   width: 100%; box-sizing: border-box;
   margin-top: 24rpx; padding: 20rpx 26rpx;
   border-radius: 28rpx; text-align: left;
   display: flex; align-items: center; gap: 20rpx;
+  background: var(--glass-1);
+  border: 1rpx solid var(--hairline);
+}
+/* 跨线庆祝：这一次才点亮强调色 —— 稀有,所以值钱。 */
+.done-tree.is-grew {
   background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.12), rgba(var(--accent-rgb), 0.04));
-  border: 1rpx solid rgba(var(--accent-rgb), 0.28);
+  border-color: rgba(var(--accent-rgb), 0.28);
 }
 .done-tree-canvas { width: 104rpx; height: 104rpx; flex: 0 0 104rpx; }
 .done-tree-txt { flex: 1; min-width: 0; }
-.done-tree-t { font-size: 28rpx; font-weight: 700; color: var(--ink-100); }
+.done-tree-t { font-size: 28rpx; font-weight: 700; color: var(--ink-80); }
+.done-tree.is-grew .done-tree-t { color: var(--ink-100); }
 .done-tree-s { margin-top: 4rpx; font-size: 22rpx; color: var(--ink-60); }
 
 /* ============ 完成页 · 目标进度行 ============ */
