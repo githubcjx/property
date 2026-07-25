@@ -31,9 +31,12 @@ function toMs(v) {
   return isNaN(t) ? 0 : t
 }
 
-// 相伴天数 = 今天 − 最早那个账户的创建日（按自然日计，当天 = 第 1 天）
-function daysSince(accounts) {
-  let earliest = 0
+// 相伴天数 = 今天 − 最早的那个起点（按自然日计，当天 = 第 1 天）。
+// 起点取「最早一笔记录」与「最早一个账户」中更早的那个：
+// 账户是软删除，清理掉旧账户后它就不在 accounts 里了，只靠账户算会让天数凭空归零；
+// 而余额为 0 建起来的账户又不产生记录，只靠记录算则新用户没有起点。两个都看才兜得住。
+function daysSince(accounts, firstAt) {
+  let earliest = toMs(firstAt)
   for (const a of accounts || []) {
     const ms = toMs(a.createdAt)
     if (ms && (!earliest || ms < earliest)) earliest = ms
@@ -52,25 +55,16 @@ function stageIndex(days, updates) {
   return 0
 }
 
-// 下一级还差什么。两个条件都不够时必须两个都说 —— 只说「再更新 2 次」，
-// 等于承诺更新两次就能长大，可天数还差着，那是句会落空的话（数据诚实）。
-function nextText(idx, days, updates) {
-  const next = STAGES[idx + 1]
-  if (!next) return '它已经长到最大了'
-  const needUpd = Math.max(0, next.updates - updates)
-  const needDay = Math.max(0, next.days - days)
-  if (needUpd > 0 && needDay > 0) {
-    return '还差 ' + needUpd + ' 次更新、' + needDay + ' 天，长成' + next.name
-  }
-  if (needUpd > 0) return '再更新 ' + needUpd + ' 次，长成' + next.name
-  if (needDay > 0) return '再过 ' + needDay + ' 天，长成' + next.name
-  return '马上就要长大了'
-}
+// 这里【故意】没有「还差 N 次更新就长大」这类进度文案，别加回来：
+// 把进度摆成待办，就会有人为了刷树去点无意义的更新，记进来的是假数据
+// （数据诚实，见 CLAUDE.md 不变量 10）。树长大该是隔一阵回来时自己发现的惊喜，
+// 不是照着清单刷出来的 KPI。所有关于树的文案一律回望，不前瞻。
 
-// accounts: 首页已加载的账户数组（免额外请求）；updates: transactions 总条数
-function evaluate(accounts, updates) {
-  const days = daysSince(accounts)
-  const n = Math.max(0, updates || 0)
+// accounts: 调用方已加载的账户数组；stats: services/transaction.js growthStats() 的返回
+function evaluate(accounts, stats) {
+  const s = stats || {}
+  const days = daysSince(accounts, s.firstAt)
+  const n = Math.max(0, s.updates || 0)
   const idx = stageIndex(days, n)
   const st = STAGES[idx]
   return {
@@ -79,10 +73,20 @@ function evaluate(accounts, updates) {
     name: st.name,
     days,
     updates: n,
-    title: st.name + ' · 第 ' + days + ' 天',
-    next: nextText(idx, days, n),
     isMax: idx === STAGES.length - 1,
   }
 }
 
-module.exports = { STAGES, evaluate, daysSince }
+// 「上次见过的阶段」存本地。判定与落戳合成一个动作：谁先看到这次长大，
+// 谁就把戳消费掉，另一处便不会为同一次成长再庆祝一遍（盘点完成页 / 首页）。
+const STORAGE_STAGE = 'tree_stage_seen'
+
+function takeGrowth(info) {
+  const seen = wx.getStorageSync(STORAGE_STAGE)
+  // 首次运行 seen 是空串而非数字 —— 那不算「长大」，只落戳，免得新用户一进来就被恭喜
+  const grew = typeof seen === 'number' && info.stage > seen
+  if (seen !== info.stage) wx.setStorageSync(STORAGE_STAGE, info.stage)
+  return grew
+}
+
+module.exports = { STAGES, evaluate, daysSince, takeGrowth, STORAGE_STAGE }

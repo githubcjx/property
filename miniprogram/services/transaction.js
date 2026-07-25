@@ -68,11 +68,21 @@ async function updateTransaction(txId, { amount, note, createdAt } = {}) {
   await cloud.transactions().doc(txId).update({ data: update })
 }
 
-// 变动记录总条数 = 用户「更新过多少次」。首页小树用它算成长阶段。
-// 走 count() 而不是拉全量：只回一个数字，不分页、不占带宽。
-async function countAll() {
-  const res = await cloud.transactions().count()
-  return (res && res.total) || 0
+// 小树成长所需的两个量。两条查询都极轻：一个只回数字，一个只回一条文档。
+//   updates —— 变动记录总条数 = 用户「更新过多少次」
+//   firstAt —— 最早一笔记录的时间 = 「相伴」的起点锚
+// 起点锚必须取 transaction 而不是账户：账户是软删除(isHidden)，listAccounts 查不到，
+// 用户只是清理掉一个不用的旧账户，相伴天数就会归零、树当场塌掉。记录不随账户隐藏而消失。
+async function growthStats() {
+  const [cnt, first] = await Promise.all([
+    cloud.transactions().count(),
+    cloud.transactions().orderBy('createdAt', 'asc').limit(1).get(),
+  ])
+  const doc = first && first.data && first.data[0]
+  return {
+    updates: (cnt && cnt.total) || 0,
+    firstAt: doc ? doc.createdAt : null,
+  }
 }
 
 module.exports = {
@@ -80,5 +90,5 @@ module.exports = {
   getById,
   deleteTransaction,
   updateTransaction,
-  countAll,
+  growthStats,
 }

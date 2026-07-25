@@ -14,6 +14,10 @@ const { formatMoney } = require('../../utils/format.js')
 const { sumNetCnyFen, cnyToBaseFen, baseCurrency } = require('../../utils/networth.js')
 const { TOOL_BADGES } = require('../../utils/toolBadges.js')
 const { goBack } = require('../../utils/nav.js')
+const txSvc = require('../../services/transaction.js')
+const growthTree = require('../../utils/growthTree.js')
+const treeArt = require('../../utils/treeArt.js')
+const { getTheme, isLight } = require('../../utils/theme.js')
 
 const STORAGE_TOOL_SEEN = 'tool_badge_seen'   // 与首页约定一致（utils/toolBadges.js）
 
@@ -57,6 +61,12 @@ Page({
     // 完成页的目标进度行（盘点的回报：看着目标更近一点）
     goal: { hasGoal: false },
 
+    // 小树：仅当这次盘点让它升级时才为 true，整块才出现
+    treeGrew: false,
+    treeName: '',
+    treeDays: 0,
+    treeUpdates: 0,
+
     // 提醒订阅：'off' 未订阅 | 'on' 已订阅 | 'soon' 模板未配置（显示「即将上线」）
     remindState: 'soon',
     remindBusy: false,
@@ -81,6 +91,13 @@ Page({
       reduceMotion: app.globalData.reduceMotion,
       theme: app.globalData.theme,
     })
+  },
+
+  // 离开时掐掉可能还在跑的生长动画：看不见的帧一帧都不该画
+  onUnload() {
+    const c = this._doneTreeCanvas
+    if (this._doneTreeRaf && c && c.cancelAnimationFrame) c.cancelAnimationFrame(this._doneTreeRaf)
+    this._doneTreeRaf = null
   },
 
   // 从横幅进入也把工具红点标记为已读（与首页 onToolTap 的约定一致）
@@ -307,6 +324,7 @@ Page({
     // 压在盘点结束这一刻太重。点这一行进净值目标页即可看到预计时间。
     this.loadGoalRow(netCny)
     this._refreshRemindState()
+    this.checkTreeGrowth()
 
     // 对比基线按快照口径回算；先算完再记录本次盘点时间
     if (lastTs) {
@@ -331,6 +349,54 @@ Page({
       }
     }
     invSvc.markInventoryDone()
+  },
+
+  // 小树是否因这次盘点升级了。这是它唯一需要被看见的时刻：你刚做完事，它立刻回应你 ——
+  // 用户不必读任何说明，做一次就懂了。没升级则整块不出现，完成页保持原样。
+  // 失败静默：一棵装饰性的树不该挡住盘点结果。
+  async checkTreeGrowth() {
+    try {
+      const info = growthTree.evaluate(this._accounts, await txSvc.growthStats())
+      if (!growthTree.takeGrowth(info)) return   // 落戳在此，首页便不会重复恭喜
+      this.setData({
+        treeGrew: true,
+        treeName: info.name,
+        treeDays: info.days,
+        treeUpdates: info.updates,
+      }, () => this._drawDoneTree(info.key))
+    } catch (err) {
+      console.warn('[inventory] 小树阶段判定失败，跳过', err)
+    }
+  },
+
+  _drawDoneTree(key) {
+    wx.createSelectorQuery().in(this)
+      .select('#doneTree').fields({ node: true, size: true }).exec((res) => {
+        const item = res && res[0]
+        if (!item || !item.node) return
+        const canvas = item.node
+        const ctx = canvas.getContext('2d')
+        const dpr = (wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()).pixelRatio || 2
+        canvas.width = item.width * dpr
+        canvas.height = item.height * dpr
+        ctx.scale(dpr, dpr)
+        const th = getTheme(this.data.theme)
+        const opt = { accent: th.chartAccent || th.accent, light: isLight(this.data.theme) }
+        if (this.data.reduceMotion) {
+          treeArt.drawStage(ctx, item.width, item.height, key, 1, opt)
+          return
+        }
+        const t0 = Date.now()
+        const frame = () => {
+          const p = Math.min(1, (Date.now() - t0) / 1100)
+          treeArt.drawStage(ctx, item.width, item.height, key, p, opt)
+          // 播完即止，不留常驻 rAF（见 utils/treeArt.js 顶部）
+          if (p < 1) this._doneTreeRaf = canvas.requestAnimationFrame(frame)
+          else this._doneTreeRaf = null
+        }
+        this._doneTreeCanvas = canvas
+        frame()
+      })
   },
 
   // 目标失败不应影响盘点结果展示（比如 goals 集合还没建），静默降级为「未设目标」引导

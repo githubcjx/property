@@ -14,8 +14,6 @@ const growthTree = require('../../utils/growthTree.js')
 const treeArt = require('../../utils/treeArt.js')
 const { getTheme, isLight } = require('../../utils/theme.js')
 
-const STORAGE_TREE_STAGE = 'tree_stage_seen'   // 上次见过的小树阶段，用于「长大了」提示
-
 const STORAGE_TOOL_SEEN = 'tool_badge_seen'   // { 工具key: 已读到的功能版本号 }
 
 const STORAGE_EXPANDED = 'idx_expanded_categories'
@@ -172,28 +170,23 @@ Page({
       this.setData({ tree: null })
       return
     }
-    let updates = 0
+    let stats = null
     try {
-      updates = await txSvc.countAll()
+      stats = await txSvc.growthStats()
     } catch (e) {
-      console.warn('[tree] 取更新次数失败，按 0 处理', e)
+      console.warn('[tree] 取成长数据失败，按种子处理', e)
     }
-    const info = growthTree.evaluate(accounts, updates)
+    const info = growthTree.evaluate(accounts, stats)
     const grew = this._treeKey && this._treeKey !== info.key   // 本次会话内升级
     this.setData({ tree: info }, () => {
       this._drawTree(!this.data.reduceMotion && (grew || !this._treeKey))
       this._treeKey = info.key
     })
-    this._celebrateIfGrown(info)
-  },
-
-  // 跨会话的升级提示：只在阶段比上次见过的更高时说一句，说完就记下，不再重复。
-  _celebrateIfGrown(info) {
-    const seen = wx.getStorageSync(STORAGE_TREE_STAGE)
-    if (typeof seen === 'number' && info.stage > seen) {
+    // 若这次长大还没被别处（盘点完成页）庆祝过，在这儿补一句 —— 改余额、删记录等
+    // 路径也会让树变化，首页是兜底的那一处。takeGrowth 落戳，保证只说一次。
+    if (growthTree.takeGrowth(info)) {
       wx.showToast({ icon: 'none', title: '小树长大了 · ' + info.name })
     }
-    if (seen !== info.stage) wx.setStorageSync(STORAGE_TREE_STAGE, info.stage)
   },
 
   // 画一帧或播一次生长动画。animate=false 时直接落终帧 —— 平时没有任何循环在跑。
@@ -245,20 +238,6 @@ Page({
       })
   },
 
-  onTreeTap() {
-    const t = this.data.tree
-    if (!t) return
-    wx.showModal({
-      title: '你的小树',
-      showCancel: false,
-      confirmText: '知道了',
-      content: '它跟着你的坚持长大，和金额无关 —— 只看相伴了多少天、更新了多少次。\n\n' +
-        '种子 → 新芽 → 小树苗 → 小树 → 大树\n' +
-        '两个条件要同时满足才升一级。\n\n' +
-        '现在：第 ' + t.days + ' 天 · 已更新 ' + t.updates + ' 次\n' +
-        '（它只会长大，不会枯萎。）',
-    })
-  },
 
   // 盘点入口：常驻首页内容顶部（有账户即显示），随新鲜度变脸，不可关闭 —— 这是主动作，不是打扰。
   //   发霉(stale)：任一账户超 STALE_DAYS / 距上次盘点超期（bannerInfo.show 已含冷静期逻辑）→ 强调色催一下

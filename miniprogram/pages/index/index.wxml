@@ -48,15 +48,6 @@
       </view>
       <text class="delta-label">过去 30 天</text>
     </view>
-
-    <!-- 小树：随「坚持」长大，与金额无关（见 utils/growthTree.js） -->
-    <view class="tree-row entry-up d3" wx:if="{{tree}}" hover-class="tree-row-hover" bindtap="onTreeTap">
-      <canvas type="2d" id="treeCanvas" class="tree-canvas {{reduceMotion ? '' : 'tree-sway'}}"></canvas>
-      <view class="tree-txt">
-        <view class="tree-name">{{tree.title}}</view>
-        <view class="tree-next">{{tree.next}}</view>
-      </view>
-    </view>
   </view>
 
   <!-- 内容 -->
@@ -84,9 +75,11 @@
         <view class="mrb-x" catchtap="onDismissReportBanner"><view class="ic ic-xs ic-close"></view></view>
       </view>
 
-      <!-- 盘点入口：常驻门口，随新鲜度变脸 —— 新鲜时安静，发霉时(is-stale)变响 -->
+      <!-- 盘点入口：常驻门口，随新鲜度变脸 —— 新鲜时安静，发霉时(is-stale)变响。
+           图标位就是那棵小树：它的成长条件是「更新次数」，而这里正是更新的入口
+           —— 长在这儿，因果自己闭环，不需要一个字的解释（见 utils/growthTree.js）。 -->
       <view wx:if="{{invEntry}}" class="inv-entry {{invEntry.stale ? 'is-stale' : ''}} entry-up" hover-class="inv-entry-hover" bindtap="onOpenInventory">
-        <view class="ive-ico"><view class="ic ic-sm ic-checklist"></view></view>
+        <canvas type="2d" id="treeCanvas" class="ive-tree {{reduceMotion ? '' : 'tree-sway'}}"></canvas>
         <view class="ive-txt">
           <view class="ive-title">{{invEntry.title}}</view>
           <view class="ive-sub">{{invEntry.sub}}</view>

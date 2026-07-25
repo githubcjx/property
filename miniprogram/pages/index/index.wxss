@@ -173,19 +173,6 @@
 }
 
 /* ============ 小树 ============ */
-.tree-row {
-  position: relative; z-index: 1;
-  margin-top: 28rpx;
-  display: flex;
-  align-items: center;
-  gap: 18rpx;
-}
-.tree-row-hover { opacity: 0.7; }
-.tree-canvas {
-  width: 124rpx;
-  height: 124rpx;
-  flex-shrink: 0;
-}
 /* 唯一的常驻动效：整块 canvas 极缓慢地摇一下。
    transform 由合成器处理，不触发重绘/重排 —— 树本身是静止帧，不重画。 */
 .tree-sway {
@@ -197,22 +184,6 @@
   50%      { transform: rotate(0.7deg); }
 }
 .no-motion .tree-sway { animation: none; }
-
-.tree-txt {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6rpx;
-}
-.tree-name {
-  font-size: 26rpx;
-  color: var(--ink-100);
-  letter-spacing: 0.02em;
-}
-.tree-next {
-  font-size: 22rpx;
-  color: var(--ink-60);
-}
 
 /* ============ Scroll ============ */
 .scroll {
@@ -719,11 +690,10 @@
   border: 1rpx solid var(--hairline);
 }
 .inv-entry-hover { transform: scale(0.99); opacity: 0.9; }
-.ive-ico {
-  width: 76rpx; height: 76rpx; flex: 0 0 76rpx; border-radius: 22rpx;
-  display: flex; align-items: center; justify-content: center;
-  background: var(--glass-2);
-  border: 1rpx solid var(--hairline);
+/* 小树占图标位：故意不套玻璃方块 —— 加个框就成了「一张画」，
+   裸放才像它本来就长在这条入口上。它自带土面投影，不需要底座。 */
+.ive-tree {
+  width: 96rpx; height: 96rpx; flex: 0 0 96rpx;
 }
 .ive-txt { flex: 1; min-width: 0; }
 .ive-title { font-size: 28rpx; font-weight: 700; color: var(--ink-100); }
@@ -737,10 +707,6 @@
     linear-gradient(180deg, rgba(var(--warn-rgb), 0.13), rgba(var(--warn-rgb), 0.05));
   border-color: rgba(var(--warn-rgb), 0.40);
   box-shadow: 0 12rpx 36rpx rgba(var(--warn-rgb), 0.10);
-}
-.inv-entry.is-stale .ive-ico {
-  background: linear-gradient(160deg, rgba(var(--warn-rgb), 0.36), rgba(var(--warn-rgb), 0.10));
-  border-color: rgba(var(--warn-rgb), 0.30);
 }
 .inv-entry.is-stale .ive-title { font-weight: 800; }
 .inv-entry.is-stale .ive-arrow { opacity: 0.9; }
