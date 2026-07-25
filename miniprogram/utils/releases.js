@@ -5,6 +5,15 @@
 
 const RELEASES = [
   {
+    version: 'V2.2',
+    date: '2026-07',
+    title: '你的小树',
+    highlight: true,
+    items: [
+      '首页多了一棵小树，跟着你的坚持长大',
+    ],
+  },
+  {
     version: 'V2.1',
     date: '2026-07',
     title: '盘点搬到首页',

@@ -172,27 +172,46 @@
   letter-spacing: 0.12em;
 }
 
-/* ============ Composition orbs ============ */
-.orbs {
+/* ============ 小树 ============ */
+.tree-row {
   position: relative; z-index: 1;
-  margin-top: 36rpx;
+  margin-top: 28rpx;
   display: flex;
   align-items: center;
-  gap: 16rpx;
+  gap: 18rpx;
 }
-.orb-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  max-width: 50px;
-  max-height: 50px;
-}
-.orb {
-  border-radius: 50%;
-  position: relative;
+.tree-row-hover { opacity: 0.7; }
+.tree-canvas {
+  width: 124rpx;
+  height: 124rpx;
   flex-shrink: 0;
-  max-width: 50px;
-  max-height: 50px;
+}
+/* 唯一的常驻动效：整块 canvas 极缓慢地摇一下。
+   transform 由合成器处理，不触发重绘/重排 —— 树本身是静止帧，不重画。 */
+.tree-sway {
+  transform-origin: 50% 88%;
+  animation: tree-sway 9s ease-in-out infinite;
+}
+@keyframes tree-sway {
+  0%, 100% { transform: rotate(-0.7deg); }
+  50%      { transform: rotate(0.7deg); }
+}
+.no-motion .tree-sway { animation: none; }
+
+.tree-txt {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+.tree-name {
+  font-size: 26rpx;
+  color: var(--ink-100);
+  letter-spacing: 0.02em;
+}
+.tree-next {
+  font-size: 22rpx;
+  color: var(--ink-60);
 }
 
 /* ============ Scroll ============ */

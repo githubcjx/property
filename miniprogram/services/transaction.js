@@ -68,9 +68,17 @@ async function updateTransaction(txId, { amount, note, createdAt } = {}) {
   await cloud.transactions().doc(txId).update({ data: update })
 }
 
+// 变动记录总条数 = 用户「更新过多少次」。首页小树用它算成长阶段。
+// 走 count() 而不是拉全量：只回一个数字，不分页、不占带宽。
+async function countAll() {
+  const res = await cloud.transactions().count()
+  return (res && res.total) || 0
+}
+
 module.exports = {
   listByAccount,
   getById,
   deleteTransaction,
   updateTransaction,
+  countAll,
 }

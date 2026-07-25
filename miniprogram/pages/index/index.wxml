@@ -49,15 +49,12 @@
       <text class="delta-label">过去 30 天</text>
     </view>
 
-    <!-- Composition orbs -->
-    <view class="orbs entry-up d3" wx:if="{{hasData}}">
-      <view
-        wx:for="{{composition}}"
-        wx:key="id"
-        class="orb-wrap"
-      >
-        <view class="orb cat-tint-{{item.rgbName}} drift-slow"
-              style="width:{{item.sizeRpx}}rpx;height:{{item.sizeRpx}}rpx;animation-delay:{{index * 300}}ms;"></view>
+    <!-- 小树：随「坚持」长大，与金额无关（见 utils/growthTree.js） -->
+    <view class="tree-row entry-up d3" wx:if="{{tree}}" hover-class="tree-row-hover" bindtap="onTreeTap">
+      <canvas type="2d" id="treeCanvas" class="tree-canvas {{reduceMotion ? '' : 'tree-sway'}}"></canvas>
+      <view class="tree-txt">
+        <view class="tree-name">{{tree.title}}</view>
+        <view class="tree-next">{{tree.next}}</view>
       </view>
     </view>
   </view>

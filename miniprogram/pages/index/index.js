@@ -9,6 +9,12 @@ const { formatRelative } = require('../../utils/date.js')
 const { APP_VERSION } = require('../../utils/version.js')
 const { TOOL_BADGES } = require('../../utils/toolBadges.js')
 const invSvc = require('../../services/inventory.js')
+const txSvc = require('../../services/transaction.js')
+const growthTree = require('../../utils/growthTree.js')
+const treeArt = require('../../utils/treeArt.js')
+const { getTheme, isLight } = require('../../utils/theme.js')
+
+const STORAGE_TREE_STAGE = 'tree_stage_seen'   // 上次见过的小树阶段，用于「长大了」提示
 
 const STORAGE_TOOL_SEEN = 'tool_badge_seen'   // { 工具key: 已读到的功能版本号 }
 
@@ -64,7 +70,8 @@ Page({
 
     hideAmount: false,
     groups: [],
-    composition: [],
+    // 小树：{ stage, key, name, days, updates, title, next, isMax }；无账户时 null
+    tree: null,
     statusBarHeight: 20,
     expandedMap: {},
 
@@ -123,6 +130,15 @@ Page({
     this.refresh()
   },
 
+  // 离开首页时掐掉可能还在跑的生长动画：看不见的帧一帧都不该画
+  onHide() {
+    const c = this._treeCanvas
+    if (this._treeRaf && c && c.canvas.cancelAnimationFrame) {
+      c.canvas.cancelAnimationFrame(this._treeRaf)
+    }
+    this._treeRaf = null
+  },
+
   // 月报横幅：月初前 BANNER_WINDOW_DAYS 天展示「上月小结」入口。
   // 仅做入口，不在首页算百分比（涨幅留到月报页内算），不额外查询。
   // 显示条件：①有账户 ②处于月初窗口期 ③本月未手动关闭。
@@ -144,6 +160,104 @@ Page({
 
   onOpenReport() {
     wx.navigateTo({ url: '/pages/report/report' })
+  },
+
+  // ============ 小树 ============
+  // 阶段只由「相伴天数 + 更新次数」决定，与金额无关（理由见 utils/growthTree.js）。
+  // 天数从已加载的 accounts 里取（零请求），次数走一次 count()（只回一个数字）。
+  async updateTree(accounts) {
+    if (!accounts || !accounts.length) {
+      this._treeCanvas = null      // 节点随 hero 一起被销毁，缓存必须失效
+      this._treeKey = null
+      this.setData({ tree: null })
+      return
+    }
+    let updates = 0
+    try {
+      updates = await txSvc.countAll()
+    } catch (e) {
+      console.warn('[tree] 取更新次数失败，按 0 处理', e)
+    }
+    const info = growthTree.evaluate(accounts, updates)
+    const grew = this._treeKey && this._treeKey !== info.key   // 本次会话内升级
+    this.setData({ tree: info }, () => {
+      this._drawTree(!this.data.reduceMotion && (grew || !this._treeKey))
+      this._treeKey = info.key
+    })
+    this._celebrateIfGrown(info)
+  },
+
+  // 跨会话的升级提示：只在阶段比上次见过的更高时说一句，说完就记下，不再重复。
+  _celebrateIfGrown(info) {
+    const seen = wx.getStorageSync(STORAGE_TREE_STAGE)
+    if (typeof seen === 'number' && info.stage > seen) {
+      wx.showToast({ icon: 'none', title: '小树长大了 · ' + info.name })
+    }
+    if (seen !== info.stage) wx.setStorageSync(STORAGE_TREE_STAGE, info.stage)
+  },
+
+  // 画一帧或播一次生长动画。animate=false 时直接落终帧 —— 平时没有任何循环在跑。
+  _drawTree(animate) {
+    const paint = (canvas, ctx, W, H) => {
+      // chartAccent 优先：浅色主题(硬核粗野)的信号黄画在纸底上几乎看不见，
+      // 该主题已为 canvas 备了一版高对比强调色，趋势图也是这么取的。
+      const th = getTheme(this.data.theme)
+      const opt = { accent: th.chartAccent || th.accent, light: isLight(this.data.theme) }
+      const key = this.data.tree && this.data.tree.key
+      if (!key) return
+      if (this._treeRaf && canvas.cancelAnimationFrame) {
+        canvas.cancelAnimationFrame(this._treeRaf)
+        this._treeRaf = null
+      }
+      if (!animate) {
+        treeArt.drawStage(ctx, W, H, key, 1, opt)
+        return
+      }
+      const t0 = Date.now()
+      const DUR = 1100
+      const frame = () => {
+        const p = Math.min(1, (Date.now() - t0) / DUR)
+        treeArt.drawStage(ctx, W, H, key, p, opt)
+        // 到 1 就彻底停手：不留常驻 rAF（发热的老账，见 utils/treeArt.js 顶部）
+        if (p < 1) this._treeRaf = canvas.requestAnimationFrame(frame)
+        else this._treeRaf = null
+      }
+      frame()
+    }
+
+    if (this._treeCanvas) {
+      const c = this._treeCanvas
+      paint(c.canvas, c.ctx, c.W, c.H)
+      return
+    }
+    wx.createSelectorQuery().in(this)
+      .select('#treeCanvas').fields({ node: true, size: true }).exec((res) => {
+        const item = res && res[0]
+        if (!item || !item.node) return
+        const canvas = item.node
+        const ctx = canvas.getContext('2d')
+        const dpr = (wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()).pixelRatio || 2
+        canvas.width = item.width * dpr
+        canvas.height = item.height * dpr
+        ctx.scale(dpr, dpr)
+        this._treeCanvas = { canvas, ctx, W: item.width, H: item.height }
+        paint(canvas, ctx, item.width, item.height)
+      })
+  },
+
+  onTreeTap() {
+    const t = this.data.tree
+    if (!t) return
+    wx.showModal({
+      title: '你的小树',
+      showCancel: false,
+      confirmText: '知道了',
+      content: '它跟着你的坚持长大，和金额无关 —— 只看相伴了多少天、更新了多少次。\n\n' +
+        '种子 → 新芽 → 小树苗 → 小树 → 大树\n' +
+        '两个条件要同时满足才升一级。\n\n' +
+        '现在：第 ' + t.days + ' 天 · 已更新 ' + t.updates + ' 次\n' +
+        '（它只会长大，不会枯萎。）',
+    })
   },
 
   // 盘点入口：常驻首页内容顶部（有账户即显示），随新鲜度变脸，不可关闭 —— 这是主动作，不是打扰。
@@ -213,6 +327,7 @@ Page({
       this.buildGroups(accounts)
       this.updateMonthlyBanner(accounts)
       this.updateInvEntry(accounts)
+      this.updateTree(accounts)
       statsSvc.getNetWorthDelta(30, accounts).then(({ delta, deltaPct }) => {
         this.applyDelta(delta, deltaPct)
       }).catch(() => {})
@@ -240,7 +355,6 @@ Page({
     const map = groups.reduce((m, g) => { m[g.categoryId] = g; return m }, {})
 
     let netWorth = 0
-    let totalAssets = 0
     for (const acc of accounts) {
       const g = map[acc.categoryId]
       if (!g) continue
@@ -257,7 +371,6 @@ Page({
           netWorth -= vCny
         } else {
           netWorth += vCny
-          totalAssets += vCny
         }
       }
     }
@@ -287,26 +400,11 @@ Page({
       })
     })
 
-    const composition = CATEGORIES.map(cat => {
-      const g = map[cat.id]
-      const v = g ? g.totalFen : 0
-      const pct = totalAssets > 0 ? v / totalAssets : 0
-      const sizeRpx = Math.max(28, Math.round(28 + pct * 64))
-      return {
-        id: cat.id,
-        name: cat.name,
-        rgbName: cat.colorClass,
-        sizeRpx,
-        valueYuan: Math.round(v / 100),
-      }
-    })
-
     const dispNet = cnyToBaseFen(netWorth)   // 净值折算到本位币用于显示
     this._baseCcy = baseCcy                   // 供 animateNetWorth 逐帧拆分用
     const parts = splitAmount(dispNet, baseCcy)
     this.setData({
       groups: visibleGroups,
-      composition,
       netWorthRaw: netWorth,
       baseSymbol: baseSym,
       netSign: parts.sign,

@@ -358,8 +358,6 @@ button.btn-reset::after { display: none; }
 .entry-up.d6 { animation-delay: 0.46s; }
 .entry-up.d7 { animation-delay: 0.54s; }
 
-.drift-slow { animation: drift-icon 6s ease-in-out infinite; }
-
 /* ============================================================
    Line icon system (inline data-URI SVGs)
    ============================================================ */
