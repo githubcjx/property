@@ -159,6 +159,20 @@
   font-size: 22rpx; color: var(--warn); line-height: 1.6; text-align: center;
 }
 
+/* 主角待定时的占位：高度对齐成稿主角（眉标 56+34 / 数字 18+84 / 副文 26+38 / 现在 18+36），
+   这样主角落地时下面的内容一行都不动 —— 不改口，也不跳版 */
+.hero-hold {
+  height: 310rpx;
+  display: flex; align-items: flex-start; justify-content: center;
+}
+.hero-skel {
+  margin-top: 108rpx;
+  width: 300rpx; height: 84rpx; border-radius: 26rpx;
+  background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.16), rgba(var(--accent-rgb), 0.06));
+  animation: glow-soft 1.6s ease-in-out infinite;
+}
+.no-motion .hero-skel { animation: none; }
+
 /* 过程压成一行安静的小字 */
 .done-line { margin-top: 44rpx; font-size: 22rpx; letter-spacing: 0.5rpx; color: var(--ink-40); }
 

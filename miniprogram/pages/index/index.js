@@ -68,7 +68,7 @@ Page({
 
     hideAmount: false,
     groups: [],
-    // 小树：{ stage, key, name, days, updates, title, next, isMax }；无账户时 null
+    // 小树：{ stage, key, name, days, updates, isMax }；无账户时 null
     tree: null,
     statusBarHeight: 20,
     expandedMap: {},
@@ -162,7 +162,7 @@ Page({
 
   // ============ 小树 ============
   // 阶段只由「相伴天数 + 更新次数」决定，与金额无关（理由见 utils/growthTree.js）。
-  // 天数从已加载的 accounts 里取（零请求），次数走一次 count()（只回一个数字）。
+  // growthStats() 并发拿条数与首笔时间，两条都极轻；账户直接用已加载的这份。
   async updateTree(accounts) {
     if (!accounts || !accounts.length) {
       this._treeCanvas = null      // 节点随 hero 一起被销毁，缓存必须失效
@@ -265,7 +265,7 @@ Page({
       title = '盘点账户'
       if (oldest == null) sub = '核对各账户余额，几分钟更新完'
       else if (oldest === 0) sub = '今天刚核对过 · 都是最新'
-      else sub = '最久 ' + oldest + ' 天前核对 · 都还新鲜'
+      else sub = oldest + ' 天前核对 · 都还新鲜'
     }
     this.setData({ invEntry: { stale, title, sub } })
   },

@@ -54,14 +54,20 @@
         <!-- 完成确认：退到最小，不与主角争 -->
         <view class="done-confirm entry-up"><text class="dc-tick">✓</text> 盘点完成</view>
 
-        <!-- HERO · 唯一主角：这次你的净值动了多少 -->
-        <view class="hero-eyebrow entry-up d1">{{heroEyebrow}}</view>
-        <view class="hero-big {{heroMode}} entry-up d1">
-          <text class="num">{{hideAmount ? heroBigMasked : heroBig}}</text>
-        </view>
-        <view class="hero-sub entry-up d2">{{heroSub}}</view>
-        <view wx:if="{{heroNetShow}}" class="hero-net entry-up d2">现在 <text class="num">{{hideAmount ? baseSymbol + ' ••••' : netText}}</text></view>
-        <view wx:if="{{skipNote}}" class="hero-foot entry-up d2">{{skipNote}}</view>
+        <!-- HERO · 唯一主角：这次你的净值动了多少。
+             与上次的比对要等回算完，没算完就先占位空着 —— 宁可空一下，
+             也不先亮一个待会儿要被改写的数字（那是改口，不是加载）。 -->
+        <block wx:if="{{heroReady}}">
+          <view class="hero-eyebrow entry-up d1">{{heroEyebrow}}</view>
+          <view class="hero-big {{heroMode}} entry-up d1">
+            <text class="num">{{hideAmount ? heroBigMasked : heroBig}}</text>
+          </view>
+          <view class="hero-sub entry-up d2">{{heroSub}}</view>
+          <view wx:if="{{heroNetShow}}" class="hero-net entry-up d2">现在 <text class="num">{{hideAmount ? baseSymbol + ' ••••' : netText}}</text></view>
+          <view wx:if="{{skipNote}}" class="hero-foot entry-up d2">{{skipNote}}</view>
+        </block>
+        <!-- 占位高度与成稿主角一致，落地时下面的内容不跳 -->
+        <view wx:else class="hero-hold"><view class="hero-skel"></view></view>
 
         <!-- 过程：压成一行安静的小字 -->
         <view class="done-line entry-up d2">{{doneLine}}</view>

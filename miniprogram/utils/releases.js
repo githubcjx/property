@@ -11,6 +11,7 @@ const RELEASES = [
     highlight: true,
     items: [
       '首页多了一棵小树，跟着你的坚持长大',
+      '修复：盘点完成页的金额会先显示再跳变',
     ],
   },
   {
