@@ -4,45 +4,102 @@
   <!-- 透明导航栏 -->
   <view class="navbar" style="padding-top: {{statusBarHeight}}px;">
     <view class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onClose">
-      <view class="ic ic-xs {{phase === 'wizard' && !empty && !loading ? 'ic-close' : 'ic-back'}}"></view>
+      <view class="ic ic-xs {{phase === 'list' && !empty && !loading ? 'ic-close' : 'ic-back'}}"></view>
     </view>
-    <text class="nav-title">盘点</text>
+    <text class="nav-title">{{navTitle}}</text>
   </view>
 
   <!-- 加载 / 空态 -->
   <view wx:if="{{loading}}" class="state-hint">正在加载账户…</view>
-  <view wx:elif="{{empty}}" class="state-hint">还没有账户数据，先去首页添加账户吧</view>
-
-  <!-- ============ 盘点进行中 ============ -->
-  <block wx:elif="{{phase === 'wizard' && cur}}">
-    <view class="wiz-meta">
-      <text class="wiz-counter num">{{idx + 1}} / {{total}}</text>
-      <text class="wiz-group">{{cur.groupName}} · 第 {{cur.groupIndex}} 个，共 {{cur.groupCount}} 个</text>
+  <!-- 空态。只有固定资产的用户（比如只记了一套房）盘点列表是空的，
+       这时不能只丢一句「没有账户」，要把「去重新估个价」这条出路给出来。 -->
+  <block wx:elif="{{empty}}">
+    <view class="state-hint">
+      <block wx:if="{{scope === 'fixed'}}">还没有固定资产账户</block>
+      <block wx:elif="{{fixed.count}}">没有需要每月核对的账户 —— 你记的都是长期资产</block>
+      <block wx:else>还没有账户数据，先去首页添加账户吧</block>
     </view>
-    <view class="wiz-bar"><view class="wiz-fill" style="width: {{progressPct}}%;"></view></view>
-
-    <view class="wiz-card glass entry-up">
-      <view class="wiz-orb cat-tint-{{cur.colorClass}}">
-        <view class="ic ic-lg ic-{{cur.icon}}"></view>
+    <view wx:if="{{scope === 'moving' && fixed.count}}" class="inv-empty-fixed">
+      <view class="inv-fixed {{fixed.due ? 'is-due' : ''}} tap" hover-class="btn-hover" bindtap="onOpenFixed">
+        <view class="inv-fixed-ico"><view class="ic ic-xs ic-house"></view></view>
+        <view class="inv-fixed-txt">
+          <view class="inv-fixed-t">固定资产 {{fixed.count}} 项</view>
+          <view class="inv-fixed-s">{{fixed.agoText}}{{fixed.agoText ? ' · ' : ''}}去重新估个价</view>
+        </view>
+        <view class="ic ic-xs ic-chevron-right inv-fixed-go"></view>
       </view>
-      <view class="wiz-name">
-        <text>{{cur.name}}</text>
-        <text wx:if="{{cur.currency !== 'CNY'}}" class="wiz-ccy">{{cur.currency}}</text>
-      </view>
-      <view class="wiz-lab">{{cur.isDebt ? '记录中的欠款' : '记录中的余额'}}</view>
-      <view class="wiz-bal {{cur.isDebt ? 'is-debt' : ''}} num">{{hideAmount ? cur.symbol + ' ••••' : cur.balanceText}}</view>
-      <view wx:if="{{cur.checkedToday}}" class="wiz-fresh is-today">✓ 今天已核对</view>
-      <view wx:elif="{{cur.freshAgo}}" class="wiz-fresh {{cur.freshStale ? 'is-stale' : ''}}">上次核对 {{cur.freshAgo}}</view>
-      <view class="wiz-ask">和你现在看到的{{cur.isDebt ? '欠款' : '余额'}}一致吗？</view>
     </view>
+  </block>
 
-    <view class="wiz-actions">
-      <view class="wiz-btn primary tap {{submitting ? 'is-busy' : ''}}" hover-class="wiz-btn-hover" bindtap="onConfirmSame">一致，确认</view>
-      <view class="wiz-btn ghost tap" hover-class="wiz-btn-hover" bindtap="onOpenEdit">不一致，改成新{{cur.isDebt ? '欠款' : '余额'}}</view>
-      <view class="wiz-hint">确认只记录核对时间，不会产生变动记录</view>
-      <view class="wiz-sub">
-        <text class="wiz-link {{idx === 0 ? 'is-disabled' : ''}}" bindtap="onPrev">‹ 上一个</text>
-        <text class="wiz-link" bindtap="onSkip">跳过 ›</text>
+  <!-- ============ 一屏列表：默认「没变」，只点要改的 ============ -->
+  <block wx:elif="{{phase === 'list'}}">
+    <view class="inv-lead">{{leadText}}</view>
+
+    <scroll-view scroll-y class="scroll" enable-flex>
+      <view class="inv-list">
+        <view
+          wx:for="{{rows}}"
+          wx:key="_id"
+          class="inv-row {{item.newBalance !== null ? 'is-edited' : ''}} {{item.failed ? 'is-failed' : ''}} tap entry-up"
+          data-id="{{item._id}}"
+          hover-class="inv-row-hover"
+          bindtap="onRowTap"
+        >
+          <view class="inv-orb cat-tint-{{item.colorClass}}">
+            <view class="ic ic-sm ic-{{item.icon}}"></view>
+          </view>
+          <view class="inv-main">
+            <view class="inv-name">
+              <text>{{item.name}}</text>
+              <text wx:if="{{item.currency !== 'CNY'}}" class="inv-ccy">{{item.currency}}</text>
+            </view>
+            <view wx:if="{{item.failed}}" class="inv-fresh is-failed">没存上</view>
+            <view wx:elif="{{item.freshText}}" class="inv-fresh {{item.freshStale ? 'is-stale' : ''}}">{{item.freshText}}</view>
+          </view>
+          <view class="inv-val">
+            <view class="inv-amt {{item.isDebt ? 'is-debt' : ''}} num">
+              {{hideAmount ? item.symbol + ' ••••' : (item.newBalance !== null ? item.newBalanceText : item.balanceText)}}
+            </view>
+            <view wx:if="{{item.deltaText}}" class="inv-delta {{item.deltaPositive ? 'is-up' : 'is-down'}} num">
+              {{hideAmount ? '••••' : item.deltaText}}
+            </view>
+            <view wx:elif="{{item.newBalance !== null}}" class="inv-delta is-same">没变</view>
+          </view>
+        </view>
+
+        <!-- 固定资产：不是流程的一步，只是一扇安静的门。
+             房子和车的节奏是「一年看一次」，把它们排进月度核对列表，
+             等于让一年不动的东西去拖慢每月都动的（见 services/inventory.js splitByScope）。 -->
+        <view
+          wx:if="{{scope === 'moving' && fixed.count}}"
+          class="inv-fixed {{fixed.due ? 'is-due' : ''}} tap"
+          hover-class="btn-hover"
+          bindtap="onOpenFixed"
+        >
+          <view class="inv-fixed-ico"><view class="ic ic-xs ic-house"></view></view>
+          <view class="inv-fixed-txt">
+            <view class="inv-fixed-t">固定资产 {{fixed.count}} 项</view>
+            <view class="inv-fixed-s">{{fixed.agoText}}{{fixed.agoText ? ' · ' : ''}}不用每月核对</view>
+          </view>
+          <view class="ic ic-xs ic-chevron-right inv-fixed-go"></view>
+        </view>
+
+        <view class="tail-space"></view>
+      </view>
+    </scroll-view>
+
+    <!-- 底部：一个按钮。没改过就是「N 项都对，完成」，一次点击结束 -->
+    <view class="inv-foot">
+      <view class="inv-cta tap {{failedCount ? 'is-retry' : ''}} {{submitting ? 'is-busy' : ''}}"
+            hover-class="wiz-btn-hover" bindtap="onSubmit">
+        <block wx:if="{{submitting}}">正在保存…</block>
+        <block wx:elif="{{failedCount}}">重试 {{failedCount}} 项</block>
+        <block wx:elif="{{editedCount}}">完成盘点 · 改了 {{editedCount}} 项</block>
+        <block wx:else>{{rows.length}} 项都对，完成</block>
+      </view>
+      <view class="inv-foot-note {{failedCount ? 'is-err' : ''}}">
+        <block wx:if="{{failedCount}}">{{rows.length - failedCount}} 项已保存，这 {{failedCount}} 项没存上</block>
+        <block wx:else>没改的账户记为「已核对，未变动」</block>
       </view>
     </view>
   </block>
@@ -74,7 +131,7 @@
           <canvas type="2d" id="doneTree" class="done-tree-canvas"></canvas>
           <view class="done-tree-txt">
             <view class="done-tree-t">{{treeGrew ? '小树长大了' : '你的小树'}}</view>
-            <view class="done-tree-s">{{treeName}} · 相伴 {{treeDays}} 天，更新过 {{treeUpdates}} 次</view>
+            <view class="done-tree-s">相伴 {{treeDays}} 天，更新过 {{treeUpdates}} 次</view>
           </view>
         </view>
 
@@ -117,33 +174,34 @@
     </scroll-view>
   </block>
 
-  <!-- 退出确认（玻璃弹窗） -->
+  <!-- 退出确认（玻璃弹窗）。改动只在本地，走到这里说明还没提交过 ——
+       点遮罩 = 继续，两个按钮分别是「丢掉」与「存下来」。 -->
   <view wx:if="{{quitVisible}}" class="quit-mask" catchtap="onQuitContinue">
     <view class="quit-card glass" catchtap="noop">
-      <view class="quit-title">结束本次盘点？</view>
-      <view class="quit-sub">已确认的 {{quitCount}} 个账户都已保存，剩下的下次可以接着盘。</view>
+      <view class="quit-title">还有 {{touchedCount}} 项没保存</view>
+      <view class="quit-sub">现在离开，这几处改动会丢掉。</view>
       <view class="quit-actions">
-        <view class="quit-btn tap" hover-class="btn-hover" catchtap="onQuitContinue">继续盘点</view>
-        <view class="quit-btn primary tap" hover-class="btn-hover" catchtap="onQuitEnd">结束</view>
+        <view class="quit-btn tap" hover-class="btn-hover" catchtap="onQuitDiscard">不保存，退出</view>
+        <view class="quit-btn primary tap" hover-class="btn-hover" catchtap="onQuitSave">保存并完成</view>
       </view>
     </view>
   </view>
 </view>
 
-<!-- 改余额半屏（复用账户详情同款组件） -->
+<!-- 改余额半屏（复用账户详情同款组件）。确认只改本地，落库统一在 onSubmit -->
 <amount-input
   id="ai"
   visible="{{showInput}}"
   mode="set"
-  account-name="{{cur.name}}"
-  account-icon="{{cur.icon}}"
-  account-icon-key="{{cur.icon}}"
-  category-class="{{cur.colorClass}}"
+  account-name="{{editing.name}}"
+  account-icon="{{editing.icon}}"
+  account-icon-key="{{editing.icon}}"
+  category-class="{{editing.colorClass}}"
   category-rgb="{{inputRgb}}"
-  current-balance-fen="{{cur.balance}}"
-  current-balance-text="{{cur.balanceText}}"
-  currency="{{cur.currency}}"
-  currency-symbol="{{cur.symbol}}"
+  current-balance-fen="{{editing.balance}}"
+  current-balance-text="{{editing.balanceText}}"
+  currency="{{editing.currency}}"
+  currency-symbol="{{editing.symbol}}"
   reduce-motion="{{reduceMotion}}"
   bindcancel="onInputCancel"
   bindconfirm="onInputConfirm"

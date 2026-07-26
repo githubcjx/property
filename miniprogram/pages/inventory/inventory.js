@@ -1,13 +1,28 @@
-// 一键盘点：逐个账户「没变，确认 / 余额变了，修改 / 跳过」，让月度更新变成 5 分钟仪式。
-// 每个动作即时落库（没有「提交」环节），中途退出/杀进程都不丢已确认的数据。
-// 领域逻辑见 services/inventory.js；「没变」只刷 checkedAt，不造假交易。
+// 盘点：一屏列出「会动」的账户，默认视为没变，只点要改的那几个，最后一次批量提交。
+//
+// 为什么是一屏而不是逐个向导（V2.3 重写）：
+//   旧版一屏一个账户，15 个账户就是 15 次翻屏 + 15 次云写入往返，其中十来个是
+//   一年都不会动的房产 / 车 / 定期。真正拖慢盘点的从来不是「改数字」，而是
+//   「为一堆明知没变的东西按一次、再等一次」。所以这里做两件事：
+//     1. 列表只放会动的账户（固定资产走独立的低频重估，见 services/inventory.js
+//        splitByScope / fixedSummary）—— 依据是用户建账户时自己选的分类，不做任何推断；
+//     2. 没被点过的行 = 没变，提交时统一 touchChecked，不需要逐个确认。
+//   「一次确认全部」之所以站得住，正是因为剩下的行少到能同时显示在一屏上：
+//   用户读完 4 个数字再按，那是真的核对；如果这一按盖掉的是 11 个看不见的账户，
+//   那就只是在按按钮，checkedAt 会变成谎话（不变量 10）。
+//
+// 提交前不落库，所以未保存时退出要拦一下（onClose）。这里刻意不做本地草稿：
+// 列表只有几行，为它引入 storage 草稿 + 恢复条 + 跨设备一致性，换来的收益远小于代价。
+//
+// scope=fixed 时本页变成「重新估个价」：同一套列表与提交逻辑，但不是盘点 ——
+// 不写 inv_last_ts、不进完成页、没有小树和提醒，估完即退。
 
 const app = getApp()
 const accountSvc = require('../../services/account.js')
 const invSvc = require('../../services/inventory.js')
 const goalSvc = require('../../services/goal.js')
 const reminderSvc = require('../../services/reminder.js')
-const { CATEGORIES, isIconKey } = require('../../utils/categories.js')
+const { isIconKey, getCategory } = require('../../utils/categories.js')
 const { catRgb } = require('../../utils/theme.js')
 const { symbolOf } = require('../../utils/currency.js')
 const { formatMoney } = require('../../utils/format.js')
@@ -21,6 +36,12 @@ const { getTheme, isLight } = require('../../utils/theme.js')
 
 const STORAGE_TOOL_SEEN = 'tool_badge_seen'   // 与首页约定一致（utils/toolBadges.js）
 
+// Promise.allSettled 在低版本基础库上不一定有，自己兜一个：每个任务都不会 reject，
+// 失败的行留在页面上重试，成功的不再重发。
+function settle(p) {
+  return p.then(() => ({ ok: true }), (err) => ({ ok: false, err }))
+}
+
 Page({
   data: {
     statusBarHeight: 20,
@@ -30,21 +51,27 @@ Page({
 
     loading: true,
     empty: false,
-    phase: 'wizard',        // wizard | done
+    phase: 'list',          // list | done
+    scope: 'moving',        // moving 月度盘点 | fixed 固定资产重估
+    navTitle: '盘点',
+    leadText: '看一眼，哪个数不对就点它改掉',
 
-    total: 0,
-    idx: 0,
-    progressPct: 0,
-    cur: null,              // 当前账户的展示数据（见 buildList）
+    rows: [],               // 见 buildRows
+    editedCount: 0,         // 已改动（值真的变了）的行数
+    touchedCount: 0,        // 被点开填过数的行数（含填了同一个数的）
+    failedCount: 0,         // 上次提交没存上的行数
     submitting: false,
+
+    // 固定资产入口（scope=moving 时才显示）
+    fixed: { count: 0, agoText: '', due: false },
 
     // 改余额半屏（复用 amount-input 组件）
     showInput: false,
     inputRgb: '167, 211, 255',
+    editing: null,          // 当前正在编辑的行
 
     // 退出确认
     quitVisible: false,
-    quitCount: 0,
 
     // 完成页 · HERO（唯一主角：这次净值动了多少）
     // heroReady：主角是否已定稿。false 时只占位，绝不先亮一个待会儿要改写的数字
@@ -74,13 +101,19 @@ Page({
     remindBusy: false,
   },
 
-  onLoad() {
+  onLoad(query) {
     const sysInfo = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
+    const scope = query && query.scope === 'fixed' ? 'fixed' : 'moving'
     this.setData({
       statusBarHeight: sysInfo.statusBarHeight || 20,
       hideAmount: app.globalData.hideAmount,
       reduceMotion: app.globalData.reduceMotion,
       theme: app.globalData.theme,
+      scope,
+      navTitle: scope === 'fixed' ? '重新估个价' : '盘点',
+      leadText: scope === 'fixed'
+        ? '房子和车不会每月变，一年看一次就够'
+        : '看一眼，哪个数不对就点它改掉',
     })
     this._markBadgeSeen()
     this.load()
@@ -116,12 +149,20 @@ Page({
     this.setData({ loading: true })
     try {
       const accounts = await accountSvc.listAccounts()
-      if (!accounts.length) {
-        this.setData({ empty: true, loading: false })
+      this._accounts = accounts
+      const { moving, fixed } = invSvc.splitByScope(accounts)
+      const list = this.data.scope === 'fixed' ? fixed : moving
+      // 固定资产摘要照常算：只有固定资产的用户（比如只记了一套房），盘点列表是空的，
+      // 但空态里仍要给出「去重新估个价」这条出路，不能只丢一句「还没有账户数据」。
+      const fixedSummary = this.data.scope === 'moving'
+        ? invSvc.fixedSummary(accounts)
+        : { count: 0, agoText: '', due: false }
+      if (!list.length) {
+        this.setData({ empty: true, loading: false, fixed: fixedSummary })
         return
       }
-      this.buildList(accounts)
-      this.setData({ loading: false })
+      this.buildRows(list)
+      this.setData({ loading: false, fixed: fixedSummary })
     } catch (err) {
       console.error('盘点加载失败', err)
       this.setData({ loading: false })
@@ -129,109 +170,66 @@ Page({
     }
   },
 
-  // 顺序与首页一致：分类顺序 → 组内创建顺序（listAccounts 已按 createdAt 升序）
-  buildList(accounts) {
-    this._accounts = accounts
-    const items = []
-    CATEGORIES.forEach(cat => {
-      const group = accounts.filter(a => a.categoryId === cat.id)
-      group.forEach((a, i) => {
-        const ccy = a.currency || 'CNY'
-        const fresh = invSvc.freshInfo(a)
-        items.push({
-          _id: a._id,
-          name: a.name,
-          icon: isIconKey(a.icon) ? a.icon : 'folder',
-          colorClass: cat.colorClass,
-          isDebt: cat.id === 'debt',
-          currency: ccy,
-          symbol: symbolOf(ccy),
-          balance: a.balance || 0,
-          balanceText: formatMoney(a.balance || 0, ccy, { symbol: true }),
-          freshAgo: fresh.agoText,
-          freshStale: fresh.stale,
-          checkedToday: fresh.days === 0,
-          groupName: cat.name,
-          groupIndex: i + 1,
-          groupCount: group.length,
-        })
-      })
+  // 顺序按「离上次核对最久」降序 —— 盘点是干活，干活按紧急排，不按分类排。
+  // 天数相同的保持 listAccounts 的创建顺序（sort 稳定性在小程序端不保证，故带上 seq）。
+  buildRows(accounts) {
+    const rows = accounts.map((a, seq) => {
+      const cat = getCategory(a.categoryId) || {}
+      const ccy = a.currency || 'CNY'
+      const fresh = invSvc.freshInfo(a)
+      return {
+        _id: a._id,
+        seq,
+        name: a.name,
+        icon: isIconKey(a.icon) ? a.icon : 'folder',
+        colorClass: cat.colorClass || 'liquid',
+        isDebt: cat.id === 'debt',
+        currency: ccy,
+        symbol: symbolOf(ccy),
+        balance: a.balance || 0,
+        balanceText: formatMoney(a.balance || 0, ccy, { symbol: true }),
+        freshDays: fresh.days == null ? -1 : fresh.days,
+        freshText: fresh.days == null ? '' : (fresh.stale ? fresh.days + ' 天没核对' : '上次核对 ' + fresh.agoText),
+        freshStale: fresh.stale,
+        newBalance: null,
+        newBalanceText: '',
+        deltaText: '',
+        deltaPositive: true,
+        isSame: false,
+        failed: false,
+      }
     })
-    this._items = items
-    this.setData({ total: items.length, idx: 0 })
-    this.applyCurrent()
+    rows.sort((x, y) => (y.freshDays - x.freshDays) || (x.seq - y.seq))
+    this._rows = rows
+    this.flushRows()
   },
 
-  applyCurrent() {
-    const idx = this.data.idx
-    const it = this._items[idx]
+  // 本地状态 → 视图。所有计数都从 _rows 现算，不维护额外计数器（改判/重试都能自洽）。
+  flushRows() {
+    const rows = this._rows || []
+    let edited = 0
+    let touched = 0
+    let failed = 0
+    for (const r of rows) {
+      if (r.newBalance != null) {
+        touched++
+        if (r.newBalance !== r.balance) edited++
+      }
+      if (r.failed) failed++
+    }
+    this.setData({ rows, editedCount: edited, touchedCount: touched, failedCount: failed })
+  },
+
+  // ===== 编辑一行 =====
+  onRowTap(e) {
+    if (this.data.submitting) return
+    const id = e.currentTarget.dataset.id
+    const row = (this._rows || []).find(r => r._id === id)
+    if (!row) return
     this.setData({
-      cur: it,
-      progressPct: this.data.total ? Math.round((idx / this.data.total) * 100) : 0,
-    })
-  },
-
-  // 统计按账户上的 result 现算，而不是边走边累加计数器 ——
-  // 用户可以「上一个」回退后重新确认同一个账户，累加会把同一个账户算成两次。
-  _tally() {
-    const t = { ok: 0, edit: 0, skip: 0, seen: 0 }
-    for (const it of this._items || []) {
-      if (it.result === 'ok') t.ok++
-      else if (it.result === 'edit') t.edit++
-      else if (it.result === 'skip') t.skip++
-    }
-    t.seen = t.ok + t.edit
-    return t
-  },
-
-  advance() {
-    if (this.data.idx < this.data.total - 1) {
-      this.setData({ idx: this.data.idx + 1 })
-      this.applyCurrent()
-    } else {
-      this.finish(false)
-    }
-  },
-
-  onPrev() {
-    if (this.data.idx === 0 || this.data.submitting) return
-    this.setData({ idx: this.data.idx - 1 })
-    this.applyCurrent()
-  },
-
-  onSkip() {
-    if (this.data.submitting) return
-    this._items[this.data.idx].result = 'skip'
-    this.advance()
-  },
-
-  // 「没变，确认」：只刷 checkedAt，不写交易
-  async onConfirmSame() {
-    if (this.data.submitting) return
-    const it = this._items[this.data.idx]
-    this.setData({ submitting: true })
-    try {
-      await accountSvc.touchChecked(it._id)
-      it.checkedToday = true
-      it.freshAgo = '今天'
-      it.freshStale = false
-      it.result = 'ok'
-      this.setData({ submitting: false })
-      this.advance()
-    } catch (err) {
-      console.error(err)
-      this.setData({ submitting: false })
-      wx.showToast({ icon: 'none', title: '保存失败：' + (err.errMsg || err.message || '') })
-    }
-  },
-
-  // 「余额变了，修改」：调起 amount-input（mode=set，外币按原币种输入）
-  onOpenEdit() {
-    if (this.data.submitting) return
-    const it = this._items[this.data.idx]
-    this.setData({
+      editing: row,
       showInput: true,
-      inputRgb: catRgb(this.data.theme, it.colorClass),
+      inputRgb: catRgb(this.data.theme, row.colorClass),
     })
   },
 
@@ -239,58 +237,102 @@ Page({
     this.setData({ showInput: false })
   },
 
-  async onInputConfirm(e) {
-    const { fenValue, note } = e.detail
-    const it = this._items[this.data.idx]
+  // 只改本地，不落库 —— 落库统一在 onSubmit
+  onInputConfirm(e) {
+    const { fenValue } = e.detail
+    const editing = this.data.editing
     const ai = this.selectComponent('#ai')
-    try {
-      await accountSvc.setBalance(it._id, fenValue, note)
-      // 同步本地视图与净值计算用的账户数据
-      it.balance = fenValue
-      it.balanceText = formatMoney(fenValue, it.currency, { symbol: true })
-      it.checkedToday = true
-      it.freshAgo = '今天'
-      it.freshStale = false
-      it.result = 'edit'
-      const acc = (this._accounts || []).find(a => a._id === it._id)
-      if (acc) acc.balance = fenValue
-      if (ai) ai.finishSubmit()
-      this.setData({ showInput: false })
-      this.advance()
-    } catch (err) {
-      console.error(err)
-      if (ai) ai.finishSubmit()
-      wx.showToast({ icon: 'none', title: '保存失败：' + (err.errMsg || err.message || '') })
+    const row = (this._rows || []).find(r => r._id === (editing && editing._id))
+    if (row) {
+      row.newBalance = fenValue
+      row.newBalanceText = formatMoney(fenValue, row.currency, { symbol: true })
+      row.failed = false
+      const diff = fenValue - row.balance
+      row.isSame = diff === 0
+      // 负债的「变好」是欠款变少，所以正负号看的是钱的方向，不是数字方向
+      row.deltaPositive = row.isDebt ? diff < 0 : diff > 0
+      row.deltaText = row.isSame
+        ? ''
+        : (diff > 0 ? '+' : '−') + formatMoney(Math.abs(diff), row.currency, { symbol: true })
     }
+    if (ai) ai.finishSubmit()
+    this.setData({ showInput: false })
+    this.flushRows()
   },
 
-  // 关闭：盘点中且动过账户时先确认（已确认的都已落库，退出无损）；其余情形直接返回
-  onClose() {
-    if (this.data.phase === 'wizard' && !this.data.empty && !this.data.loading) {
-      const touched = this._tally().seen
-      if (touched > 0) {
-        this.setData({ quitVisible: true, quitCount: touched })
-        return
+  // ===== 提交 =====
+  // 没点过的行 = 没变 → touchChecked（只盖核对时间，不写交易，不变量 3）
+  // 点过但填了同一个数的行，同样只 touchChecked —— 用户确认了「就是这个数」，
+  // 硬写一笔 amount=0 的交易会污染流水和所有基于 balanceAfter 的回算。
+  async onSubmit() {
+    if (this.data.submitting) return
+    const rows = this._rows || []
+    // 上一轮有失败时，这次只重试失败的那几行，成功的不再重发
+    const targets = this.data.failedCount > 0 ? rows.filter(r => r.failed) : rows
+    if (!targets.length) return
+
+    this.setData({ submitting: true })
+    const results = await Promise.all(targets.map(r => {
+      const changed = r.newBalance != null && r.newBalance !== r.balance
+      return settle(changed
+        ? accountSvc.setBalance(r._id, r.newBalance, '盘点')
+        : accountSvc.touchChecked(r._id))
+    }))
+
+    let failed = 0
+    targets.forEach((r, i) => {
+      if (results[i].ok) {
+        r.failed = false
+        if (r.newBalance != null && r.newBalance !== r.balance) {
+          // 同步本地账户数据，完成页的净值才是提交后的净值
+          const acc = (this._accounts || []).find(a => a._id === r._id)
+          if (acc) acc.balance = r.newBalance
+          r.balance = r.newBalance
+          r.balanceText = r.newBalanceText
+        }
+      } else {
+        r.failed = true
+        failed++
+        console.error('[inventory] 保存失败', r.name, results[i].err)
       }
+    })
+    this.setData({ submitting: false })
+    this.flushRows()
+
+    if (failed > 0) {
+      wx.showToast({ icon: 'none', title: failed + ' 项没存上，可重试' })
+      return
+    }
+    if (this.data.scope === 'fixed') {
+      wx.showToast({ icon: 'success', title: '已更新' })
+      setTimeout(goBack, 600)
+      return
+    }
+    this.finish()
+  },
+
+  // ===== 退出 =====
+  // 有没保存的改动才拦；没有就直接走（点进来看一眼再退出不该被打断）
+  onClose() {
+    if (this.data.submitting) return
+    if (this.data.phase === 'list' && this.data.touchedCount > 0) {
+      this.setData({ quitVisible: true })
+      return
     }
     goBack()
   },
 
-  onQuitContinue() {
-    this.setData({ quitVisible: false })
-  },
+  onQuitContinue() { this.setData({ quitVisible: false }) },
+  onQuitDiscard() { this.setData({ quitVisible: false }); goBack() },
+  onQuitSave() { this.setData({ quitVisible: false }); this.onSubmit() },
 
-  onQuitEnd() {
-    this.setData({ quitVisible: false })
-    this.finish(true)
+  // ===== 固定资产：另一条低频车道 =====
+  onOpenFixed() {
+    wx.navigateTo({ url: '/pages/inventory/inventory?scope=fixed' })
   },
 
   // 完成：主角是「这次净值动了多少」。回算不出上次基线时降级为「起点」呈现，绝不造对比。
-  async finish(partial) {
-    const s = this._tally()
-    const seen = s.seen
-    // 没核对的 = 跳过的 + 提前结束时还没轮到的
-    const unchecked = Math.max(0, this.data.total - seen)
+  async finish() {
     const lastTs = invSvc.lastInventoryTs()
 
     const baseCcy = baseCurrency()
@@ -316,9 +358,6 @@ Page({
     // 用户看见的是 App 当着他的面改答案，那是闪烁，不是加载。
     this.setData(Object.assign({
       phase: 'done',
-      progressPct: 100,
-      // 有账户没核对时说清楚：净资产里这些账户用的还是旧余额，别让用户误以为全是最新的
-      skipNote: unchecked > 0 ? '其中 ' + unchecked + ' 个账户这次没核对，用的仍是上次记录的余额' : '',
       netText,
       baseSymbol: baseSym,
     }, lastTs ? { heroReady: false } : baselineHero))

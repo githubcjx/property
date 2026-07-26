@@ -255,9 +255,12 @@ Page({
     }
     const info = invSvc.bannerInfo(accounts)
     const stale = info.show || PREVIEW_INV_BANNER
-    // 最久未核对的账户天数（calm 态文案用）
+    // 最久未核对的账户天数（calm 态文案用）。
+    // 只看盘点范围内的账户 —— 固定资产走独立的低频重估，拿它的天数报在这里，
+    // 用户点进盘点会找不到对应的账户（见 services/inventory.js splitByScope）。
     let oldest = null
     for (const a of accounts) {
+      if (!invSvc.inScope(a)) continue
       const d = invSvc.freshInfo(a).days
       if (d != null && (oldest == null || d > oldest)) oldest = d
     }

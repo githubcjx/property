@@ -18,8 +18,53 @@ const { toDate } = require('../utils/date.js')
 const STALE_DAYS = 30      // 超过视为「太久没核对」（横幅触发 + 琥珀色警示）
 const ROW_HIDE_DAYS = 7    // 首页账户行 ≤7 天不显示新鲜度小字，减少噪音
 const COOLDOWN_DAYS = 7    // 盘点后的冷静期：这期间不再弹横幅（见 bannerInfo）
+const REVALUE_DAYS = 365   // 固定资产超过这个天数没估过，入口转琥珀色（见 fixedSummary）
 
 const STORAGE_LAST_TS = 'inv_last_ts'
+
+// 月度盘点只核对「会动」的账户：流动资金 / 投资 / 应收款 / 负债。
+//
+// 固定资产被排除，依据不是任何推断，而是用户自己在建账户时选的分类 ——
+// utils/categories.js 里 fixed 的 desc 原话就是「房产 / 车辆等长期资产」。
+// 房子和工资卡本来就不是一个节奏的东西，把它们排进同一个逐个核对的列表，
+// 是让 11 个一年不动的账户去拖慢那 4 个每月都动的（这也正是「盘点很烦、
+// 一年只做 4 次」的根因）。固定资产改走 REVALUE_DAYS 的低频重估入口。
+//
+// 注意：排除的只是「核对流程」，不是「净资产计算」—— 固定资产照常计入净值，
+// 见 utils/networth.js 与不变量 4。
+const SCOPE_EXCLUDED_CATEGORIES = ['fixed']
+
+function inScope(acc) {
+  return !!acc && SCOPE_EXCLUDED_CATEGORIES.indexOf(acc.categoryId) === -1
+}
+
+// 把账户拆成「盘点要核对的」与「固定资产」两拨
+function splitByScope(accounts) {
+  const moving = []
+  const fixed = []
+  for (const a of accounts || []) (inScope(a) ? moving : fixed).push(a)
+  return { moving, fixed }
+}
+
+// 固定资产入口的摘要：{ count, days, agoText, due }
+// days = 这批账户里「最久没被估过」的那个的天数（取最小新鲜度）。
+// 一个都没有时 count 为 0，调用方隐藏整行。
+function fixedSummary(accounts) {
+  const fixed = (accounts || []).filter(a => !inScope(a))
+  if (!fixed.length) return { count: 0, days: null, agoText: '', due: false }
+  let days = null
+  for (const a of fixed) {
+    const d = calendarDaysAgo(freshnessMs(a))
+    if (d == null) continue
+    if (days == null || d > days) days = d
+  }
+  if (days == null) return { count: fixed.length, days: null, agoText: '', due: false }
+  let agoText
+  if (days < 30) agoText = '上次估值 ' + (days === 0 ? '今天' : days + ' 天前')
+  else if (days < 365) agoText = '上次估值 ' + Math.floor(days / 30) + ' 个月前'
+  else agoText = '已 ' + Math.floor(days / 365) + ' 年没估过'
+  return { count: fixed.length, days, agoText, due: days >= REVALUE_DAYS }
+}
 
 // 账户新鲜度时间戳（ms）；取不到任何时间时返回 0
 function freshnessMs(acc) {
@@ -53,9 +98,14 @@ function freshInfo(acc) {
   return { days, stale: days >= STALE_DAYS, text, agoText }
 }
 
+// 「有几个账户该核对了」—— 只数盘点范围内的账户。
+// 固定资产不在月度盘点里（见 splitByScope），若把它算进来，一处一年没重估的房产
+// 会让首页永远挂着「该盘点了」，而用户进盘点页根本找不到它，催了也消不掉。
+// 房产的过期由 fixedSummary().due 单独管。
 function staleCount(accounts) {
   let n = 0
   for (const a of accounts || []) {
+    if (!inScope(a)) continue
     const days = calendarDaysAgo(freshnessMs(a))
     if (days != null && days >= STALE_DAYS) n++
   }
@@ -80,8 +130,9 @@ function markInventoryDone() {
 // 注意：只有真的走过流程才会写 inv_last_ts（一个账户都没动就退出不写，见 pages/inventory），
 // 所以「点开看一眼就退」拿不到冷静期。
 function bannerInfo(accounts) {
-  if (!accounts || !accounts.length) return { show: false, staleCount: 0, lastDays: null }
-  const stale = staleCount(accounts)
+  const scoped = (accounts || []).filter(inScope)
+  if (!scoped.length) return { show: false, staleCount: 0, lastDays: null }
+  const stale = staleCount(scoped)
   const lastTs = lastInventoryTs()
   const lastDays = lastTs ? calendarDaysAgo(lastTs) : null
   if (lastDays != null && lastDays < COOLDOWN_DAYS) {
@@ -114,6 +165,10 @@ module.exports = {
   STALE_DAYS,
   ROW_HIDE_DAYS,
   COOLDOWN_DAYS,
+  REVALUE_DAYS,
+  inScope,
+  splitByScope,
+  fixedSummary,
   freshnessMs,
   freshInfo,
   staleCount,

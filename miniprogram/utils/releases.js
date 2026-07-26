@@ -5,6 +5,16 @@
 
 const RELEASES = [
   {
+    version: 'V2.3',
+    date: '2026-07',
+    title: '盘点快多了',
+    highlight: true,
+    items: [
+      '盘点改成一屏：没变就直接点完成，几十秒结束',
+      '房子和车挪出月度盘点，改成一年估一次',
+    ],
+  },
+  {
     version: 'V2.2',
     date: '2026-07',
     title: '你的小树',

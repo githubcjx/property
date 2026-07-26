@@ -31,98 +31,117 @@
 
 .state-hint { margin-top: 120rpx; text-align: center; font-size: 26rpx; color: var(--ink-60); }
 
-/* ============ 进度 ============ */
-.wiz-meta {
-  display: flex; align-items: baseline; justify-content: space-between;
-  padding: 8rpx 32rpx 0;
+/* ============ 一屏列表 ============ */
+.inv-lead {
+  padding: 4rpx 44rpx 20rpx;
+  text-align: center; font-size: 22rpx; color: var(--ink-40); line-height: 1.6;
 }
-.wiz-counter { font-size: 26rpx; font-weight: 700; color: var(--ink-80); letter-spacing: 1rpx; }
-.wiz-group { font-size: 22rpx; color: var(--ink-60); }
-.wiz-bar {
-  height: 8rpx; border-radius: 8rpx; overflow: hidden;
-  margin: 16rpx 32rpx 8rpx;
+
+.inv-list { padding-top: 4rpx; }
+
+/* 一行 = 一个账户。默认即「没变」，点它才进入编辑 —— 所以整行可点，
+   不再给每行配一个确认按钮（那等于把 15 次点击换个地方摆）。 */
+.inv-row {
+  display: flex; align-items: center; gap: 20rpx;
+  padding: 26rpx 24rpx;
+  margin-bottom: 16rpx;
+  border-radius: 28rpx;
   background: var(--glass-1);
   border: 1rpx solid var(--hairline);
+  transition: border-color 0.2s ease, background 0.2s ease;
 }
-.wiz-fill {
-  height: 100%; border-radius: 8rpx;
-  background: linear-gradient(90deg, rgba(var(--good-rgb), 0.5), var(--good));
-  transition: width 0.3s ease;
+.inv-row-hover { transform: scale(0.99); opacity: 0.85; }
+.inv-row.is-edited {
+  border-color: rgba(var(--good-rgb), 0.34);
+  background: rgba(var(--good-rgb), 0.06);
+}
+.inv-row.is-failed {
+  border-color: rgba(var(--debt-rgb), 0.5);
+  background: rgba(var(--debt-rgb), 0.07);
 }
 
-/* ============ 当前账户卡 ============ */
-.wiz-card {
-  margin: 24rpx 32rpx 0;
-  border-radius: 36rpx;
-  padding: 48rpx 32rpx 40rpx;
-  text-align: center;
-  border: 1rpx solid var(--hairline);
-}
-.wiz-orb {
-  width: 108rpx; height: 108rpx; border-radius: 32rpx;
-  margin: 0 auto;
+.inv-orb {
+  width: 68rpx; height: 68rpx; flex: 0 0 68rpx; border-radius: 22rpx;
   display: flex; align-items: center; justify-content: center;
 }
-.wiz-name {
-  margin-top: 24rpx;
-  font-size: 34rpx; font-weight: 800; color: var(--ink-100);
-  display: flex; align-items: center; justify-content: center; gap: 12rpx;
+.inv-main { flex: 1; min-width: 0; }
+.inv-name {
+  display: flex; align-items: center; gap: 10rpx;
+  font-size: 28rpx; font-weight: 600; color: var(--ink-100);
 }
-.wiz-ccy {
-  font-size: 20rpx; font-weight: 500; color: var(--ink-60);
-  border: 1rpx solid var(--hairline-hi); border-radius: 8rpx;
-  padding: 2rpx 10rpx;
+.inv-ccy {
+  font-size: 18rpx; font-weight: 500; color: var(--ink-60);
+  border: 1rpx solid var(--hairline-hi); border-radius: 6rpx;
+  padding: 0 8rpx;
 }
-.wiz-lab { margin-top: 28rpx; font-size: 22rpx; color: var(--ink-60); }
-.wiz-bal {
-  margin-top: 8rpx;
-  font-size: 64rpx; font-weight: 800; letter-spacing: -1rpx;
-  color: var(--ink-100);
-}
-.wiz-bal.is-debt { color: var(--debt); }
-.wiz-fresh { margin-top: 16rpx; font-size: 22rpx; color: var(--ink-40); }
-.wiz-fresh.is-stale { color: var(--warn); }
-.wiz-fresh.is-today { color: var(--good); }
-.wiz-ask {
-  margin-top: 28rpx; padding-top: 24rpx;
-  border-top: 1rpx solid var(--hairline);
-  font-size: 26rpx; color: var(--ink-80);
-}
+.inv-fresh { margin-top: 6rpx; font-size: 20rpx; color: var(--ink-40); }
+.inv-fresh.is-stale { color: var(--warn); }
+.inv-fresh.is-failed { color: var(--debt); font-weight: 700; }
 
-/* ============ 动作区 ============ */
-.wiz-actions {
-  margin-top: auto;
-  padding: 32rpx 32rpx calc(48rpx + env(safe-area-inset-bottom));
+.inv-val { flex: 0 0 auto; text-align: right; max-width: 300rpx; }
+.inv-amt { font-size: 30rpx; font-weight: 700; color: var(--ink-100); letter-spacing: 0.4rpx; }
+.inv-amt.is-debt { color: var(--debt); }
+.inv-delta { margin-top: 6rpx; font-size: 20rpx; font-weight: 700; }
+.inv-delta.is-up { color: var(--good); }
+.inv-delta.is-down { color: var(--debt); }
+.inv-delta.is-same { color: var(--ink-40); font-weight: 400; }
+
+/* 固定资产：虚线区分「这不是流程的一步」，只是一扇门 */
+.inv-fixed {
+  display: flex; align-items: center; gap: 18rpx;
+  margin-top: 8rpx; padding: 22rpx 24rpx;
+  border-radius: 28rpx;
+  border: 1rpx dashed var(--hairline-hi);
 }
-.wiz-btn {
+.inv-fixed.is-due {
+  border-color: rgba(var(--warn-rgb), 0.42);
+  background: rgba(var(--warn-rgb), 0.05);
+}
+.inv-fixed-ico {
+  width: 56rpx; height: 56rpx; flex: 0 0 56rpx; border-radius: 18rpx;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(var(--fixed-rgb), 0.14); color: var(--fixed);
+}
+.inv-fixed.is-due .inv-fixed-ico { background: rgba(var(--warn-rgb), 0.16); color: var(--warn); }
+.inv-fixed-txt { flex: 1; min-width: 0; }
+.inv-fixed-t { font-size: 24rpx; font-weight: 700; color: var(--ink-80); }
+.inv-fixed-s { margin-top: 4rpx; font-size: 20rpx; color: var(--ink-40); }
+.inv-fixed.is-due .inv-fixed-s { color: var(--warn); }
+.inv-fixed-go { color: var(--ink-40); flex: 0 0 auto; }
+
+/* 空态里的固定资产出路 */
+.inv-empty-fixed { margin: 40rpx 32rpx 0; }
+
+/* ============ 底部：一个按钮 ============ */
+.inv-foot {
+  flex: 0 0 auto;
+  padding: 20rpx 32rpx calc(32rpx + env(safe-area-inset-bottom));
+  border-top: 1rpx solid var(--hairline);
+}
+.inv-cta {
   height: 104rpx; border-radius: 32rpx;
   display: flex; align-items: center; justify-content: center;
   font-size: 30rpx; font-weight: 700;
-}
-.wiz-btn.primary {
   background: rgba(var(--good-rgb), 0.16);
   border: 1rpx solid rgba(var(--good-rgb), 0.45);
   color: var(--good);
   box-shadow: 0 12rpx 36rpx rgba(var(--good-rgb), 0.12);
 }
-.wiz-btn.primary.is-busy { opacity: 0.55; }
-.wiz-btn.ghost {
-  margin-top: 20rpx;
-  background: var(--glass-1);
-  border: 1rpx solid var(--hairline);
-  color: var(--ink-100);
+.inv-cta.is-retry {
+  background: rgba(var(--debt-rgb), 0.16);
+  border-color: rgba(var(--debt-rgb), 0.45);
+  color: var(--debt);
+  box-shadow: none;
 }
-.wiz-btn-hover { transform: scale(0.98); opacity: 0.85; }
-.wiz-hint {
-  margin-top: 18rpx; text-align: center;
+.inv-cta.is-busy { opacity: 0.55; }
+.inv-foot-note {
+  margin-top: 16rpx; text-align: center;
   font-size: 20rpx; color: var(--ink-40);
 }
-.wiz-sub {
-  display: flex; justify-content: space-between;
-  margin-top: 24rpx; padding: 0 8rpx;
-}
-.wiz-link { font-size: 26rpx; color: var(--ink-60); padding: 12rpx; }
-.wiz-link.is-disabled { opacity: 0.3; pointer-events: none; }
+.inv-foot-note.is-err { color: var(--debt); }
+
+/* 按下反馈：列表底部 CTA 与完成页的 .done-cta 共用 */
+.wiz-btn-hover { transform: scale(0.98); opacity: 0.85; }
 
 /* ============ 完成页 ============ */
 .scroll { flex: 1; padding: 8rpx 32rpx 0; box-sizing: border-box; }
