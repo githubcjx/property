@@ -1,12 +1,13 @@
 const app = getApp()
 const { APP_VERSION } = require('../../utils/version.js')
+const { DEFAULT_THEME } = require('../../utils/theme.js')
 
 Page({
   data: {
     version: APP_VERSION,
     statusBarHeight: 20,
     reduceMotion: false,
-    theme: 'aurora',
+    theme: DEFAULT_THEME,
     sections: [
       {
         title: '关于这个小程序',

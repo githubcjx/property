@@ -188,7 +188,7 @@
 /* ============ Scroll ============ */
 .scroll {
   flex: 1;
-  padding: 0 28rpx 220rpx;
+  padding: 0 0 220rpx;
   box-sizing: border-box;
 }
 
@@ -244,7 +244,7 @@
   display: flex;
   flex-direction: column;
   gap: 20rpx;
-  padding-top: 24rpx;
+  padding: 24rpx 28rpx 0;
 }
 .cat-card {
   border-radius: 36rpx;
@@ -682,7 +682,7 @@
   display: flex;
   align-items: center;
   gap: 22rpx;
-  margin: 0 0 24rpx;
+  margin: 0 28rpx 24rpx;
   padding: 22rpx 26rpx;
   border-radius: 28rpx;
   overflow: hidden;

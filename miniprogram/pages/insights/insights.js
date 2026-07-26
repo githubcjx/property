@@ -3,12 +3,13 @@ const accountSvc = require('../../services/account.js')
 const allocationSvc = require('../../services/allocation.js')
 const { formatCNY } = require('../../utils/format.js')
 const { goBack } = require('../../utils/nav.js')
+const { DEFAULT_THEME } = require('../../utils/theme.js')
 
 Page({
   data: {
     statusBarHeight: 20,
     reduceMotion: false,
-    theme: 'aurora',
+    theme: DEFAULT_THEME,
     hideAmount: false,
     loading: true,
     hasData: false,

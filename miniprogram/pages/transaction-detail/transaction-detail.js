@@ -5,6 +5,7 @@ const { formatMoney, fenToUnit, unitToFen } = require('../../utils/format.js')
 const { formatDateTime } = require('../../utils/date.js')
 const { isIconKey, getCategory } = require('../../utils/categories.js')
 const { symbolOf, digitsOf } = require('../../utils/currency.js')
+const { DEFAULT_THEME } = require('../../utils/theme.js')
 
 // 按账户币种拆分金额（人民币/美元 2 位小数，日元 0 位）
 function splitAmount(fen, ccy) {
@@ -69,7 +70,7 @@ Page({
     editTime: '',
     submitting: false,
     reduceMotion: false,
-    theme: 'aurora',
+    theme: DEFAULT_THEME,
   },
 
   onLoad(query) {

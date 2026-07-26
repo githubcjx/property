@@ -1,5 +1,5 @@
 const app = getApp()
-const { getTheme } = require('../../utils/theme.js')
+const { getTheme, DEFAULT_THEME } = require('../../utils/theme.js')
 const { getCurrency } = require('../../utils/currency.js')
 const { APP_VERSION } = require('../../utils/version.js')
 const exportSvc = require('../../services/export.js')
@@ -9,7 +9,7 @@ Page({
     version: APP_VERSION,
     statusBarHeight: 20,
     reduceMotion: false,
-    theme: 'aurora',
+    theme: DEFAULT_THEME,
     themeName: '',
     accentColor: '#a7d3ff',   // 原生 switch 的 color 取不到 CSS 变量，用当前主题强调色
     baseCurrencyText: '',

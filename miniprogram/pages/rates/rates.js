@@ -1,12 +1,13 @@
 const app = getApp()
 const fxRate = require('../../services/fxRate.js')
 const { CURRENCIES } = require('../../utils/currency.js')
+const { DEFAULT_THEME } = require('../../utils/theme.js')
 
 Page({
   data: {
     statusBarHeight: 20,
     reduceMotion: false,
-    theme: 'aurora',
+    theme: DEFAULT_THEME,
     rows: [],
     date: '',
     source: '',

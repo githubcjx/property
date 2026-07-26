@@ -1,13 +1,14 @@
 const app = getApp()
 const { APP_VERSION } = require('../../utils/version.js')
 const { RELEASES } = require('../../utils/releases.js')
+const { DEFAULT_THEME } = require('../../utils/theme.js')
 
 Page({
   data: {
     version: APP_VERSION,
     statusBarHeight: 20,
     reduceMotion: false,
-    theme: 'aurora',
+    theme: DEFAULT_THEME,
     // 版本日志单一来源见 utils/releases.js（自新到旧）
     releases: RELEASES,
   },

@@ -1,11 +1,12 @@
 const app = getApp()
 const { CURRENCIES, getCurrency } = require('../../utils/currency.js')
+const { DEFAULT_THEME } = require('../../utils/theme.js')
 
 Page({
   data: {
     statusBarHeight: 20,
     reduceMotion: false,
-    theme: 'aurora',
+    theme: DEFAULT_THEME,
     currencies: CURRENCIES,
     current: 'CNY',
   },

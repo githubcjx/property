@@ -1,10 +1,10 @@
 const app = getApp()
-const { THEME_GROUPS, THEME_LOCK_ENABLED, THEME_AD_UNIT_ID, isAdConfigured } = require('../../utils/theme.js')
+const { THEME_GROUPS, THEME_LOCK_ENABLED, THEME_AD_UNIT_ID, isAdConfigured, DEFAULT_THEME } = require('../../utils/theme.js')
 
 Page({
   data: {
     groups: THEME_GROUPS,
-    theme: 'aurora',
+    theme: DEFAULT_THEME,
     reduceMotion: false,
     statusBarHeight: 20,
     lockEnabled: THEME_LOCK_ENABLED,   // 广告解锁总开关；关闭时 premium 系列免费、不显角标

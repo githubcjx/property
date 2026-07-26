@@ -1,7 +1,11 @@
 // 主题：每套主题 = 一组 CSS 变量覆盖（见 app.wxss 的 .theme-xxx 类）。
 // 这里是 JS 侧的单一事实来源：色卡选择器渲染 dots/名称，趋势图(ECharts)按
 // 主题强调色给折线着色（canvas 内的颜色无法走 CSS 变量，只能由 JS 注入）。
-const DEFAULT_THEME = 'aurora'
+// 默认主题：晴空软光(slate)。它是结构型主题(软光浮雕)，不只是配色，见 app.wxss。
+// 注意 slate 仍带 locked:true —— 但默认主题天然会被 app.js onLaunch 的「既往不咎」
+// 逻辑解锁(新用户一进来当前主题就是它)，所以即便日后打开 THEME_LOCK_ENABLED，
+// 它实际上也不会被收费。要真收费得先换个默认主题。
+const DEFAULT_THEME = 'slate'
 
 const THEMES = [
   // —— 人民币纸币色卡系列（按面值 1/5/10/20/50/100 排序）——
@@ -82,11 +86,13 @@ const THEMES = [
   },
 ]
 
-// 系列分组（用于主题选择页分段标题与说明）。顺序即展示顺序。
+// 系列分组（用于主题选择页分段标题与说明）。顺序即展示顺序：
+// 质感臻选打头（默认主题「晴空软光」在这一组，开屏所见即列表第一块），
+// 人民币纸币放最后 —— 它有 6 套，摆在最前会把另外两组挤到首屏之外。
 const THEME_SERIES = [
-  { key: 'banknote', name: '人民币纸币配色系列', desc: '取自一版纸币标准色，按面值 1 / 5 / 10 / 20 / 50 / 100 排序' },
-  { key: 'classic', name: '经典深色系列', desc: '深色玻璃质感原生配色' },
   { key: 'premium', name: '质感臻选系列', desc: '软光浮雕 + 浅色粗野 · 两种独特结构质感' },
+  { key: 'classic', name: '经典深色系列', desc: '深色玻璃质感原生配色' },
+  { key: 'banknote', name: '人民币纸币配色系列', desc: '取自一版纸币标准色，按面值 1 / 5 / 10 / 20 / 50 / 100 排序' },
 ]
 
 // 派生：[{ ...series, themes: [...] }]，已过滤掉无主题的空系列。
@@ -94,8 +100,10 @@ const THEME_GROUPS = THEME_SERIES
   .map(s => ({ ...s, themes: THEMES.filter(t => t.series === s.key) }))
   .filter(g => g.themes.length)
 
+// 取不到时回退默认主题（而不是 THEMES[0]）—— 数组顺序是给选择页看的展示顺序，
+// 拿它当兜底会让一个坏掉的 pref_theme 渲染成碰巧排在第一位的那套配色。
 function getTheme(key) {
-  return THEMES.find(t => t.key === key) || THEMES[0]
+  return THEMES.find(t => t.key === key) || THEMES.find(t => t.key === DEFAULT_THEME) || THEMES[0]
 }
 
 // JS 侧类目色(镜像 app.wxss 的 --liquid/--investment/--fixed/--receivable，按主题)。

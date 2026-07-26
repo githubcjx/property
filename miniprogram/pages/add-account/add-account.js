@@ -3,6 +3,7 @@ const accountSvc = require('../../services/account.js')
 const { CATEGORIES, getSubType, getCategory } = require('../../utils/categories.js')
 const { unitToFen, fenToUnit } = require('../../utils/format.js')
 const { CURRENCIES, symbolOf } = require('../../utils/currency.js')
+const { DEFAULT_THEME } = require('../../utils/theme.js')
 
 // 币种选择器选项（显示「代码 名称」），index 对齐 CURRENCIES
 const CCY_OPTIONS = CURRENCIES.map(c => c.code + ' ' + c.name)
@@ -45,7 +46,7 @@ Page({
     showSuccess: false,
     burstKey: 0,
     reduceMotion: false,
-    theme: 'aurora',
+    theme: DEFAULT_THEME,
   },
 
   onLoad(query) {

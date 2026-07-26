@@ -6,13 +6,13 @@ const app = getApp()
 const accountSvc = require('../../services/account.js')
 const { QUICK_ACCOUNTS } = require('../../utils/accountTemplates.js')
 const { getCategory, isDebtCategory } = require('../../utils/categories.js')
-const { catRgb } = require('../../utils/theme.js')
+const { catRgb, DEFAULT_THEME } = require('../../utils/theme.js')
 const { formatMoney } = require('../../utils/format.js')
 
 Page({
   data: {
     statusBarHeight: 20,
-    theme: 'aurora',
+    theme: DEFAULT_THEME,
     reduceMotion: false,
 
     step: 'pick',            // pick | fill | reveal

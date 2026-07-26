@@ -23,7 +23,7 @@ const invSvc = require('../../services/inventory.js')
 const goalSvc = require('../../services/goal.js')
 const reminderSvc = require('../../services/reminder.js')
 const { isIconKey, getCategory } = require('../../utils/categories.js')
-const { catRgb } = require('../../utils/theme.js')
+const { catRgb, DEFAULT_THEME } = require('../../utils/theme.js')
 const { symbolOf } = require('../../utils/currency.js')
 const { formatMoney } = require('../../utils/format.js')
 const { sumNetCnyFen, cnyToBaseFen, baseCurrency } = require('../../utils/networth.js')
@@ -45,7 +45,7 @@ function settle(p) {
 Page({
   data: {
     statusBarHeight: 20,
-    theme: 'aurora',
+    theme: DEFAULT_THEME,
     reduceMotion: false,
     hideAmount: false,
 

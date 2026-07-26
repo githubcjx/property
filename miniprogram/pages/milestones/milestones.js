@@ -5,12 +5,13 @@ const { formatMoney, unitToFen, fenToUnit } = require('../../utils/format.js')
 const { baseCurrency, cnyToBaseFen } = require('../../utils/networth.js')
 const { symbolOf } = require('../../utils/currency.js')
 const { goBack } = require('../../utils/nav.js')
+const { DEFAULT_THEME } = require('../../utils/theme.js')
 
 Page({
   data: {
     statusBarHeight: 20,
     reduceMotion: false,
-    theme: 'aurora',
+    theme: DEFAULT_THEME,
     hideAmount: false,
     loading: true,
     hasData: false,

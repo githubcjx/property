@@ -3,6 +3,7 @@ const reportSvc = require('../../services/report.js')
 const accountSvc = require('../../services/account.js')
 const { formatCNY } = require('../../utils/format.js')
 const { goBack } = require('../../utils/nav.js')
+const { DEFAULT_THEME } = require('../../utils/theme.js')
 
 // 演示开关：true = 写死示例数据；false = 用真实账户数据计算（当前为真实计算预览）。
 const USE_DEMO = false
@@ -38,7 +39,7 @@ Page({
   data: {
     statusBarHeight: 20,
     reduceMotion: false,
-    theme: 'aurora',
+    theme: DEFAULT_THEME,
     hideAmount: false,
 
     loading: true,

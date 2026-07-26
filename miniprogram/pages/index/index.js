@@ -12,7 +12,7 @@ const invSvc = require('../../services/inventory.js')
 const txSvc = require('../../services/transaction.js')
 const growthTree = require('../../utils/growthTree.js')
 const treeArt = require('../../utils/treeArt.js')
-const { getTheme, isLight } = require('../../utils/theme.js')
+const { getTheme, isLight, DEFAULT_THEME } = require('../../utils/theme.js')
 
 const STORAGE_TOOL_SEEN = 'tool_badge_seen'   // { 工具key: 已读到的功能版本号 }
 
@@ -75,7 +75,7 @@ Page({
 
     wobbleMap: {},
     reduceMotion: false,
-    theme: 'aurora',
+    theme: DEFAULT_THEME,
 
     // 工具 · 分析中心面板
     toolsVisible: false,

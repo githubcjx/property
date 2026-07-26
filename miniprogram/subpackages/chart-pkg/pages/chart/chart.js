@@ -1,7 +1,7 @@
 const app = getApp()
 const echarts = require('../../ec-canvas/echarts')
 const chartSvc = require('../../../../services/chart.js')
-const { getTheme, isLight } = require('../../../../utils/theme.js')
+const { getTheme, isLight, DEFAULT_THEME } = require('../../../../utils/theme.js')
 const { baseCurrency, cnyToBaseFen } = require('../../../../utils/networth.js')
 const { symbolOf } = require('../../../../utils/currency.js')
 const { formatMoney, fenToUnit } = require('../../../../utils/format.js')
@@ -56,7 +56,7 @@ Page({
     hasData: false,
     hideAmount: false,
     reduceMotion: false,
-    theme: 'aurora',
+    theme: DEFAULT_THEME,
 
     statusBarHeight: 20,
 
