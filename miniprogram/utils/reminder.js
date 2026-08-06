@@ -6,7 +6,7 @@
 // 模板 ID 从微信公众平台申请：小程序后台 → 订阅消息 → 公共模板库 → 选一个
 // 「记账/账单提醒」类模板 → 我的模板里拿到 tmpl id（形如 abcDEF...，25+ 位）。
 // 填进 TEMPLATE_ID 即自动启用；未配置时完成页显示「即将上线」且不调订阅接口
-// （与 utils/theme.js 的 THEME_AD_UNIT_ID / isAdConfigured 同一套写法）。
+// （同款「未配置就整条链路 no-op」的写法，另一处在 cloudfunctions/inventoryRemind）。
 //
 // ⚠️ 选定模板后，模板的字段名（thing19 / time16 …）必须与云函数 inventoryRemind
 //    里 buildData() 的键一一对应 —— 连 thing/time 前缀都要照抄，否则微信报 47003。

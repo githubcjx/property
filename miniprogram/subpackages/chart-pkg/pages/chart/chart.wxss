@@ -240,3 +240,137 @@
   line-height: 1.5;
 }
 .basis-note-warn { color: var(--warn); }
+
+/* ============ 回顾中枢 ============
+   曲线下方的三块摘要：构成 / 目标 / 上月。每块都是「一眼 + 一个去处」，
+   刻意做得比曲线轻 —— 主角只有一个，它们是通往详情的路标，不是并列的第二张图表。 */
+/* 本页原本没有通用按下态；中枢三块都要用，在这里补一条（与首页/盘点页同款手感） */
+.btn-hover { opacity: 0.75; transform: scale(0.98); }
+
+.hub {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+  margin-top: 32rpx;
+}
+.hub-card {
+  border-radius: 28rpx;
+  padding: 26rpx 28rpx;
+}
+.hub-head {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+.hub-title {
+  flex: 1;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--ink-100);
+  letter-spacing: 0.02em;
+}
+.hub-go { opacity: 0.45; }
+.hub-pct {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+/* 构成：小环图 + 图例 */
+.hub-alloc {
+  display: flex;
+  align-items: center;
+  gap: 28rpx;
+  margin-top: 22rpx;
+}
+.hub-donut {
+  position: relative;
+  width: 150rpx; height: 150rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.hub-donut-hole {
+  position: absolute;
+  inset: 30rpx;
+  border-radius: 50%;
+  background: var(--bg-1);
+}
+.hub-legend {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  min-width: 0;
+}
+.hub-leg-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+.hub-leg-dot {
+  width: 14rpx; height: 14rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.hub-leg-name {
+  flex: 1;
+  font-size: 24rpx;
+  color: var(--ink-80);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.hub-leg-pct {
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+/* 目标：进度条 */
+.hub-bar {
+  height: 12rpx;
+  border-radius: 6rpx;
+  background: var(--glass-1);
+  overflow: hidden;
+  margin-top: 20rpx;
+}
+.hub-bar-fill {
+  height: 100%;
+  border-radius: 6rpx;
+  background: linear-gradient(90deg, rgba(var(--accent-rgb), 0.55), var(--accent));
+}
+.hub-sub {
+  margin-top: 16rpx;
+  font-size: 22rpx;
+  color: var(--ink-60);
+  line-height: 1.5;
+}
+
+/* 上月小结：一行 */
+.hub-row {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  border-radius: 24rpx;
+  padding: 22rpx 26rpx;
+}
+.hub-row-ico {
+  width: 60rpx; height: 60rpx;
+  border-radius: 18rpx;
+  background: var(--glass-1);
+  border: 1rpx solid var(--hairline);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.hub-row-txt { flex: 1; min-width: 0; }
+.hub-row-t {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--ink-100);
+}
+.hub-row-s {
+  margin-top: 4rpx;
+  font-size: 20rpx;
+  color: var(--ink-40);
+}

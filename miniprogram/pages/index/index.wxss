@@ -527,52 +527,6 @@
   transform: scale(0.96);
 }
 
-/* 新功能红点：工具入口聚合红点 + 面板内工具条目右上角红点。
-   红点是「有更新」的通知语义，用固定醒目红(区别于财务负向的 --debt 柔红)，
-   box-shadow 用同底色描边，让它像浮在表面。 */
-.tool-dot {
-  position: absolute;
-  top: -4rpx; right: -4rpx;
-  width: 16rpx; height: 16rpx;
-  border-radius: 50%;
-  background: #fa5151;
-  box-shadow: 0 0 0 3rpx var(--bg-1), 0 0 8rpx rgba(250, 81, 81, 0.6);
-  z-index: 3;
-}
-.tool-dot-fab { top: 12rpx; right: 16rpx; }
-
-/* ============ 工具 · 分析中心面板 ============ */
-.tools-mask {
-  position: fixed;
-  inset: 0;
-  z-index: 200;
-  background: rgba(3, 4, 7, 0.6);
-  -webkit-backdrop-filter: blur(6rpx);
-  backdrop-filter: blur(6rpx);
-  display: flex;
-  align-items: flex-end;
-  animation: tools-fade 0.22s var(--ease-soft);
-}
-.tools-mask.closing { animation: tools-fade-out 0.26s var(--ease-soft) forwards; }
-
-.tools-sheet {
-  width: 100%;
-  padding: 16rpx 40rpx calc(48rpx + env(safe-area-inset-bottom));
-  border-radius: 40rpx 40rpx 0 0;
-  background: linear-gradient(180deg, #14161d 0%, #0a0b10 100%);
-  border-top: 1rpx solid var(--hairline-hi);
-  box-shadow: 0 -24rpx 60rpx rgba(0, 0, 0, 0.5);
-  animation: tools-rise 0.3s var(--ease-soft);
-}
-.tools-sheet.closing { animation: tools-sink 0.28s var(--ease-soft) forwards; }
-
-@keyframes tools-fade { from { opacity: 0; } to { opacity: 1; } }
-@keyframes tools-rise { from { transform: translateY(100%); } to { transform: translateY(0); } }
-/* 关闭:用独立的「正向」退出动画 + forwards 保持终态。
-   原先用 reverse 复用开场动画,缓动被反转、且同名动画切换可能不重启,体感像「突然消失」。 */
-@keyframes tools-fade-out { from { opacity: 1; } to { opacity: 0; } }
-@keyframes tools-sink { from { transform: translateY(0); } to { transform: translateY(105%); } }
-.no-motion .tools-mask, .no-motion .tools-sheet { animation: none; }
 /* 简化动效:悬浮按钮也去掉 backdrop-filter,回退不透明深色,彻底降温 */
 .no-motion .fab,
 .no-motion .tools-entry {
@@ -580,71 +534,6 @@
   backdrop-filter: none;
   background: rgba(22, 24, 30, 0.9);
 }
-
-.sheet-handle {
-  width: 72rpx; height: 8rpx;
-  border-radius: 4rpx;
-  background: var(--ink-20);
-  margin: 4rpx auto 24rpx;
-}
-.sheet-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24rpx;
-}
-.sheet-title {
-  font-size: 34rpx;
-  font-weight: 600;
-  color: var(--ink-100);
-  letter-spacing: 0.5rpx;
-}
-.sheet-close {
-  width: 60rpx; height: 60rpx;
-  border-radius: 50%;
-  background: var(--glass-1);
-  border: 1rpx solid var(--hairline);
-  display: flex; align-items: center; justify-content: center;
-}
-
-.tool-grid {
-  display: flex;
-  flex-wrap: wrap;
-}
-.tool-cell {
-  width: 25%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16rpx;
-  padding: 8rpx 0 16rpx;
-}
-.tool-cell-hover { transform: scale(0.92); opacity: 0.85; }
-.tool-chip {
-  width: 104rpx; height: 104rpx;
-  border-radius: 30rpx;
-  display: flex; align-items: center; justify-content: center;
-  position: relative;
-  border: 1rpx solid var(--hairline);
-}
-.tool-chip::after {
-  content: '';
-  position: absolute; inset: 0;
-  border-radius: 30rpx;
-  filter: blur(16rpx);
-  opacity: 0.7;
-  z-index: -1;
-}
-.chip-ice   { background: rgba(var(--accent-rgb), 0.16); border-color: rgba(var(--accent-rgb), 0.32); }
-.chip-ice::after   { background: radial-gradient(circle, rgba(var(--accent-rgb), 0.40), transparent 70%); }
-.chip-gold  { background: rgba(243, 223, 163, 0.16); border-color: rgba(243, 223, 163, 0.32); }
-.chip-gold::after  { background: radial-gradient(circle, rgba(243, 223, 163, 0.34), transparent 70%); }
-.chip-teal  { background: rgba(var(--fixed-rgb), 0.16); border-color: rgba(var(--fixed-rgb), 0.32); }
-.chip-teal::after  { background: radial-gradient(circle, rgba(var(--fixed-rgb), 0.38), transparent 70%); }
-.chip-report { background: rgba(255, 207, 138, 0.16); border-color: rgba(255, 207, 138, 0.32); }
-.chip-report::after { background: radial-gradient(circle, rgba(255, 207, 138, 0.36), transparent 70%); }
-.chip-inv  { background: rgba(var(--good-rgb), 0.16); border-color: rgba(var(--good-rgb), 0.32); }
-.chip-inv::after  { background: radial-gradient(circle, rgba(var(--good-rgb), 0.38), transparent 70%); }
 
 /* ============ 月报横幅 ============ */
 .mreport-banner {
@@ -710,9 +599,4 @@
 }
 .inv-entry.is-stale .ive-title { font-weight: 800; }
 .inv-entry.is-stale .ive-arrow { opacity: 0.9; }
-.tool-label {
-  font-size: 24rpx;
-  color: var(--ink-80);
-  font-weight: 500;
-}
 

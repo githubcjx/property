@@ -428,200 +428,14 @@ button.btn-reset::after { display: none; }
 /* ============================================================
    主题 · Theme overrides
    机制：每套主题 = 一组 CSS 变量覆盖。页面根节点(.page)与 .canvas-bg 上挂
-   class="theme-{{theme}}"，变量级联到全部子元素。默认主题(aurora)即 page 基色，
-   无需 class。所有白色玻璃叠加在深色底上继续有效，只切换强调色 / 类别色 / 星云色。
+   class="theme-{{theme}}"，变量级联到全部子元素。
    --debt / --neg 在所有主题保持红色（财务「负向」语义）。
+
+   V3.0 只剩两套，都是【结构型】主题：除覆盖变量外还重塑玻璃/卡片/按钮的质感。
+   上面 page 选择器里的基础色板不再有任何主题直接使用它，但仍是必需的 ——
+   两套主题都只覆盖自己关心的那部分变量，其余全靠这份基色兜底。
+   （被删掉的 12 套纯换色主题见 utils/theme.js 顶部说明。）
    ============================================================ */
-
-/* —— 人民币纸币色卡系列（按面值 1/5/10/20/50/100）—— */
-/* 1 元 · 不焦绿（标准色 #566C44，深色化后取明亮橄榄绿为强调） */
-.theme-yuan1 {
-  --bg-0: #040705; --bg-1: #070d09; --bg-2: #0c150f;
-  --ink-100: #f1f8ec;
-  --ink-80: rgba(241, 248, 236, 0.78);
-  --ink-60: rgba(241, 248, 236, 0.55);
-  --ink-40: rgba(241, 248, 236, 0.36);
-  --ink-20: rgba(241, 248, 236, 0.18);
-  --ice-blue: #8fb96b; --accent: #8fb96b; --accent-2: #c9c88a;
-  --accent-rgb: 143, 185, 107;
-  --liquid: #8fb96b;     --liquid-rgb: 143, 185, 107;
-  --investment: #c9c88a; --investment-rgb: 201, 200, 138;
-  --fixed: #b6d88f;      --fixed-rgb: 182, 216, 143;
-  --receivable: #e2eccb; --receivable-rgb: 226, 236, 203;
-  --neb-1: rgba(143, 185, 107, 0.14);
-  --neb-2: rgba(201, 200, 138, 0.08);
-}
-/* 5 元 · 绝绝紫（标准色 #6C4D7E） */
-.theme-yuan5 {
-  --bg-0: #09060f; --bg-1: #0e0a16; --bg-2: #161021;
-  --ink-100: #f4eefb;
-  --ink-80: rgba(244, 238, 251, 0.78);
-  --ink-60: rgba(244, 238, 251, 0.55);
-  --ink-40: rgba(244, 238, 251, 0.36);
-  --ink-20: rgba(244, 238, 251, 0.18);
-  --ice-blue: #c4a0db; --accent: #c4a0db; --accent-2: #f2c79b;
-  --accent-rgb: 196, 160, 219;
-  --liquid: #c4a0db;     --liquid-rgb: 196, 160, 219;
-  --investment: #f2c79b; --investment-rgb: 242, 199, 155;
-  --fixed: #a9d1d9;      --fixed-rgb: 169, 209, 217;
-  --receivable: #efe3f6; --receivable-rgb: 239, 227, 246;
-  --neb-1: rgba(196, 160, 219, 0.15);
-  --neb-2: rgba(242, 199, 155, 0.09);
-}
-/* 10 元 · 不摆蓝（标准色 #325969） */
-.theme-yuan10 {
-  --bg-0: #04070a; --bg-1: #070d12; --bg-2: #0c1620;
-  --ink-100: #ecf3f8;
-  --ink-80: rgba(236, 243, 248, 0.78);
-  --ink-60: rgba(236, 243, 248, 0.55);
-  --ink-40: rgba(236, 243, 248, 0.36);
-  --ink-20: rgba(236, 243, 248, 0.18);
-  --ice-blue: #6fa6c4; --accent: #6fa6c4; --accent-2: #f0c9ae;
-  --accent-rgb: 111, 166, 196;
-  --liquid: #6fa6c4;     --liquid-rgb: 111, 166, 196;
-  --investment: #f0c9ae; --investment-rgb: 240, 201, 174;
-  --fixed: #9bb89a;      --fixed-rgb: 155, 184, 154;
-  --receivable: #ddc7dc; --receivable-rgb: 221, 199, 220;
-  --neb-1: rgba(111, 166, 196, 0.15);
-  --neb-2: rgba(240, 201, 174, 0.09);
-}
-/* 20 元 · 糖太棕（标准色 #856441） */
-.theme-yuan20 {
-  --bg-0: #080603; --bg-1: #0e0a05; --bg-2: #15100a;
-  --ink-100: #f9f1e8;
-  --ink-80: rgba(249, 241, 232, 0.78);
-  --ink-60: rgba(249, 241, 232, 0.55);
-  --ink-40: rgba(249, 241, 232, 0.36);
-  --ink-20: rgba(249, 241, 232, 0.18);
-  --ice-blue: #d9a86a; --accent: #d9a86a; --accent-2: #e8b98c;
-  --accent-rgb: 217, 168, 106;
-  --liquid: #d9a86a;     --liquid-rgb: 217, 168, 106;
-  --investment: #e8b98c; --investment-rgb: 232, 185, 140;
-  --fixed: #9acaae;      --fixed-rgb: 154, 202, 174;
-  --receivable: #edcdb6; --receivable-rgb: 237, 205, 182;
-  --neb-1: rgba(217, 168, 106, 0.14);
-  --neb-2: rgba(232, 185, 140, 0.08);
-}
-/* 50 元 · 放青松（标准色 #518463） */
-.theme-yuan50 {
-  --bg-0: #040806; --bg-1: #070f0b; --bg-2: #0c1813;
-  --ink-100: #eef8f1;
-  --ink-80: rgba(238, 248, 241, 0.78);
-  --ink-60: rgba(238, 248, 241, 0.55);
-  --ink-40: rgba(238, 248, 241, 0.36);
-  --ink-20: rgba(238, 248, 241, 0.18);
-  --ice-blue: #74c495; --accent: #74c495; --accent-2: #9fd9b8;
-  --accent-rgb: 116, 196, 149;
-  --liquid: #74c495;     --liquid-rgb: 116, 196, 149;
-  --investment: #9fd9b8; --investment-rgb: 159, 217, 184;
-  --fixed: #d2c8ac;      --fixed-rgb: 210, 200, 172;
-  --receivable: #cebbd8; --receivable-rgb: 206, 187, 216;
-  --neb-1: rgba(116, 196, 149, 0.14);
-  --neb-2: rgba(159, 217, 184, 0.08);
-}
-/* 100 元 · 发财红（标准色 #CC4968；--debt/--neg 仍保持红色，强调取偏玫的暖红） */
-.theme-yuan100 {
-  --bg-0: #0a0406; --bg-1: #100609; --bg-2: #18090d;
-  --ink-100: #fbecf0;
-  --ink-80: rgba(251, 236, 240, 0.78);
-  --ink-60: rgba(251, 236, 240, 0.55);
-  --ink-40: rgba(251, 236, 240, 0.36);
-  --ink-20: rgba(251, 236, 240, 0.18);
-  --ice-blue: #f06a86; --accent: #f06a86; --accent-2: #f2a07a;
-  --accent-rgb: 240, 106, 134;
-  --liquid: #f06a86;     --liquid-rgb: 240, 106, 134;
-  --investment: #f2a07a; --investment-rgb: 242, 160, 122;
-  --fixed: #d8cca0;      --fixed-rgb: 216, 204, 160;
-  --receivable: #e8b6d6; --receivable-rgb: 232, 182, 214;
-  --neb-1: rgba(240, 106, 134, 0.15);
-  --neb-2: rgba(242, 160, 122, 0.09);
-}
-
-.theme-gilded {
-  --bg-0: #0a0805; --bg-1: #0e0b07; --bg-2: #14100a;
-  --ink-100: #fbf6ec;
-  --ink-80: rgba(251, 246, 236, 0.78);
-  --ink-60: rgba(251, 246, 236, 0.55);
-  --ink-40: rgba(251, 246, 236, 0.36);
-  --ink-20: rgba(251, 246, 236, 0.18);
-  --ice-blue: #f3dfa3; --accent: #f3dfa3; --accent-2: #e8b96a;
-  --accent-rgb: 243, 223, 163;
-  --liquid: #f3dfa3;     --liquid-rgb: 243, 223, 163;
-  --investment: #e8c98a; --investment-rgb: 232, 201, 138;
-  --fixed: #d9b38c;      --fixed-rgb: 217, 179, 140;
-  --receivable: #f7ecd2; --receivable-rgb: 247, 236, 210;
-  --pos: #f3dfa3;
-  --neb-1: rgba(243, 223, 163, 0.13);
-  --neb-2: rgba(232, 185, 106, 0.08);
-}
-.theme-neon {
-  --bg-0: #05060a; --bg-1: #080910; --bg-2: #0d0f1a;
-  --ink-100: #f5f0ff;
-  --ink-80: rgba(245, 240, 255, 0.78);
-  --ink-60: rgba(245, 240, 255, 0.55);
-  --ink-40: rgba(245, 240, 255, 0.36);
-  --ink-20: rgba(245, 240, 255, 0.18);
-  --ice-blue: #5ee7ff; --accent: #5ee7ff; --accent-2: #ff6ec7;
-  --accent-rgb: 94, 231, 255;
-  --liquid: #5ee7ff;     --liquid-rgb: 94, 231, 255;
-  --investment: #ff6ec7; --investment-rgb: 255, 110, 199;
-  --fixed: #a78bfa;      --fixed-rgb: 167, 139, 250;
-  --receivable: #c9f7ff; --receivable-rgb: 201, 247, 255;
-  --pos: #5ee7ff;
-  --neb-1: rgba(255, 110, 199, 0.16);
-  --neb-2: rgba(94, 231, 255, 0.12);
-}
-.theme-emerald {
-  --bg-0: #040806; --bg-1: #060c09; --bg-2: #0a1410;
-  --ink-100: #eefbf4;
-  --ink-80: rgba(238, 251, 244, 0.78);
-  --ink-60: rgba(238, 251, 244, 0.55);
-  --ink-40: rgba(238, 251, 244, 0.36);
-  --ink-20: rgba(238, 251, 244, 0.18);
-  --ice-blue: #6ee7b7; --accent: #6ee7b7; --accent-2: #a3e635;
-  --accent-rgb: 110, 231, 183;
-  --liquid: #6ee7b7;     --liquid-rgb: 110, 231, 183;
-  --investment: #a3e635; --investment-rgb: 163, 230, 53;
-  --fixed: #5eead4;      --fixed-rgb: 94, 234, 212;
-  --receivable: #ecfccb; --receivable-rgb: 236, 252, 203;
-  --pos: #6ee7b7;
-  --neb-1: rgba(110, 231, 183, 0.14);
-  --neb-2: rgba(163, 230, 53, 0.08);
-}
-.theme-twilight {
-  --bg-0: #0a0710; --bg-1: #0e0a16; --bg-2: #161020;
-  --ink-100: #f6f0ff;
-  --ink-80: rgba(246, 240, 255, 0.78);
-  --ink-60: rgba(246, 240, 255, 0.55);
-  --ink-40: rgba(246, 240, 255, 0.36);
-  --ink-20: rgba(246, 240, 255, 0.18);
-  --ice-blue: #c4a3ff; --accent: #c4a3ff; --accent-2: #ff9ec4;
-  --accent-rgb: 196, 163, 255;
-  --liquid: #c4a3ff;     --liquid-rgb: 196, 163, 255;
-  --investment: #ff9ec4; --investment-rgb: 255, 158, 196;
-  --fixed: #a3c4ff;      --fixed-rgb: 163, 196, 255;
-  --receivable: #f0e6ff; --receivable-rgb: 240, 230, 255;
-  --pos: #c4a3ff;
-  --neb-1: rgba(196, 163, 255, 0.15);
-  --neb-2: rgba(255, 158, 196, 0.09);
-}
-.theme-obsidian {
-  --bg-0: #000000; --bg-1: #070708; --bg-2: #0e0e10;
-  --ink-100: #f5f6f8;
-  --ink-80: rgba(245, 246, 248, 0.78);
-  --ink-60: rgba(245, 246, 248, 0.55);
-  --ink-40: rgba(245, 246, 248, 0.36);
-  --ink-20: rgba(245, 246, 248, 0.18);
-  --ice-blue: #e8eaed; --accent: #e8eaed; --accent-2: #b8bcc4;
-  --accent-rgb: 232, 234, 237;
-  --liquid: #e8eaed;     --liquid-rgb: 232, 234, 237;
-  --investment: #b8bcc4; --investment-rgb: 184, 188, 196;
-  --fixed: #9aa0aa;      --fixed-rgb: 154, 160, 170;
-  --receivable: #f5f6f8; --receivable-rgb: 245, 246, 248;
-  --pos: #e8eaed;
-  --neb-1: rgba(232, 234, 237, 0.08);
-  --neb-2: rgba(184, 188, 196, 0.05);
-}
 
 /* —— 软光质感系列 · 暮蓝软光（新拟态 / Neumorphism）——
    与其它主题不同：本主题除覆盖变量外，还在 .theme-slate 作用域下把共享玻璃表面
@@ -672,8 +486,7 @@ button.btn-reset::after { display: none; }
 }
 .theme-slate .glass-2,
 .theme-slate .card-sub { background: var(--nm-surf-2); }
-/* 工具面板图标块 / 深色 / 幽灵按钮：软浮雕凸起,阴影尺寸缩小以匹配小块比例,按下内凹 */
-.theme-slate .tool-chip,
+/* 深色 / 幽灵按钮：软浮雕凸起,阴影尺寸缩小以匹配小块比例,按下内凹 */
 .theme-slate .btn-dark,
 .theme-slate .btn-ghost {
   background: var(--nm-surf);
@@ -683,10 +496,8 @@ button.btn-reset::after { display: none; }
     -4rpx -4rpx 10rpx var(--nm-light),
     inset 1rpx 1rpx 1rpx rgba(255, 255, 255, 0.05);
 }
-.theme-slate .tool-chip::after { opacity: 0.28; } /* 只留一丝类别色透出 */
 .theme-slate .btn-dark:active,
-.theme-slate .btn-ghost:active,
-.theme-slate .tool-cell-hover .tool-chip {
+.theme-slate .btn-ghost:active {
   background: var(--nm-concave);                   /* 凹面渐变方向翻转,更真实 */
   box-shadow:
     inset 5rpx 5rpx 12rpx var(--nm-dark),
@@ -937,38 +748,6 @@ button.btn-reset::after { display: none; }
 }
 .theme-brutalist .mrb-title,
 .theme-brutalist .mrb-sub { color: var(--bru-ink); }
-
-/* ============================================================
-   工具面板（底部抽屉）→ 纸底 + 黑顶边；chip 实心色块
-   ============================================================ */
-.theme-brutalist .tools-mask {
-  background: rgba(20, 17, 11, 0.35);
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-}
-.theme-brutalist .tools-sheet {
-  background: var(--bg-1);
-  border-top: var(--bru-border);
-  border-radius: 28rpx 28rpx 0 0;
-  box-shadow: 0 -12rpx 0 var(--bru-ink);
-}
-.theme-brutalist .sheet-title,
-.theme-brutalist .tool-label { color: var(--ink-100); }
-.theme-brutalist .sheet-close {
-  background: var(--bg-2);
-  border: 3rpx solid var(--bru-ink);
-}
-.theme-brutalist .tool-chip {
-  border: var(--bru-border);
-  border-radius: 16rpx;
-  box-shadow: var(--bru-shadow-sm);
-}
-/* chip 柔光后景（::after 模糊）关闭，改实心色 */
-.theme-brutalist .tool-chip::after { display: none; }
-.theme-brutalist .chip-ice    { background: var(--liquid); }
-.theme-brutalist .chip-gold   { background: var(--fixed); }
-.theme-brutalist .chip-teal   { background: var(--receivable); }
-.theme-brutalist .chip-report { background: var(--accent); }
 
 /* ============================================================
    空状态 / 版本更新弹窗：去发光，实心 + 黑边 + 硬投影

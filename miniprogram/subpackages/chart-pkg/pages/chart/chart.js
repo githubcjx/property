@@ -1,10 +1,17 @@
 const app = getApp()
 const echarts = require('../../ec-canvas/echarts')
 const chartSvc = require('../../../../services/chart.js')
+const accountSvc = require('../../../../services/account.js')
+const allocationSvc = require('../../../../services/allocation.js')
+const goalSvc = require('../../../../services/goal.js')
 const { getTheme, isLight, DEFAULT_THEME } = require('../../../../utils/theme.js')
-const { baseCurrency, cnyToBaseFen } = require('../../../../utils/networth.js')
+const { baseCurrency, cnyToBaseFen, sumNetCnyFen } = require('../../../../utils/networth.js')
 const { symbolOf } = require('../../../../utils/currency.js')
 const { formatMoney, fenToUnit } = require('../../../../utils/format.js')
+const { goBack } = require('../../../../utils/nav.js')
+
+// 环图摘要只列前几大类，超出的合成一行「其他」—— 这里是摘要，完整清单在资产配置页
+const HUB_LEGEND_MAX = 4
 
 // Tab 与时间范围常量
 const TABS = [
@@ -60,13 +67,20 @@ Page({
 
     statusBarHeight: 20,
 
+    // 回顾中枢（曲线下方的三块摘要）
+    alloc: null,                    // { conicGradient, rows[] }；无数据时 null
+    goal: { hasGoal: false },
+    prevMonthLabel: '',
+
     ec: {
       lazyLoad: true,
     },
   },
 
+  // 分享卡 / 订阅消息可能把用户直接丢到本页，此时页面栈只有一层，
+  // navigateBack 会静默失败把人困住 —— 统一走 goBack（CLAUDE.md「二级页返回」约定）
   onBack() {
-    wx.navigateBack()
+    goBack()
   },
 
   // 非 setData 状态
@@ -107,7 +121,10 @@ Page({
     this.setData({
       reduceMotion: app.globalData.reduceMotion,
       theme: app.globalData.theme,
+      hideAmount: app.globalData.hideAmount,
     })
+    // 每次回到本页都重取：从目标页设完目标返回时，下面那块进度要立刻是新的
+    this.loadHub()
   },
 
   onUnload() {
@@ -147,6 +164,80 @@ Page({
     } finally {
       this.setData({ loading: false })
     }
+  },
+
+  // ============== 回顾中枢 ==============
+  // 三块摘要都只读、只摘要，计算全部复用既有 service：
+  // 构成走 allocation.evaluate，目标走 goal.buildGoalView，小结只是一个入口。
+  // 任何一块拿不到数据都静默降级（隐藏该块），绝不影响主角曲线。
+  async loadHub() {
+    const now = new Date()
+    const prevMonthNum = now.getMonth() === 0 ? 12 : now.getMonth()
+    this.setData({ prevMonthLabel: prevMonthNum + ' 月' })
+
+    let accounts = []
+    try {
+      accounts = await accountSvc.listAccounts()
+    } catch (err) {
+      console.warn('[hub] 账户加载失败，中枢降级隐藏', err)
+      return
+    }
+    this.applyAlloc(allocationSvc.evaluate(accounts))
+    this.loadGoal(accounts)
+  },
+
+  applyAlloc(r) {
+    if (!r || !r.hasData || !r.assetCategories.length) {
+      this.setData({ alloc: null })
+      return
+    }
+    // 只取前 N 大类，其余合成「其他」—— 摘要不该把图例排到屏幕外
+    const cats = r.assetCategories
+    const head = cats.slice(0, HUB_LEGEND_MAX)
+    const rows = head.map(c => ({
+      id: c.id,
+      name: c.name,
+      colorClass: c.colorClass,
+      pctText: c.pct.toFixed(1),
+    }))
+    if (cats.length > HUB_LEGEND_MAX) {
+      const restPct = cats.slice(HUB_LEGEND_MAX).reduce((s, c) => s + c.pct, 0)
+      rows.push({ id: '__rest', name: '其他', colorClass: 'receivable', pctText: restPct.toFixed(1) })
+    }
+    this.setData({ alloc: { conicGradient: r.conicGradient, rows } })
+  },
+
+  // 目标：只显示进度与「还差多少」。预计达成时间需要 growth 采样，那是目标页的事 ——
+  // 这里传 null growth（与盘点完成页同一处理），卡片只承诺它算得出来的部分（不变量 10）。
+  async loadGoal(accounts) {
+    try {
+      const goal = await goalSvc.getActiveGoal()
+      if (!goal) {
+        this.setData({ goal: { hasGoal: false } })
+        return
+      }
+      const v = goalSvc.buildGoalView(goal, sumNetCnyFen(accounts), null)
+      this.setData({
+        goal: Object.assign({}, v, {
+          pct: Math.max(0, Math.min(100, v.pct)).toFixed(1),
+          remainingText: formatMoney(v.remainingFen, v.currency, { symbol: true }),
+        }),
+      })
+    } catch (err) {
+      // goals 集合还没建等情况：静默当作「未设目标」，引导仍在
+      console.warn('[hub] 目标加载失败，按未设目标处理', err)
+      this.setData({ goal: { hasGoal: false } })
+    }
+  },
+
+  onOpenInsights() {
+    wx.navigateTo({ url: '/pages/insights/insights' })
+  },
+  onOpenGoal() {
+    wx.navigateTo({ url: '/pages/milestones/milestones' })
+  },
+  onOpenReport() {
+    wx.navigateTo({ url: '/pages/report/report' })
   },
 
   // ============== ECharts 渲染 ==============

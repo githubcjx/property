@@ -104,30 +104,17 @@
 .cat-amt { font-size: 28rpx; font-weight: 600; color: var(--ink-100); }
 
 /* ============ 色卡 ============ */
-.series-head { margin: 36rpx 4rpx 18rpx; }
-.picker-title {
-  display: block;
-  font-size: 26rpx;
-  font-weight: 600;
-  color: var(--ink-80);
-  letter-spacing: 0.04em;
-}
-.series-desc {
-  display: block;
-  margin-top: 6rpx;
-  font-size: 20rpx;
-  line-height: 1.5;
-  color: var(--ink-40);
-}
+/* 只剩两套主题，卡片放大到半屏一张：一深一浅并排，选择本身就是全部说明，不需要分组标题 */
 .swatches {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 18rpx;
+  grid-template-columns: 1fr 1fr;
+  gap: 20rpx;
+  margin-top: 36rpx;
 }
 .swatch {
   position: relative;
-  border-radius: 24rpx;
-  padding: 22rpx 18rpx 18rpx;
+  border-radius: 28rpx;
+  padding: 28rpx 24rpx 26rpx;
   border: 1rpx solid var(--hairline-hi);
   overflow: hidden;
   transition: transform 0.18s var(--ease-soft), border-color 0.18s;
@@ -145,30 +132,28 @@
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.92) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>") center / 18rpx no-repeat;
 }
-.sw-dots { display: flex; gap: 8rpx; margin-bottom: 16rpx; }
-.sw-dot { width: 30rpx; height: 30rpx; border-radius: 50%; }
-.sw-name { font-size: 22rpx; color: rgba(255, 255, 255, 0.9); }
+.sw-dots { display: flex; gap: 8rpx; margin-bottom: 20rpx; }
+.sw-dot { width: 34rpx; height: 34rpx; border-radius: 50%; }
+.sw-name {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+}
+.sw-desc {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 20rpx;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.5);
+}
 /* 浅色主题的色卡(如硬核粗野)：卡面是浅纸底，名字改墨色、色点加描边防止与底同色隐形 */
 .swatch-light .sw-name { color: rgba(20, 17, 11, 0.85); }
+.swatch-light .sw-desc { color: rgba(20, 17, 11, 0.5); }
 .swatch-light .sw-dot { border: 1rpx solid rgba(20, 17, 11, 0.30); }
 .swatch-light.active {
   border-color: rgba(20, 17, 11, 0.55);
   box-shadow: 0 0 0 2rpx rgba(20, 17, 11, 0.30);
-}
-
-/* 解锁质感系列：未解锁的色卡显示金底黑字「看广告解锁」角标，色点略降透明度示意锁定 */
-.swatch-locked .sw-dots { opacity: 0.72; }
-.sw-lock {
-  position: absolute;
-  top: 0; right: 0;
-  padding: 4rpx 10rpx;
-  font-size: 17rpx;
-  font-weight: 700;
-  line-height: 1.2;
-  color: #14110b;
-  background: #ffce2e;
-  border-radius: 0 24rpx 0 12rpx;
-  letter-spacing: 0.02em;
 }
 
 .hint {

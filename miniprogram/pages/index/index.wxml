@@ -148,12 +148,14 @@
     </block>
   </scroll-view>
 
-  <!-- 左下：工具入口（无数据时隐藏 —— 分析工具对着空数据毫无意义） -->
+  <!-- 左下：回顾（唯一一扇分析的门。V3.0 之前这里是「工具」抽屉，点开是四个
+       并列的镜头 —— 趋势 / 配置 / 目标 / 小结。四个门通向同一个房间：「我这段时间
+       过得怎么样」。现在只留一扇，房间在门后面自己分区，见趋势页的「回顾中枢」。
+       无数据时隐藏 —— 分析对着空数据毫无意义。） -->
   <view wx:if="{{hasData}}" class="fab-cluster fab-cluster-left">
-    <view class="tools-entry tap" hover-class="tools-entry-hover" bindtap="onOpenTools">
-      <view class="ic ic-sm ic-apps"></view>
-      <text class="tools-entry-label">工具</text>
-      <view wx:if="{{toolBadgeAny}}" class="tool-dot tool-dot-fab"></view>
+    <view class="tools-entry tap" hover-class="tools-entry-hover" bindtap="onOpenReview">
+      <view class="ic ic-sm ic-chart"></view>
+      <text class="tools-entry-label">回顾</text>
     </view>
   </view>
 
@@ -161,45 +163,6 @@
   <view class="fab-cluster fab-cluster-right">
     <view class="fab tap" hover-class="fab-hover" bindtap="onSettings">
       <view class="ic ic-sm ic-settings"></view>
-    </view>
-  </view>
-
-  <!-- 工具面板：盘点(动作) 置顶 + 四个分析镜头一行铺满 -->
-  <view wx:if="{{toolsVisible}}" class="tools-mask {{toolsClosing ? 'closing' : ''}}" bindtap="onCloseTools">
-    <view class="tools-sheet {{toolsClosing ? 'closing' : ''}}" catchtap="onSheetNoop">
-      <view class="sheet-handle"></view>
-      <view class="sheet-head">
-        <text class="sheet-title">工具</text>
-        <view class="sheet-close tap" hover-class="btn-hover" catchtap="onCloseTools">
-          <view class="ic ic-xs ic-close"></view>
-        </view>
-      </view>
-
-      <!-- 四个分析镜头：一行铺满，不分组（盘点已移到首页门口） -->
-      <view class="tool-grid">
-        <view class="tool-cell tap" hover-class="tool-cell-hover" data-url="/pages/report/report" bindtap="onToolTap">
-          <view class="tool-chip chip-report"><view class="ic ic-sm ic-report"></view></view>
-          <text class="tool-label">月度小结</text>
-        </view>
-        <view class="tool-cell tap" hover-class="tool-cell-hover" data-url="/subpackages/chart-pkg/pages/chart/chart" bindtap="onToolTap">
-          <view class="tool-chip chip-ice"><view class="ic ic-sm ic-chart"></view></view>
-          <text class="tool-label">净值趋势</text>
-        </view>
-        <view class="tool-cell tap" hover-class="tool-cell-hover" data-url="/pages/insights/insights" data-badge="insights" bindtap="onToolTap">
-          <view class="tool-chip chip-teal">
-            <view class="ic ic-sm ic-pie"></view>
-            <view wx:if="{{toolBadges.insights}}" class="tool-dot"></view>
-          </view>
-          <text class="tool-label">资产配置</text>
-        </view>
-        <view class="tool-cell tap" hover-class="tool-cell-hover" data-url="/pages/milestones/milestones" data-badge="milestones" bindtap="onToolTap">
-          <view class="tool-chip chip-gold">
-            <view class="ic ic-sm ic-trophy"></view>
-            <view wx:if="{{toolBadges.milestones}}" class="tool-dot"></view>
-          </view>
-          <text class="tool-label">净值目标</text>
-        </view>
-      </view>
     </view>
   </view>
 

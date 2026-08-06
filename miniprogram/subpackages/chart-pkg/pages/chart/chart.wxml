@@ -8,7 +8,7 @@
     <view class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onBack">
       <view class="ic ic-xs ic-back"></view>
     </view>
-    <text class="nav-title">趋势</text>
+    <text class="nav-title">回顾</text>
     <view class="nav-spacer"></view>
   </view>
 
@@ -78,5 +78,65 @@
     <picker mode="date" value="{{customEnd}}" start="{{customStart}}" bindchange="onCustomEnd">
       <view class="date-pick glass tap">止 · {{customEnd}}</view>
     </picker>
+  </view>
+
+  <!-- ============ 回顾中枢 ============
+       V3.0：首页那个「四个镜头」的工具抽屉没了，四扇门合成一扇「回顾」，落在这里。
+       曲线是主角，下面三块是它的三个切面 —— 构成（横切）、目标（前方）、上月（回望）。
+       每块只给摘要与一个去处，详情仍在各自的页面里，这里不重复实现任何计算。 -->
+  <view class="hub" wx:if="{{hasData}}">
+
+    <!-- 构成：环图摘要 → 资产配置页 -->
+    <view wx:if="{{alloc}}" class="hub-card glass tap entry-up" hover-class="btn-hover" bindtap="onOpenInsights">
+      <view class="hub-head">
+        <text class="hub-title">资产构成</text>
+        <view class="ic ic-xs ic-chevron-right hub-go"></view>
+      </view>
+      <view class="hub-alloc">
+        <view class="hub-donut" style="background: {{alloc.conicGradient}};">
+          <view class="hub-donut-hole"></view>
+        </view>
+        <view class="hub-legend">
+          <view class="hub-leg-row" wx:for="{{alloc.rows}}" wx:key="id">
+            <view class="hub-leg-dot cat-bg-{{item.colorClass}}"></view>
+            <text class="hub-leg-name">{{item.name}}</text>
+            <text class="hub-leg-pct cat-{{item.colorClass}} num">{{item.pctText}}%</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 前方：目标进度 → 净值目标页 -->
+    <view class="hub-card glass tap entry-up d1" hover-class="btn-hover" bindtap="onOpenGoal">
+      <block wx:if="{{goal.hasGoal}}">
+        <view class="hub-head">
+          <text class="hub-title">{{goal.name}}</text>
+          <text class="hub-pct num">{{goal.pctText}}%</text>
+        </view>
+        <view class="hub-bar"><view class="hub-bar-fill" style="width: {{goal.pct}}%;"></view></view>
+        <view class="hub-sub">
+          <block wx:if="{{goal.achieved}}">已达成，去看看 →</block>
+          <block wx:else>还差 {{hideAmount ? '••••' : goal.remainingText}} · 看预计达成时间 →</block>
+        </view>
+      </block>
+      <block wx:else>
+        <view class="hub-head">
+          <text class="hub-title">净值目标</text>
+          <view class="ic ic-xs ic-chevron-right hub-go"></view>
+        </view>
+        <view class="hub-sub">还没设目标 · 设一个，让曲线有个奔头 →</view>
+      </block>
+    </view>
+
+    <!-- 回望：上月小结 → 月度小结页 -->
+    <view class="hub-row glass tap entry-up d2" hover-class="btn-hover" bindtap="onOpenReport">
+      <view class="hub-row-ico"><view class="ic ic-xs ic-report"></view></view>
+      <view class="hub-row-txt">
+        <view class="hub-row-t">{{prevMonthLabel}}小结</view>
+        <view class="hub-row-s">看看上个月是谁在推动</view>
+      </view>
+      <view class="ic ic-xs ic-chevron-right hub-go"></view>
+    </view>
+
   </view>
 </view>

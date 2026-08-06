@@ -27,14 +27,11 @@ const { catRgb, DEFAULT_THEME } = require('../../utils/theme.js')
 const { symbolOf } = require('../../utils/currency.js')
 const { formatMoney } = require('../../utils/format.js')
 const { sumNetCnyFen, cnyToBaseFen, baseCurrency } = require('../../utils/networth.js')
-const { TOOL_BADGES } = require('../../utils/toolBadges.js')
 const { goBack } = require('../../utils/nav.js')
 const txSvc = require('../../services/transaction.js')
 const growthTree = require('../../utils/growthTree.js')
 const treeArt = require('../../utils/treeArt.js')
 const { getTheme, isLight } = require('../../utils/theme.js')
-
-const STORAGE_TOOL_SEEN = 'tool_badge_seen'   // 与首页约定一致（utils/toolBadges.js）
 
 // Promise.allSettled 在低版本基础库上不一定有，自己兜一个：每个任务都不会 reject，
 // 失败的行留在页面上重试，成功的不再重发。
@@ -115,7 +112,6 @@ Page({
         ? '房子和车不会每月变，一年看一次就够'
         : '看一眼，哪个数不对就点它改掉',
     })
-    this._markBadgeSeen()
     this.load()
   },
 
@@ -133,16 +129,6 @@ Page({
     const c = this._doneTreeCanvas
     if (this._doneTreeRaf && c && c.cancelAnimationFrame) c.cancelAnimationFrame(this._doneTreeRaf)
     this._doneTreeRaf = null
-  },
-
-  // 从横幅进入也把工具红点标记为已读（与首页 onToolTap 的约定一致）
-  _markBadgeSeen() {
-    if (!TOOL_BADGES.inventory) return
-    const seen = wx.getStorageSync(STORAGE_TOOL_SEEN) || {}
-    if ((seen.inventory || 0) < TOOL_BADGES.inventory) {
-      seen.inventory = TOOL_BADGES.inventory
-      wx.setStorageSync(STORAGE_TOOL_SEEN, seen)
-    }
   },
 
   async load() {

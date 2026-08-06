@@ -1,7 +1,7 @@
 // TODO: 替换为你的云开发环境 ID（云开发控制台获取）
 const CLOUD_ENV_ID = 'cloud1-d9g5kur3sa2da3193'
 
-const { DEFAULT_THEME, isLight, isLocked } = require('./utils/theme.js')
+const { isLight, normalizeTheme } = require('./utils/theme.js')
 const { DEFAULT_BASE } = require('./utils/currency.js')
 const fxRateSvc = require('./services/fxRate.js')
 
@@ -10,9 +10,8 @@ App({
     hideAmount: wx.getStorageSync('pref_hide_amount') === true,
     cloudReady: false,
     reduceMotion: wx.getStorageSync('pref_reduce_motion') === true,
-    theme: wx.getStorageSync('pref_theme') || DEFAULT_THEME,
-    // 已解锁的付费主题 key 列表（看激励视频解锁后写入，永久保留）
-    unlockedThemes: wx.getStorageSync('pref_unlocked_themes') || [],
+    // V3.0 删掉了 12 套主题，老用户存的 key 可能已不存在 —— normalizeTheme 收归默认（见 utils/theme.js）
+    theme: normalizeTheme(wx.getStorageSync('pref_theme')),
     // 多货币：本位币（显示镜头，默认人民币）+ 汇率表（由 fxRate.refresh 填充）
     baseCurrency: wx.getStorageSync('pref_base_ccy') || DEFAULT_BASE,
     fxRates: null,
@@ -38,11 +37,10 @@ App({
       traceUser: true,
     })
     this.globalData.cloudReady = true
-    // 既往不咎：升级前已在用的锁定主题（如老版免费的「晴空软光」）视为已解锁，
-    // 避免老用户升级后当前主题突然「需看广告」被踢出体验。
-    const cur = this.globalData.theme
-    if (isLocked(cur) && this.globalData.unlockedThemes.indexOf(cur) < 0) {
-      this.unlockTheme(cur)
+    // 主题迁移落盘：globalData 里已被 normalizeTheme 收归，storage 也要回写一次，
+    // 否则下次启动仍读到那个已被删除的 key，每次都要再迁移一遍。
+    if (wx.getStorageSync('pref_theme') !== this.globalData.theme) {
+      wx.setStorageSync('pref_theme', this.globalData.theme)
     }
     // 异步加载汇率（失败回退本地缓存）；不阻塞启动
     fxRateSvc.refresh()
@@ -83,18 +81,6 @@ App({
       backgroundColorBottom: light ? '#efe7d6' : '#050507',
     })
     wx.setBackgroundTextStyle({ textStyle: light ? 'dark' : 'light' })
-  },
-
-  // 主题是否已解锁：免费主题恒 true；锁定主题(locked)需已看过激励视频。
-  isThemeUnlocked(key) {
-    return !isLocked(key) || this.globalData.unlockedThemes.indexOf(key) >= 0
-  },
-
-  // 解锁一个主题（激励视频看完后调用）。幂等；永久持久化。
-  unlockTheme(key) {
-    if (this.globalData.unlockedThemes.indexOf(key) >= 0) return
-    this.globalData.unlockedThemes = this.globalData.unlockedThemes.concat(key)
-    wx.setStorageSync('pref_unlocked_themes', this.globalData.unlockedThemes)
   },
 
   // 设置本位币（显示镜头）。只改显示口径，不改任何已存数据、不重算历史。
