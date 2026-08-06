@@ -65,16 +65,6 @@
     </block>
 
     <block wx:if="{{hasData}}">
-      <!-- 月报横幅（月初窗口期；当前为预览强制显示） -->
-      <view wx:if="{{monthlyBannerVisible}}" class="mreport-banner entry-up" bindtap="onOpenReport">
-        <view class="mrb-ico"><view class="ic ic-sm ic-report"></view></view>
-        <view class="mrb-txt">
-          <view class="mrb-title">你的{{monthlyBanner.periodLabel}}净值小结</view>
-          <view class="mrb-sub">上月小结已生成 · 看看是谁在推动 →</view>
-        </view>
-        <view class="mrb-x" catchtap="onDismissReportBanner"><view class="ic ic-xs ic-close"></view></view>
-      </view>
-
       <!-- 盘点入口：常驻门口，随新鲜度变脸 —— 新鲜时安静，发霉时(is-stale)变响。
            图标位就是那棵小树：它的成长条件是「更新次数」，而这里正是更新的入口
            —— 长在这儿，因果自己闭环，不需要一个字的解释（见 utils/growthTree.js）。 -->

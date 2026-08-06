@@ -15,20 +15,9 @@ const { getTheme, isLight, DEFAULT_THEME } = require('../../utils/theme.js')
 
 const STORAGE_EXPANDED = 'idx_expanded_categories'
 
-// 月报横幅：每月前 N 天提示回顾「上一个完整月」的小结（本月未手动关闭、且有账户时显示）。
-const BANNER_WINDOW_DAYS = 3
-
-const STORAGE_BANNER_DISMISS = 'report_banner_dismissed_month'  // 值为 'YYYY-M'
-
 // 调试开关：true = 无论账户新鲜与否都强制显示盘点横幅，方便在开发者工具里看样式。
 // 正常必须保持 false，否则新用户一进首页就被提示「该盘点了」。
 const PREVIEW_INV_BANNER = false
-
-// 当前月份键（用于按月判断横幅是否已被关闭）
-function currentMonthKey() {
-  const d = new Date()
-  return d.getFullYear() + '-' + (d.getMonth() + 1)
-}
 
 // 按本位币的小数位拆分（人民币/美元=2 位，日元/韩元=0 位）
 function splitAmount(fen, ccy) {
@@ -74,10 +63,6 @@ Page({
     reduceMotion: false,
     theme: DEFAULT_THEME,
 
-    // 月报横幅
-    monthlyBannerVisible: false,
-    monthlyBanner: null,
-
     // 盘点入口：常驻内容顶部，随新鲜度变脸。{ stale, title, sub }；无账户时 null
     invEntry: null,
   },
@@ -113,28 +98,12 @@ Page({
     this._treeRaf = null
   },
 
-  // 月报横幅：月初前 BANNER_WINDOW_DAYS 天展示「上月小结」入口。
-  // 仅做入口，不在首页算百分比（涨幅留到月报页内算），不额外查询。
-  // 显示条件：①有账户 ②处于月初窗口期 ③本月未手动关闭。
-  updateMonthlyBanner(accounts) {
-    const now = new Date()
-    const inWindow = now.getDate() <= BANNER_WINDOW_DAYS
-    const dismissedMonth = wx.getStorageSync(STORAGE_BANNER_DISMISS)
-    if (!accounts || !accounts.length || !inWindow || dismissedMonth === currentMonthKey()) {
-      this.setData({ monthlyBannerVisible: false })
-      return
-    }
-    // 上一个完整月（1 月时回退到去年 12 月）
-    const prevMonthNum = now.getMonth() === 0 ? 12 : now.getMonth()
-    this.setData({
-      monthlyBannerVisible: true,
-      monthlyBanner: { periodLabel: prevMonthNum + ' 月' },
-    })
-  },
-
-  onOpenReport() {
-    wx.navigateTo({ url: '/pages/report/report' })
-  },
+  // 首页刻意没有「月报横幅」（V3.0 删除，别加回来）：
+  // 它原本在每月前 3 天顶在内容最上面 —— 而每月 1 日正是盘点提醒订阅消息把人叫回来的时刻。
+  // 那条推送说的是「该盘点了」，一次性订阅一个月只有一次额度，横幅却在同一屏把注意力
+  // 引向另一件事。小结现在常驻在「回顾」中枢里（趋势页底部），想看随时能看；
+  // 需要一个 × 关闭按钮的界面元素，本身就是在承认它有时候是打扰。
+  // 首页永远只有三样东西：净资产、盘点、分类列表。
 
   // ============ 小树 ============
   // 阶段只由「相伴天数 + 更新次数」决定，与金额无关（理由见 utils/growthTree.js）。
@@ -259,12 +228,6 @@ Page({
     wx.navigateTo({ url: '/pages/inventory/inventory' })
   },
 
-  onDismissReportBanner() {
-    // 按月持久化：本月关闭后，重开也不再显示，直到下个月（记录过期）
-    wx.setStorageSync(STORAGE_BANNER_DISMISS, currentMonthKey())
-    this.setData({ monthlyBannerVisible: false })
-  },
-
   // 定义本方法即可激活右上角「...」菜单里的「发送给朋友」
   // 显式指定 imageUrl：否则微信会截取当前页面作分享缩略图，导致净资产数字被带进分享卡片
   onShareAppMessage() {
@@ -289,7 +252,6 @@ Page({
     try {
       const accounts = await accountSvc.listAccounts()
       this.buildGroups(accounts)
-      this.updateMonthlyBanner(accounts)
       this.updateInvEntry(accounts)
       this.updateTree(accounts)
       statsSvc.getNetWorthDelta(30, accounts).then(({ delta, deltaPct }) => {

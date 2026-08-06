@@ -733,23 +733,6 @@ button.btn-reset::after { display: none; }
 }
 
 /* ============================================================
-   月报横幅 → 实心琥珀块 + 黑边 + 硬投影（去柔光渐变）
-   ============================================================ */
-.theme-brutalist .mreport-banner {
-  background: var(--fixed);
-  border: var(--bru-border);
-  border-radius: 18rpx;
-  box-shadow: var(--bru-shadow);
-}
-.theme-brutalist .mrb-ico {
-  background: var(--bg-2);
-  border: 3rpx solid var(--bru-ink);
-  border-radius: 12rpx;
-}
-.theme-brutalist .mrb-title,
-.theme-brutalist .mrb-sub { color: var(--bru-ink); }
-
-/* ============================================================
    空状态 / 版本更新弹窗：去发光，实心 + 黑边 + 硬投影
    ============================================================ */
 .theme-brutalist .empty-orb {
