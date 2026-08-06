@@ -20,7 +20,6 @@
 const app = getApp()
 const accountSvc = require('../../services/account.js')
 const invSvc = require('../../services/inventory.js')
-const goalSvc = require('../../services/goal.js')
 const reminderSvc = require('../../services/reminder.js')
 const { isIconKey, getCategory } = require('../../utils/categories.js')
 const { catRgb, DEFAULT_THEME } = require('../../utils/theme.js')
@@ -37,6 +36,25 @@ const { getTheme, isLight } = require('../../utils/theme.js')
 // 失败的行留在页面上重试，成功的不再重发。
 function settle(p) {
   return p.then(() => ({ ok: true }), (err) => ({ ok: false, err }))
+}
+
+// 上月小结入口的窗口期：每月前 N 天。月报讲的是「上一个完整月」，
+// 过了月初再提就不新鲜了；平时想看，「回顾」里常驻着。
+const REPORT_WINDOW_DAYS = 3
+function inReportWindow() {
+  return new Date().getDate() <= REPORT_WINDOW_DAYS
+}
+// 上一个完整月（1 月时回退到去年 12 月）
+function prevMonthLabel() {
+  const m = new Date().getMonth()
+  return (m === 0 ? 12 : m) + ' 月'
+}
+
+// 主角字号 112rpx 在 750rpx 屏宽下大约放得下 11 个字形；再长就要降一档，
+// 否则「−¥12,345,678」会顶破屏幕。WXSS 没有 auto-fit，只能在这里按长度判一次。
+const HERO_BIG_MAX = 11
+function isLongAmount(text) {
+  return String(text || '').length > HERO_BIG_MAX
 }
 
 Page({
@@ -76,6 +94,7 @@ Page({
     heroMode: 'baseline',   // baseline 首次/无对比 | gain 涨 | loss 跌
     heroEyebrow: '你的起点',
     heroBig: '',            // 主角大字：gain/loss 为变动量，baseline 为当前净值本身
+    heroBigLong: false,     // 金额过长（>11 字形）时降一档字号，见 isLongAmount
     heroBigMasked: '',      // 隐藏金额时的占位
     heroSub: '',
     heroNetShow: false,     // gain/loss 时在主角下补一行「现在 ¥X」
@@ -83,15 +102,17 @@ Page({
     netText: '',
     baseSymbol: '¥',
 
-    // 完成页的目标进度行（盘点的回报：看着目标更近一点）
-    goal: { hasGoal: false },
-
-    // 小树：treeShow 有账户就为 true（每次盘点都显示）；treeGrew 仅这次跨阶段线时为 true（庆祝）
+    // 小树：与主角合成一幅画（V3.1）。treeShow 有账户就为 true（每次盘点都显示）；
+    // treeGrew 仅这次跨阶段线时为 true（播生长动画 + 加一行庆祝）
     treeShow: false,
     treeGrew: false,
     treeName: '',
     treeDays: 0,
     treeUpdates: 0,
+
+    // 上月小结入口：只在每月前 REPORT_WINDOW_DAYS 天出现
+    reportRow: false,
+    reportLabel: '',
 
     // 提醒订阅：'off' 未订阅 | 'on' 已订阅 | 'soon' 模板未配置（显示「即将上线」）
     remindState: 'soon',
@@ -331,6 +352,7 @@ Page({
       heroMode: 'baseline',
       heroEyebrow: '你的起点',
       heroBig: netText,
+      heroBigLong: isLongAmount(netText),
       heroBigMasked: baseSym + ' ••••',
       heroSub: lastTs
         ? '这次暂时算不出与上次的对比，先记下现在的净值'
@@ -346,11 +368,10 @@ Page({
       phase: 'done',
       netText,
       baseSymbol: baseSym,
-    }, lastTs ? { heroReady: false } : baselineHero))
+      reportRow: inReportWindow(),
+      reportLabel: prevMonthLabel(),
+    }, lastTs ? { heroReady: false } : baselineHero), () => this._maybeDrawTree())
 
-    // 目标进度行：只显示进度与还差，不算预计达成时间 —— 那需要全量拉交易记录重建时间线，
-    // 压在盘点结束这一刻太重。点这一行进净值目标页即可看到预计时间。
-    this.loadGoalRow(netCny)
     this._refreshRemindState()
     this.checkTreeGrowth()
 
@@ -363,11 +384,13 @@ Page({
           const deltaCny = netCny - baseline
           const positive = deltaCny >= 0
           const days = Math.max(0, Math.floor((Date.now() - lastTs) / 86400000))
+          const bigText = (positive ? '+' : '−') + formatMoney(Math.abs(cnyToBaseFen(deltaCny)), baseCcy, { symbol: true })
           // 主角就是「这次动了多少」：涨发光、跌平静、金额下沉为副信息
           hero = {
             heroMode: positive ? 'gain' : 'loss',
             heroEyebrow: '较上次盘点',
-            heroBig: (positive ? '+' : '−') + formatMoney(Math.abs(cnyToBaseFen(deltaCny)), baseCcy, { symbol: true }),
+            heroBig: bigText,
+            heroBigLong: isLongAmount(bigText),
             heroBigMasked: (positive ? '+ ' : '− ') + baseSym + ' ••••',
             heroSub: '从 ' + (days === 0 ? '今天早些时候' : days + ' 天前') + ' 那次盘点算起',
             heroNetShow: true,
@@ -377,8 +400,9 @@ Page({
       } catch (err) {
         console.warn('[inventory] 回算上次盘点基线失败，降级为「起点」呈现', err)
       }
-      // 成功或兜底都在这一次 setData 里定稿，主角自始至终只被写过一遍
-      this.setData(hero || baselineHero)
+      // 成功或兜底都在这一次 setData 里定稿，主角自始至终只被写过一遍。
+      // 树的 canvas 长在 heroReady 的 block 里，定稿这一刻节点才存在 —— 回调里补画。
+      this.setData(hero || baselineHero, () => this._maybeDrawTree())
     }
     invSvc.markInventoryDone()
   },
@@ -391,16 +415,27 @@ Page({
     try {
       const info = growthTree.evaluate(this._accounts, await txSvc.growthStats())
       const grew = growthTree.takeGrowth(info)
+      this._treeInfo = { key: info.key, grew }
       this.setData({
         treeShow: true,
         treeGrew: grew,
         treeName: info.name,
         treeDays: info.days,
         treeUpdates: info.updates,
-      }, () => this._drawDoneTree(info.key, grew))
+      }, () => this._maybeDrawTree())
     } catch (err) {
       console.warn('[inventory] 小树阶段判定失败，跳过', err)
     }
+  },
+
+  // 树的 canvas 现在长在 hero 里（V3.1 合一），节点只有 heroReady 之后才存在。
+  // 而阶段判定与主角回算是两条并行的异步链，谁先到不一定 —— 所以两边都调这里，
+  // 条件齐了才画，且只画一次（否则跨线那次会把生长动画重播一遍）。
+  _maybeDrawTree() {
+    if (this._treeDrawn) return
+    if (!this.data.heroReady || !this.data.treeShow || !this._treeInfo) return
+    this._treeDrawn = true
+    this._drawDoneTree(this._treeInfo.key, this._treeInfo.grew)
   },
 
   // animate=true（跨线庆祝）才播一次生长动画；否则直接落静止终帧。
@@ -434,24 +469,12 @@ Page({
       })
   },
 
-  // 目标失败不应影响盘点结果展示（比如 goals 集合还没建），静默降级为「未设目标」引导
-  async loadGoalRow(netCnyFen) {
-    try {
-      const goal = await goalSvc.getActiveGoal()
-      if (!goal) return
-      const v = goalSvc.buildGoalView(goal, netCnyFen, null)
-      this.setData({
-        goal: Object.assign({}, v, {
-          remainingText: formatMoney(v.remainingFen, v.currency, { symbol: true }),
-        }),
-      })
-    } catch (err) {
-      console.warn('[inventory] 读取目标失败，隐藏目标行', err)
-    }
-  },
+  // 完成页刻意没有「目标进度」卡（V3.1 删除，别加回来）：
+  // 「离目标还差多少」是回望时的问题，不是刚做完一件事时的问题 —— 摆在这里，
+  // 只会让一次不错的更新显得渺小。目标进度常驻在「回顾」中枢里（趋势页底部）。
 
-  onOpenGoal() {
-    wx.navigateTo({ url: '/pages/milestones/milestones' })
+  onOpenReport() {
+    wx.navigateTo({ url: '/pages/report/report' })
   },
 
   // 提醒入口状态：模板未配置时保持「即将上线」，否则查一次是否已有未使用的订阅额度

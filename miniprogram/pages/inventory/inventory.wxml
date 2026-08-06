@@ -108,48 +108,47 @@
   <block wx:elif="{{phase === 'done'}}">
     <scroll-view scroll-y class="scroll" enable-flex>
       <view class="done">
-        <!-- HERO · 唯一主角：这次你的净值动了多少。
+        <!-- HERO · 一个东西，不是四张卡片。
+             这次动了多少（数字）与你坚持了多久（树）合成一幅画：数字在上，树在下，
+             一竖列读下来 —— 树是这个数字的来处。V3.1 之前它们是并列的两张卡，
+             四个等重的框摆在一起，眼睛不知道该看哪个，于是哪个都不是主角。
+
              与上次的比对要等回算完，没算完就先占位空着 —— 宁可空一下，
-             也不先亮一个待会儿要被改写的数字（那是改口，不是加载）。 -->
+             也不先亮一个待会儿要被改写的数字（那是改口，不是加载）。
+             树的 canvas 也在这个 block 里，所以必须等 heroReady 后再画，
+             否则 selectorQuery 取不到节点（见 inventory.js _maybeDrawTree）。 -->
         <block wx:if="{{heroReady}}">
           <view class="hero-eyebrow entry-up d1">{{heroEyebrow}}</view>
-          <view class="hero-big {{heroMode}} entry-up d1">
+          <view class="hero-big {{heroMode}} {{heroBigLong ? 'is-long' : ''}} entry-up d1">
             <text class="num">{{hideAmount ? heroBigMasked : heroBig}}</text>
           </view>
           <view class="hero-sub entry-up d2">{{heroSub}}</view>
-          <view wx:if="{{heroNetShow}}" class="hero-net entry-up d2">现在 <text class="num">{{hideAmount ? baseSymbol + ' ••••' : netText}}</text></view>
-          <view wx:if="{{skipNote}}" class="hero-foot entry-up d2">{{skipNote}}</view>
+
+          <!-- 小树：每次盘点都露一面，只有这次真跨了阶段线才播生长动画（is-grew）。
+               文案一律回望（走过多久、更新过多少次），绝不写「再更新 N 次就…」：
+               把进度摆成任务，会有人为了刷树而记假账（数据诚实，见 CLAUDE.md 不变量 10）。 -->
+          <canvas wx:if="{{treeShow}}" type="2d" id="doneTree"
+                  class="hero-tree entry-up d2 {{treeGrew ? 'is-grew' : ''}}"></canvas>
+
+          <view wx:if="{{heroNetShow}}" class="hero-net entry-up d3">现在 <text class="num">{{hideAmount ? baseSymbol + ' ••••' : netText}}</text></view>
+          <view wx:if="{{treeShow}}" class="hero-treeline entry-up d3">相伴 {{treeDays}} 天 · 更新过 {{treeUpdates}} 次</view>
+          <view wx:if="{{treeGrew}}" class="hero-grew entry-up d3">小树长大了 · {{treeName}}</view>
+          <view wx:if="{{skipNote}}" class="hero-foot entry-up d3">{{skipNote}}</view>
         </block>
         <!-- 占位高度与成稿主角一致，落地时下面的内容不跳 -->
         <view wx:else class="hero-hold"><view class="hero-skel"></view></view>
 
-        <!-- 你的小树：每次盘点都露一面（回应"你刚做完事"，也让功能被看见），
-             只有这次真跨了阶段线才高亮 + 播生长动画（is-grew）。
-             文案一律回望（走过多久、更新过多少次），绝不写「再更新 N 次就…」：
-             把进度摆成任务，会有人为了刷树而记假账（数据诚实，见 CLAUDE.md 不变量 10）。 -->
-        <view wx:if="{{treeShow}}" class="done-tree entry-up d2 {{treeGrew ? 'is-grew' : ''}}">
-          <canvas type="2d" id="doneTree" class="done-tree-canvas"></canvas>
-          <view class="done-tree-txt">
-            <view class="done-tree-t">{{treeGrew ? '小树长大了' : '你的小树'}}</view>
-            <view class="done-tree-s">相伴 {{treeDays}} 天，更新过 {{treeUpdates}} 次</view>
+        <!-- 上月小结：只在每月前几天出现（一年 36 天，其余时间这里是空的）。
+             它刻意长在「做完之后」而不是首页门口 —— 月初那条订阅消息把人叫回来是为了盘点，
+             在他动手之前拦一道「看小结」，等于用自己唯一的推送额度把人引向别处
+             （首页月报横幅已于 V3.0 删除，别加回去）。 -->
+        <view wx:if="{{reportRow}}" class="done-report tap entry-up d4" hover-class="btn-hover" bindtap="onOpenReport">
+          <view class="dr-ico"><view class="ic ic-xs ic-report"></view></view>
+          <view class="dr-txt">
+            <view class="dr-t">{{reportLabel}}小结已生成</view>
+            <view class="dr-s">看看上个月是谁在推动</view>
           </view>
-        </view>
-
-        <!-- 目标进度：盘点的回报 -->
-        <view wx:if="{{goal.hasGoal}}" class="done-goal tap entry-up d3" hover-class="btn-hover" bindtap="onOpenGoal">
-          <view class="dg-top">
-            <view class="dg-ico"><view class="ic ic-xs ic-flag"></view></view>
-            <text class="dg-name">{{goal.name}}</text>
-            <text class="dg-pct num">{{goal.pctText}}%</text>
-          </view>
-          <view class="dg-bar"><view class="dg-fill" style="width: {{goal.pct}}%;"></view></view>
-          <view class="dg-sub">
-            <block wx:if="{{goal.achieved}}">已达成，去看看 →</block>
-            <block wx:else>还差 {{hideAmount ? '••••' : goal.remainingText}} · 看预计达成时间 →</block>
-          </view>
-        </view>
-        <view wx:else class="done-goal-empty tap entry-up d3" hover-class="btn-hover" bindtap="onOpenGoal">
-          设一个目标，让每次盘点都有奔头 →
+          <view class="ic ic-xs ic-chevron-right dr-go"></view>
         </view>
 
         <view class="done-remind entry-up d4 {{remindState === 'soon' ? 'is-soon' : ''}} {{remindState === 'on' ? 'is-on' : ''}}"

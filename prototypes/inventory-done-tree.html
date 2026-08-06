@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>盘点完成页 · 树与数字合一 · 原型</title>
+<style>
+  /* ============================================================
+     V3.1 原型：盘点完成页「树与数字合成一个东西」的三种构图。
+     树的画法从 miniprogram/utils/treeArt.js 原样移植（只替掉 require），
+     所以这里看到的树就是 App 真正画出来的那棵，不是示意图。
+
+     数据诚实（CLAUDE.md 不变量 10）：页面上每个数字都是现有模型算得出来的 ——
+     本次变化(盘点前后净值差)、现在净资产(live balance)、相伴天数与更新次数
+     (accounts.createdAt / transactions 条数，见 utils/growthTree.js)。
+     没有一个是编的。
+     ============================================================ */
+
+  /* —— 晴空软光 slate（默认）—— */
+  .t-slate {
+    --bg-0: #171b22; --bg-1: #1e232c; --bg-2: #242a34;
+    --ink-100: #eef2f8;
+    --ink-80: rgba(238,242,248,0.80);
+    --ink-60: rgba(238,242,248,0.56);
+    --ink-40: rgba(238,242,248,0.38);
+    --ink-20: rgba(238,242,248,0.20);
+    --accent: #6cb8f2; --accent-rgb: 108,184,242;
+    --pos: #6cb8f2; --neg: #ffb3b3;
+    --hairline: rgba(255,255,255,0.08);
+    --nm-surf:   linear-gradient(145deg, #232833, #191d25);
+    --nm-surf-2: linear-gradient(145deg, #29303c, #1f242e);
+    --nm-dark:  rgba(0,0,0,0.55);
+    --nm-light: rgba(255,255,255,0.06);
+    --card-bg: var(--nm-surf);
+    --card-border: none;
+    --card-shadow: 6rpx 6rpx 16px var(--nm-dark), -5px -5px 12px var(--nm-light);
+    --btn-ink: #0d1218;
+    --radius: 28px;
+  }
+  /* —— 硬核粗野 brutalist（浅色）—— */
+  .t-brutalist {
+    --bg-0: #e4dcc7; --bg-1: #efe7d6; --bg-2: #ffffff;
+    --ink-100: #14110b;
+    --ink-80: rgba(20,17,11,0.82);
+    --ink-60: rgba(20,17,11,0.60);
+    --ink-40: rgba(20,17,11,0.42);
+    --ink-20: rgba(20,17,11,0.18);
+    --accent: #ffce2e; --accent-rgb: 255,206,46;
+    --pos: #1f7a4d; --neg: #e5382b;
+    --hairline: rgba(20,17,11,0.16);
+    --card-bg: #ffffff;
+    --card-border: 3px solid #14110b;
+    --card-shadow: 6px 6px 0 #14110b;
+    --btn-ink: #14110b;
+    --radius: 16px;
+  }
+  /* 粗野主题的树用蓝，信号黄画在纸上看不见（App 里由 theme.chartAccent 承担） */
+  .t-brutalist { --tree-hex: #3b6fe0; }
+  .t-slate     { --tree-hex: #6cb8f2; }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: #0a0b10;
+    color: #f5f8ff;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", system-ui, sans-serif;
+    font-size: 14px; line-height: 1.5;
+    padding: 20px 16px 80px;
+  }
+
+  /* ============ 控制条 ============ */
+  .bar {
+    position: sticky; top: 0; z-index: 20;
+    display: flex; flex-wrap: wrap; gap: 20px; align-items: center;
+    padding: 14px 18px; margin: 0 auto 26px; max-width: 1280px;
+    background: rgba(16,18,24,0.94);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 14px;
+    backdrop-filter: blur(10px);
+  }
+  .bar h1 { font-size: 15px; margin: 0 8px 0 0; font-weight: 700; letter-spacing: .02em; }
+  .grp { display: flex; align-items: center; gap: 8px; }
+  .grp > span { font-size: 12px; color: rgba(245,248,255,0.45); }
+  .seg { display: flex; background: rgba(255,255,255,0.06); border-radius: 9px; padding: 3px; }
+  .seg button {
+    border: 0; background: transparent; color: rgba(245,248,255,0.6);
+    font: inherit; font-size: 12px; padding: 5px 11px; border-radius: 7px; cursor: pointer;
+  }
+  .seg button.on { background: rgba(255,255,255,0.15); color: #fff; font-weight: 600; }
+
+  .note {
+    max-width: 1280px; margin: 0 auto 26px;
+    font-size: 13px; line-height: 1.75; color: rgba(245,248,255,0.5);
+  }
+  .note b { color: rgba(245,248,255,0.82); font-weight: 600; }
+
+  /* ============ 手机 ============ */
+  .stage { display: flex; flex-wrap: wrap; gap: 26px; justify-content: center; max-width: 1360px; margin: 0 auto; }
+  .col { width: 390px; }
+  .col-head { margin: 0 0 10px 4px; }
+  .col-name { font-size: 14px; font-weight: 700; color: #f5f8ff; }
+  .col-desc { font-size: 12px; color: rgba(245,248,255,0.45); margin-top: 3px; line-height: 1.5; }
+
+  .phone {
+    position: relative; width: 390px; height: 800px;
+    border-radius: 42px; overflow: hidden;
+    background: var(--bg-1);
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 26px 70px rgba(0,0,0,0.55);
+    display: flex; flex-direction: column;
+    color: var(--ink-100);
+  }
+  /* 软光主题的极淡星云底；粗野主题纯平 */
+  .t-slate .phone::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(60% 40% at 50% 12%, rgba(var(--accent-rgb),0.10), transparent 70%);
+  }
+
+  .nav {
+    position: relative; z-index: 2;
+    display: flex; align-items: center; gap: 12px;
+    padding: 48px 22px 6px;
+  }
+  .nav-btn {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--bg-2); border: var(--card-border, 1px solid var(--hairline));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: var(--ink-60);
+  }
+  .t-slate .nav-btn { border: 1px solid var(--hairline); }
+  .nav-title { font-size: 13px; color: var(--ink-60); letter-spacing: .04em; }
+
+  .body { position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column; padding: 0 22px 22px; }
+
+  /* ============ 主角区（三种构图共用的字号体系）============ */
+  .eyebrow {
+    font-size: 12px; letter-spacing: .18em; color: var(--ink-40);
+    text-transform: none;
+  }
+  .big {
+    font-variant-numeric: tabular-nums;
+    font-weight: 800; letter-spacing: -0.02em; line-height: 1;
+  }
+  .big.up   { color: var(--pos); }
+  .big.down { color: var(--neg); }
+  .big.flat { color: var(--ink-100); }
+  .sub { font-size: 13px; color: var(--ink-60); }
+  .netline { font-size: 13px; color: var(--ink-80); font-variant-numeric: tabular-nums; }
+  .netline b { font-weight: 700; }
+  /* 相伴天数/更新次数：一律回望，绝不写「再更新 N 次就长大」（见 growthTree.js） */
+  .treeline { font-size: 12px; color: var(--ink-40); font-variant-numeric: tabular-nums; }
+
+  /* —— A：树在数字身后 —— */
+  .hero-a { position: relative; padding: 30px 0 14px; text-align: center; }
+  .hero-a canvas {
+    position: absolute; left: 50%; top: 4px; transform: translateX(-50%);
+    width: 300px; height: 300px; opacity: 0.30; pointer-events: none;
+  }
+  .hero-a .inner { position: relative; padding-top: 74px; }
+  .hero-a .big { font-size: 62px; margin: 12px 0 0; }
+  .hero-a .sub { margin-top: 12px; }
+  .hero-a .netline { margin-top: 76px; }
+  .hero-a .treeline { margin-top: 8px; }
+
+  /* —— B：树托着数字 —— */
+  .hero-b { text-align: center; padding: 22px 0 8px; }
+  .hero-b .big { font-size: 60px; margin: 10px 0 0; }
+  .hero-b .sub { margin-top: 10px; }
+  .hero-b canvas { width: 210px; height: 210px; display: block; margin: 2px auto -6px; }
+  .hero-b .netline { margin-top: 2px; }
+  .hero-b .treeline { margin-top: 7px; }
+
+  /* —— C：并肩 —— */
+  .hero-c { display: flex; align-items: center; gap: 14px; padding: 34px 0 18px; }
+  .hero-c canvas { width: 132px; height: 132px; flex: 0 0 132px; }
+  .hero-c .txt { min-width: 0; }
+  /* 并肩构图的代价：数字被树挤掉约 1/3 宽度，只能降字号 + 禁止折行。
+     「+¥12,340」折成两行的那一刻，主角就没了。 */
+  .hero-c .big { font-size: 38px; margin: 8px 0 0; white-space: nowrap; }
+  .hero-c .sub { margin-top: 9px; }
+  .hero-c .netline { margin-top: 14px; }
+  .hero-c .treeline { margin-top: 6px; }
+
+  .grow-tag {
+    display: inline-block; margin-top: 12px;
+    font-size: 12px; font-weight: 700; letter-spacing: .04em;
+    color: var(--btn-ink); background: var(--accent);
+    padding: 4px 12px; border-radius: 999px;
+  }
+  .t-brutalist .grow-tag { border: 2px solid #14110b; border-radius: 6px; }
+
+  .spacer { flex: 1; min-height: 12px; }
+
+  /* ============ 月初小结行（一年只出现 36 天）============ */
+  .rpt {
+    display: flex; align-items: center; gap: 14px;
+    padding: 15px 18px; margin-bottom: 14px;
+    border-radius: var(--radius);
+    background: var(--card-bg); border: var(--card-border); box-shadow: var(--card-shadow);
+  }
+  .t-slate .rpt { box-shadow: 5px 5px 12px var(--nm-dark), -4px -4px 10px var(--nm-light); }
+  .rpt-ico {
+    width: 34px; height: 34px; border-radius: 11px; flex: 0 0 34px;
+    display: flex; align-items: center; justify-content: center; font-size: 15px;
+    background: rgba(var(--accent-rgb),0.18);
+  }
+  .t-brutalist .rpt-ico { background: var(--accent); border: 2px solid #14110b; border-radius: 8px; }
+  .rpt-t { font-size: 14px; font-weight: 600; }
+  .rpt-s { font-size: 11px; color: var(--ink-40); margin-top: 2px; }
+  .rpt-go { margin-left: auto; color: var(--ink-40); font-size: 13px; }
+
+  /* ============ 底部：订阅升为主按钮 ============ */
+  .cta {
+    height: 54px; border-radius: var(--radius);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    font-size: 16px; font-weight: 700; letter-spacing: .02em;
+    background: var(--accent); color: var(--btn-ink);
+    border: var(--card-border);
+  }
+  .t-brutalist .cta { box-shadow: 5px 5px 0 #14110b; }
+  .cta-why { text-align: center; font-size: 11px; color: var(--ink-40); margin-top: 9px; }
+  .cta-plain {
+    text-align: center; font-size: 14px; color: var(--ink-60);
+    margin-top: 16px; text-decoration: underline; text-underline-offset: 3px;
+  }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <h1>盘点完成页 · 树与数字合一</h1>
+  <div class="grp"><span>主题</span>
+    <div class="seg" id="segTheme">
+      <button data-v="slate" class="on">晴空软光</button>
+      <button data-v="brutalist">硬核粗野</button>
+    </div>
+  </div>
+  <div class="grp"><span>本次结果</span>
+    <div class="seg" id="segState">
+      <button data-v="up" class="on">涨</button>
+      <button data-v="down">跌</button>
+      <button data-v="flat">没变</button>
+      <button data-v="first">首次盘点</button>
+    </div>
+  </div>
+  <div class="grp"><span>小树阶段</span>
+    <div class="seg" id="segStage">
+      <button data-v="seed">种子</button>
+      <button data-v="sprout">新芽</button>
+      <button data-v="sapling">树苗</button>
+      <button data-v="young">小树</button>
+      <button data-v="tree" class="on">大树</button>
+    </div>
+  </div>
+  <div class="grp"><span>这次跨阶段</span>
+    <div class="seg" id="segGrew">
+      <button data-v="0" class="on">否</button>
+      <button data-v="1">是（长大了）</button>
+    </div>
+  </div>
+  <div class="grp"><span>月初窗口</span>
+    <div class="seg" id="segRpt">
+      <button data-v="0" class="on">否</button>
+      <button data-v="1">是（前 3 天）</button>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  三种构图，同一套内容。树的绘制代码从 <b>utils/treeArt.js</b> 原样移植，看到的就是 App 真画出来的那棵。<br>
+  页面上每个数字都能从现有数据算出来：本次变化、现在净资产、相伴天数、更新次数。<b>没有一个是编的。</b><br>
+  底部按钮是 V3.1 的另一条提案（订阅升为主按钮），一并放进来看整页的重量分布 —— 那条还没定，先看构图。
+</div>
+
+<div class="stage" id="stage"></div>
+
+<script>
+/* ============================================================
+   treeArt.js 移植（只把 require('./theme.js') 换成本地 hexToRgb，
+   其余造型数据与绘制逻辑逐字照搬，保证原型与线上同一棵树）
+   ============================================================ */
+const TAU = Math.PI * 2, RAD = Math.PI / 180;
+function hexToRgb(hex) {
+  const h = String(hex || '').replace('#', '');
+  const s = h.length === 3 ? h.replace(/(.)/g, '$1$1') : h;
+  const n = parseInt(s, 16);
+  return ((n >> 16) & 255) + ', ' + ((n >> 8) & 255) + ', ' + (n & 255);
+}
+function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+function easeOutBack(t) { const c = 1.35, u = t - 1; return 1 + (c + 1) * u * u * u + c * u * u; }
+function pop(p, delay, dur) { return easeOutBack(clamp01((p - delay) / (dur || 0.32))); }
+
+const SHAPES = {
+  seed: { soilR: 22, seed: { x: 50, y: 78, rx: 6.4, ry: 8.6, rot: -14 } },
+  sprout: {
+    soilR: 22,
+    stem: { p: [50, 87, 47, 74, 50, 62], w0: 2.6, w1: 1.5 },
+    leaves: [
+      { x: 49.6, y: 64.5, len: 15, wd: 6, ang: -158, d: 0.42 },
+      { x: 49.6, y: 64.5, len: 15.5, wd: 6.2, ang: -22, d: 0.56 },
+    ],
+  },
+  sapling: {
+    soilR: 24,
+    stem: { p: [50, 87, 45, 64, 50.5, 40], w0: 3.2, w1: 1.4 },
+    leaves: [
+      { x: 48.2, y: 75.5, len: 15, wd: 5.5, ang: -22, d: 0.40 },
+      { x: 47.6, y: 64, len: 15.5, wd: 5.5, ang: -158, d: 0.50 },
+      { x: 48.4, y: 52, len: 14, wd: 5, ang: -25, d: 0.60 },
+      { x: 49.5, y: 45, len: 12.5, wd: 4.5, ang: -155, d: 0.68 },
+      { x: 50.5, y: 41, len: 11, wd: 4, ang: -88, d: 0.78 },
+    ],
+  },
+  young: {
+    soilR: 26,
+    stem: { p: [50, 87, 48, 66, 50, 46], w0: 6.5, w1: 2.4 },
+    branches: [
+      { p: [49.2, 64, 41, 58, 33, 52], w0: 2.6, w1: 1.1 },
+      { p: [49.4, 57, 58, 52, 65, 47], w0: 2.4, w1: 1.0 },
+    ],
+    canopy: [
+      { x: 50, y: 33, r: 15.5, d: 0.42 }, { x: 35, y: 42, r: 10.5, d: 0.52 },
+      { x: 64, y: 40, r: 11, d: 0.58 }, { x: 45, y: 24, r: 10, d: 0.66 },
+      { x: 59, y: 27, r: 9.5, d: 0.72 },
+    ],
+  },
+  tree: {
+    soilR: 30, flare: true,
+    stem: { p: [50, 87, 47, 64, 50, 42], w0: 10.5, w1: 3.2 },
+    branches: [
+      { p: [48.5, 68, 37, 64, 28, 54], w0: 3.4, w1: 1.2 },
+      { p: [48.6, 63, 62, 60, 71, 50], w0: 3.2, w1: 1.2 },
+      { p: [49.3, 55, 41, 50, 36, 42], w0: 2.6, w1: 1.0 },
+      { p: [49.5, 50, 58, 46, 63, 38], w0: 2.4, w1: 1.0 },
+    ],
+    canopy: [
+      { x: 50, y: 28, r: 19, d: 0.40 }, { x: 30, y: 42, r: 13, d: 0.48 },
+      { x: 70, y: 40, r: 13.5, d: 0.54 }, { x: 50, y: 45, r: 12, d: 0.58 },
+      { x: 38, y: 20, r: 12.5, d: 0.62 }, { x: 63, y: 20, r: 12, d: 0.68 },
+    ],
+    sparks: [
+      { x: 38, y: 27, r: 1.7, d: 0.82 }, { x: 59, y: 18, r: 1.4, d: 0.88 },
+      { x: 46, y: 37, r: 1.2, d: 0.94 },
+    ],
+  },
+};
+
+function samples(p, n) {
+  const out = [];
+  for (let i = 0; i <= n; i++) {
+    const t = i / n, u = 1 - t;
+    out.push([u*u*p[0] + 2*u*t*p[2] + t*t*p[4], u*u*p[1] + 2*u*t*p[3] + t*t*p[5]]);
+  }
+  return out;
+}
+function limbPath(ctx, seg) {
+  const pts = samples(seg.p, 14), left = [], right = [];
+  for (let i = 0; i < pts.length; i++) {
+    const t = i / (pts.length - 1);
+    const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)];
+    const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1;
+    const nx = -dy / L, ny = dx / L;
+    const hw = (seg.w0 + (seg.w1 - seg.w0) * t) / 2;
+    left.push([pts[i][0] + nx*hw, pts[i][1] + ny*hw]);
+    right.push([pts[i][0] - nx*hw, pts[i][1] - ny*hw]);
+  }
+  ctx.beginPath();
+  ctx.moveTo(left[0][0], left[0][1]);
+  for (let i = 1; i < left.length; i++) ctx.lineTo(left[i][0], left[i][1]);
+  for (let i = right.length - 1; i >= 0; i--) ctx.lineTo(right[i][0], right[i][1]);
+  ctx.closePath();
+}
+function leafPath(ctx, lf, k) {
+  const a = lf.ang * RAD, L = lf.len * k, W = lf.wd * k;
+  const cx = Math.cos(a), cy = Math.sin(a), px = -cy, py = cx;
+  const mx = lf.x + cx * L * 0.42, my = lf.y + cy * L * 0.42;
+  ctx.beginPath();
+  ctx.moveTo(lf.x, lf.y);
+  ctx.quadraticCurveTo(mx + px*W, my + py*W, lf.x + cx*L, lf.y + cy*L);
+  ctx.quadraticCurveTo(mx - px*W, my - py*W, lf.x, lf.y);
+  ctx.closePath();
+}
+
+function drawStage(ctx, W, H, stageKey, p, opt) {
+  const S = SHAPES[stageKey] || SHAPES.seed;
+  const o = opt || {};
+  const accent = o.accent || '#a7d3ff';
+  const rgb = hexToRgb(accent);
+  const fol = (a) => 'rgba(' + rgb + ',' + a + ')';
+  const bark = o.light ? '#6b543f' : '#8b7360';
+  const soilInk = o.light ? 'rgba(60,44,30,0.16)' : 'rgba(255,255,255,0.07)';
+  const s = Math.min(W, H) / 100;
+  const ox = (W - 100 * s) / 2, oy = (H - 100 * s) / 2;
+
+  ctx.clearRect(0, 0, W, H);
+  ctx.save();
+  ctx.translate(ox, oy);
+  ctx.scale(s, s);
+  const prog = clamp01(p);
+
+  ctx.fillStyle = soilInk;
+  ctx.beginPath();
+  ctx.ellipse(50, 86.5, S.soilR, 3.4, 0, 0, TAU);
+  ctx.fill();
+
+  if (stageKey === 'seed') {
+    const k = pop(prog, 0.1, 0.45);
+    if (k > 0) {
+      const sd = S.seed;
+      ctx.save();
+      ctx.globalAlpha = clamp01(prog / 0.35);
+      ctx.beginPath(); ctx.arc(sd.x, sd.y, 15, 0, TAU);
+      ctx.fillStyle = fol(0.07); ctx.fill();
+      ctx.translate(sd.x, sd.y); ctx.rotate(sd.rot * RAD); ctx.scale(k, k);
+      const g = ctx.createLinearGradient(-sd.rx, -sd.ry, sd.rx, sd.ry);
+      g.addColorStop(0, fol(0.95)); g.addColorStop(1, fol(0.5));
+      ctx.fillStyle = g; ctx.shadowColor = fol(0.45); ctx.shadowBlur = 10 * s;
+      ctx.beginPath(); ctx.ellipse(0, 0, sd.rx, sd.ry, 0, 0, TAU); ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.beginPath(); ctx.ellipse(-sd.rx*0.32, -sd.ry*0.3, sd.rx*0.28, sd.ry*0.34, -0.5, 0, TAU); ctx.fill();
+      ctx.restore();
+    }
+    ctx.restore();
+    return;
+  }
+
+  const grow = easeOutCubic(clamp01(prog / 0.6));
+  ctx.save();
+  ctx.beginPath(); ctx.rect(0, 88 - 88 * grow, 100, 88 * grow + 2); ctx.clip();
+  const barkG = ctx.createLinearGradient(38, 0, 62, 0);
+  barkG.addColorStop(0, bark);
+  barkG.addColorStop(0.45, o.light ? '#8a6f52' : '#a68a72');
+  barkG.addColorStop(1, bark);
+  ctx.fillStyle = barkG;
+  if (S.flare) {
+    ctx.beginPath();
+    ctx.moveTo(50 - S.stem.w0/2, 80);
+    ctx.quadraticCurveTo(50 - S.stem.w0/2 - 3, 85, 50 - S.stem.w0/2 - 7, 87);
+    ctx.lineTo(50 + S.stem.w0/2 + 7, 87);
+    ctx.quadraticCurveTo(50 + S.stem.w0/2 + 3, 85, 50 + S.stem.w0/2, 80);
+    ctx.closePath(); ctx.fill();
+  }
+  if (S.stem) { limbPath(ctx, S.stem); ctx.fill(); }
+  for (const b of (S.branches || [])) { limbPath(ctx, b); ctx.fill(); }
+  ctx.restore();
+
+  for (const lf of (S.leaves || [])) {
+    const k = pop(prog, lf.d);
+    if (k <= 0) continue;
+    const a = lf.ang * RAD;
+    const g = ctx.createLinearGradient(lf.x, lf.y, lf.x + Math.cos(a)*lf.len, lf.y + Math.sin(a)*lf.len);
+    g.addColorStop(0, fol(0.55)); g.addColorStop(1, fol(0.98));
+    ctx.fillStyle = g; ctx.shadowColor = fol(0.4); ctx.shadowBlur = 8 * s;
+    leafPath(ctx, lf, k); ctx.fill(); ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(255,255,255,0.28)'; ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.moveTo(lf.x, lf.y);
+    ctx.lineTo(lf.x + Math.cos(a)*lf.len*k*0.88, lf.y + Math.sin(a)*lf.len*k*0.88);
+    ctx.stroke();
+  }
+
+  const canopy = S.canopy || [];
+  const live = canopy.map(c => ({ c, k: pop(prog, c.d) })).filter(x => x.k > 0);
+  if (live.length) {
+    const union = () => {
+      ctx.beginPath();
+      for (const { c, k } of live) { const r = c.r * k; ctx.moveTo(c.x + r, c.y); ctx.arc(c.x, c.y, r, 0, TAU); }
+    };
+    ctx.fillStyle = fol(0.62); ctx.shadowColor = fol(0.42); ctx.shadowBlur = 14 * s;
+    union(); ctx.fill(); ctx.shadowBlur = 0;
+    let x0 = 100, y0 = 100, x1 = 0, y1 = 0;
+    for (const { c, k } of live) {
+      x0 = Math.min(x0, c.x - c.r*k); y0 = Math.min(y0, c.y - c.r*k);
+      x1 = Math.max(x1, c.x + c.r*k); y1 = Math.max(y1, c.y + c.r*k);
+    }
+    ctx.save(); union(); ctx.clip();
+    const lg = ctx.createLinearGradient(x0, y0, x1, y1);
+    lg.addColorStop(0, 'rgba(255,255,255,0.30)');
+    lg.addColorStop(0.45, 'rgba(255,255,255,0.04)');
+    lg.addColorStop(1, o.light ? 'rgba(40,30,20,0.20)' : 'rgba(0,0,0,0.26)');
+    ctx.fillStyle = lg; ctx.fillRect(x0 - 1, y0 - 1, x1 - x0 + 2, y1 - y0 + 2);
+    ctx.restore();
+  }
+
+  for (const sp of (S.sparks || [])) {
+    const k = pop(prog, sp.d, 0.2);
+    if (k <= 0) continue;
+    ctx.globalAlpha = clamp01(k);
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.shadowColor = 'rgba(255,255,255,0.7)'; ctx.shadowBlur = 6 * s;
+    ctx.beginPath(); ctx.arc(sp.x, sp.y, sp.r, 0, TAU); ctx.fill();
+    ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+  }
+  ctx.restore();
+}
+
+/* ============================================================
+   页面状态与内容
+   ============================================================ */
+const state = { theme: 'slate', st: 'up', stage: 'tree', grew: 0, rpt: 0 };
+
+const STAGE_NAME = { seed: '一颗种子', sprout: '一株新芽', sapling: '小树苗', young: '一棵小树', tree: '一棵大树' };
+
+// 四种结果的文案。数字全部来自现有模型可算的量。
+function content() {
+  const net = '¥645,200';
+  const days = 287, updates = 34;
+  if (state.st === 'first') {
+    return {
+      eyebrow: '你的起点', big: net, cls: 'flat',
+      sub: '从今天开始，这条线由你自己写',
+      netShow: false, days: 1, updates: 1,
+    };
+  }
+  if (state.st === 'down') {
+    return {
+      eyebrow: '这次盘点', big: '−¥3,180', cls: 'down',
+      sub: '回撤也是真实的一笔 · 你如实记下了',
+      netShow: true, net, days, updates,
+    };
+  }
+  if (state.st === 'flat') {
+    return {
+      eyebrow: '这次盘点', big: '没有变化', cls: 'flat',
+      sub: '5 个账户都核对过了，都对得上',
+      netShow: true, net, days, updates,
+    };
+  }
+  return {
+    eyebrow: '这次盘点', big: '+¥12,340', cls: 'up',
+    sub: '主要来自「投资 · 基金」',
+    netShow: true, net, days, updates,
+  };
+}
+
+const VARIANTS = [
+  {
+    key: 'a', name: 'A · 树在数字身后',
+    desc: '树放大压淡当背景，数字浮在树冠上。一眼只有一个焦点，但树被牺牲成了纹理。',
+  },
+  {
+    key: 'b', name: 'B · 树托着数字',
+    desc: '数字在上、树在下，一竖列读下来。树是「数字的来处」，最像一个庆祝时刻。',
+  },
+  {
+    key: 'c', name: 'C · 并肩',
+    desc: '树在左、数字在右。最省高度、长金额也不挤，但两者仍是两个东西，只是靠得近。',
+  },
+];
+
+function heroHTML(v, c) {
+  const grow = state.grew ? `<div class="grow-tag">小树长大了 · ${STAGE_NAME[state.stage]}</div>` : '';
+  const treeline = `<div class="treeline">相伴 ${c.days} 天 · 更新过 ${c.updates} 次</div>`;
+  const netline = c.netShow ? `<div class="netline">现在 <b>${c.net}</b></div>` : '';
+
+  if (v === 'a') {
+    return `<div class="hero-a">
+      <canvas data-tree></canvas>
+      <div class="inner">
+        <div class="eyebrow">${c.eyebrow}</div>
+        <div class="big ${c.cls}">${c.big}</div>
+        <div class="sub">${c.sub}</div>
+        ${netline}
+        ${treeline}
+        ${grow}
+      </div>
+    </div>`;
+  }
+  if (v === 'b') {
+    return `<div class="hero-b">
+      <div class="eyebrow">${c.eyebrow}</div>
+      <div class="big ${c.cls}">${c.big}</div>
+      <div class="sub">${c.sub}</div>
+      <canvas data-tree></canvas>
+      ${netline}
+      ${treeline}
+      ${grow}
+    </div>`;
+  }
+  return `<div class="hero-c">
+    <canvas data-tree></canvas>
+    <div class="txt">
+      <div class="eyebrow">${c.eyebrow}</div>
+      <div class="big ${c.cls}">${c.big}</div>
+      <div class="sub">${c.sub}</div>
+      ${netline}
+      ${treeline}
+      ${grow}
+    </div>
+  </div>`;
+}
+
+function render() {
+  const c = content();
+  const stage = state.st === 'first' ? 'sprout' : state.stage;
+  const stageEl = document.getElementById('stage');
+
+  stageEl.innerHTML = VARIANTS.map(v => `
+    <div class="col">
+      <div class="col-head">
+        <div class="col-name">${v.name}</div>
+        <div class="col-desc">${v.desc}</div>
+      </div>
+      <div class="phone t-${state.theme}">
+        <div class="nav"><div class="nav-btn">‹</div><div class="nav-title">盘点</div></div>
+        <div class="body">
+          ${heroHTML(v.key, c)}
+          <div class="spacer"></div>
+          ${state.rpt ? `
+          <div class="rpt">
+            <div class="rpt-ico">▤</div>
+            <div>
+              <div class="rpt-t">7 月小结已生成</div>
+              <div class="rpt-s">看看上个月是谁在推动</div>
+            </div>
+            <div class="rpt-go">›</div>
+          </div>` : ''}
+          <div class="cta">完成，下月初提醒我</div>
+          <div class="cta-why">微信服务通知 · 每次盘点后需重新订阅</div>
+          <div class="cta-plain">只完成</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  // 画树：读 CSS 变量 --tree-hex，与 App 里 theme.chartAccent || theme.accent 同一口径
+  document.querySelectorAll('[data-tree]').forEach(cv => {
+    const host = cv.closest('.phone');
+    const hex = getComputedStyle(host).getPropertyValue('--tree-hex').trim();
+    const rect = cv.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 2;
+    const W = rect.width, H = rect.height;
+    cv.width = W * dpr; cv.height = H * dpr;
+    const ctx = cv.getContext('2d');
+    ctx.scale(dpr, dpr);
+    drawStage(ctx, W, H, stage, 1, { accent: hex, light: state.theme === 'brutalist' });
+  });
+}
+
+function wire(id, key, cast) {
+  const box = document.getElementById(id);
+  box.addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    box.querySelectorAll('button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    state[key] = cast ? cast(b.dataset.v) : b.dataset.v;
+    render();
+  });
+}
+wire('segTheme', 'theme');
+wire('segState', 'st');
+wire('segStage', 'stage');
+wire('segGrew', 'grew', Number);
+wire('segRpt', 'rpt', Number);
+render();
+</script>
+</body>
+</html>

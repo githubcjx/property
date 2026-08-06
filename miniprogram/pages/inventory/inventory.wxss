@@ -152,11 +152,16 @@
 /* ============ HERO · 唯一主角：这次净值动了多少 ============ */
 /* 全系统唯一的一处「抬升」：主角数字的光晕（涨/起点才发光，跌不庆祝） */
 .hero-eyebrow { margin-top: 56rpx; font-size: 24rpx; letter-spacing: 2rpx; color: var(--ink-60); }
+/* V3.1：主角字号从 80 提到 112rpx（原型 B 的比例）。树进来之后，
+   80rpx 的数字压不住一棵 400rpx 的树，主角会被自己的陪衬盖过去。 */
 .hero-big {
   margin-top: 18rpx; padding: 0 16rpx;
   display: flex; align-items: center; justify-content: center;
-  font-size: 80rpx; font-weight: 800; letter-spacing: -2rpx; line-height: 1.05;
+  font-size: 112rpx; font-weight: 800; letter-spacing: -2rpx; line-height: 1.05;
 }
+/* 长金额（如 −¥12,345,678）在 112rpx 下会顶破 750rpx 屏宽，降一档。
+   字号由 JS 按字符数决定（WXSS 没有 auto-fit），见 inventory.js heroBigLong。 */
+.hero-big.is-long { font-size: 84rpx; letter-spacing: -1rpx; }
 .hero-big.gain { color: var(--good); text-shadow: 0 0 60rpx rgba(var(--good-rgb), 0.45); }
 .hero-big.baseline { color: var(--accent); text-shadow: 0 0 60rpx rgba(var(--accent-rgb), 0.40); }
 .hero-big.loss { color: var(--debt); }   /* 跌不加光晕：只用语义红，平静呈现 */
@@ -171,10 +176,12 @@
   font-size: 22rpx; color: var(--warn); line-height: 1.6; text-align: center;
 }
 
-/* 主角待定时的占位：高度对齐成稿主角（眉标 56+34 / 数字 18+84 / 副文 26+38 / 现在 18+36），
-   这样主角落地时下面的内容一行都不动 —— 不改口，也不跳版 */
+/* 主角待定时的占位：高度对齐成稿主角，这样主角落地时下面的内容一行都不动
+   —— 不改口，也不跳版。V3.1 树并进了主角，占位要跟着长高：
+   眉标 56+34 / 数字 18+118 / 副文 26+38 / 树 4+400−12 / 现在 18+36 / 陪伴 14+30 ≈ 780。
+   （占位只在「有上次盘点、正在回算」时出现，那条路径必定带「现在 ¥X」一行。） */
 .hero-hold {
-  height: 310rpx;
+  height: 780rpx;
   display: flex; align-items: flex-start; justify-content: center;
 }
 .hero-skel {
@@ -185,10 +192,32 @@
 }
 .no-motion .hero-skel { animation: none; }
 
-/* ============ 完成页 · 你的小树（每次都在，跨线才高亮）============ */
-/* 平时：一条安静的玻璃行，和目标行 / 提醒行同一重量，不与净值主角争。
-   紧随主角，多留一档间距，把主角和下面的陪伴清楚分开。 */
-.done-tree {
+/* 小树：不再是主角下面的第二张卡，而是主角的一部分（V3.1）。
+   数字在上、树在下、小字收在树脚 —— 一竖列读下来是一幅画，不是两个格子。
+   没有卡片底、没有描边：一旦给它一个框，它就又变回一个并列的模块了。 */
+.hero-tree {
+  width: 400rpx; height: 400rpx;
+  margin: 4rpx auto -12rpx;   /* 负下边距：土面影子和下一行小字贴紧，树才像"站"在字上 */
+  display: block;
+}
+/* 跨线庆祝：稀有，所以值钱 —— 只在这一次给树脚打一圈强调色地光。 */
+.hero-tree.is-grew {
+  filter: drop-shadow(0 6rpx 40rpx rgba(var(--accent-rgb), 0.35));
+}
+/* 陪伴的小字：一律回望（走过多久、更新过多少次），绝不写「再更新 N 次就…」，
+   理由见 utils/growthTree.js —— 把进度摆成任务，就会有人为了刷树记假账。 */
+.hero-treeline { margin-top: 14rpx; font-size: 22rpx; color: var(--ink-40); }
+.hero-grew {
+  margin-top: 16rpx; padding: 6rpx 22rpx;
+  font-size: 22rpx; font-weight: 700; letter-spacing: 1rpx;
+  color: var(--ink-100);
+  background: rgba(var(--accent-rgb), 0.16);
+  border: 1rpx solid rgba(var(--accent-rgb), 0.32);
+  border-radius: 999rpx;
+}
+
+/* ============ 完成页 · 上月小结入口（每月前 3 天）============ */
+.done-report {
   width: 100%; box-sizing: border-box;
   margin-top: 48rpx; padding: 20rpx 26rpx;
   border-radius: 28rpx; text-align: left;
@@ -196,48 +225,22 @@
   background: var(--glass-1);
   border: 1rpx solid var(--hairline);
 }
-/* 跨线庆祝：这一次才点亮强调色 —— 稀有,所以值钱。 */
-.done-tree.is-grew {
-  background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.12), rgba(var(--accent-rgb), 0.04));
-  border-color: rgba(var(--accent-rgb), 0.28);
-}
-.done-tree-canvas { width: 104rpx; height: 104rpx; flex: 0 0 104rpx; }
-.done-tree-txt { flex: 1; min-width: 0; }
-.done-tree-t { font-size: 28rpx; font-weight: 700; color: var(--ink-80); }
-.done-tree.is-grew .done-tree-t { color: var(--ink-100); }
-.done-tree-s { margin-top: 4rpx; font-size: 22rpx; color: var(--ink-60); }
-
-/* ============ 完成页 · 目标进度行 ============ */
-.done-goal {
-  width: 100%; box-sizing: border-box;
-  margin-top: 24rpx; border-radius: 28rpx;
-  padding: 24rpx 26rpx; text-align: left;
-  background: linear-gradient(180deg, rgba(var(--warn-rgb), 0.12), rgba(var(--warn-rgb), 0.04));
-  border: 1rpx solid rgba(var(--warn-rgb), 0.34);
-}
-.dg-top { display: flex; align-items: center; gap: 14rpx; }
-.dg-ico {
-  width: 48rpx; height: 48rpx; flex: 0 0 48rpx; border-radius: 16rpx;
+.dr-ico {
+  width: 56rpx; height: 56rpx; flex: 0 0 56rpx; border-radius: 18rpx;
   display: flex; align-items: center; justify-content: center;
-  background: rgba(var(--warn-rgb), 0.18);
+  background: rgba(var(--accent-rgb), 0.16);
 }
-.dg-name { flex: 1; font-size: 26rpx; font-weight: 700; color: var(--ink-100); }
-.dg-pct { font-size: 28rpx; font-weight: 800; color: var(--warn); }
-.dg-bar { height: 10rpx; border-radius: 10rpx; overflow: hidden; margin-top: 18rpx; background: rgba(255, 255, 255, 0.07); }
-.dg-fill { height: 100%; border-radius: 10rpx; background: linear-gradient(90deg, rgba(var(--warn-rgb), 0.45), var(--warn)); }
-.dg-sub { font-size: 22rpx; color: var(--ink-80); margin-top: 16rpx; }
+.dr-txt { flex: 1; min-width: 0; }
+.dr-t { font-size: 26rpx; font-weight: 700; color: var(--ink-100); }
+.dr-s { margin-top: 4rpx; font-size: 22rpx; color: var(--ink-40); }
+.dr-go { opacity: 0.45; }
+.done-report + .done-remind { margin-top: 24rpx; }
 
-.done-goal-empty {
-  width: 100%; box-sizing: border-box;
-  margin-top: 24rpx; border-radius: 28rpx;
-  padding: 26rpx; text-align: center;
-  font-size: 24rpx; color: var(--ink-60);
-  background: var(--glass-1); border: 1rpx dashed rgba(var(--warn-rgb), 0.3);
-}
-
+/* 紧跟主角时要拉开一档（48rpx），跟在小结行后面则只需一档间距。
+   一年里 329 天上面是主角，36 天上面是小结行 —— 两种都得站得住。 */
 .done-remind {
   width: 100%; box-sizing: border-box;
-  margin-top: 24rpx; border-radius: 28rpx;
+  margin-top: 48rpx; border-radius: 28rpx;
   padding: 24rpx 26rpx;
   display: flex; align-items: center; gap: 20rpx;
   background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.10), rgba(var(--accent-rgb), 0.04));
