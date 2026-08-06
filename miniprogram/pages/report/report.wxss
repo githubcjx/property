@@ -28,13 +28,6 @@
   text-align: center; letter-spacing: 0.5rpx;
 }
 
-.demo-flag {
-  margin: 0 24rpx 8rpx; align-self: flex-start;
-  font-size: 20rpx; color: var(--warn);
-  background: rgba(246, 214, 138, 0.12); border: 1rpx solid rgba(246, 214, 138, 0.3);
-  border-radius: 10rpx; padding: 4rpx 12rpx;
-}
-
 .scroll { flex: 1; padding: 8rpx 24rpx 0; box-sizing: border-box; }
 
 .state-hint { margin-top: 120rpx; text-align: center; font-size: 26rpx; color: var(--ink-60); }

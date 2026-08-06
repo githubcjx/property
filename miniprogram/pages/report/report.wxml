@@ -9,8 +9,6 @@
     <text class="nav-title">净值小结</text>
   </view>
 
-  <view wx:if="{{isDemo}}" class="demo-flag">示例数据 · 仅供预览</view>
-
   <!-- 加载态：轨道环绕 spinner -->
   <view wx:if="{{loading}}" class="loading-orbit">
     <view class="orbit-spinner">

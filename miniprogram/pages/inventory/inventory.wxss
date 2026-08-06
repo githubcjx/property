@@ -238,52 +238,34 @@
 .dr-t { font-size: 26rpx; font-weight: 700; color: var(--ink-100); }
 .dr-s { margin-top: 4rpx; font-size: 22rpx; color: var(--ink-40); }
 .dr-go { opacity: 0.45; }
-.done-report + .done-remind { margin-top: 24rpx; }
 
-/* 紧跟主角时要拉开一档（48rpx），跟在小结行后面则只需一档间距。
-   一年里 329 天上面是主角，36 天上面是小结行 —— 两种都得站得住。 */
-.done-remind {
-  width: 100%; box-sizing: border-box;
-  margin-top: 48rpx; border-radius: 28rpx;
-  padding: 24rpx 26rpx;
-  display: flex; align-items: center; gap: 20rpx;
-  background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.10), rgba(var(--accent-rgb), 0.04));
-  border: 1rpx solid rgba(var(--accent-rgb), 0.28);
-}
-.done-remind-ico {
-  width: 68rpx; height: 68rpx; flex: 0 0 68rpx; border-radius: 20rpx;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(var(--accent-rgb), 0.16);
-}
-.done-remind-txt { flex: 1; min-width: 0; }
-.done-remind-t { font-size: 26rpx; font-weight: 700; color: var(--ink-100); }
-.done-remind-s { font-size: 22rpx; color: var(--ink-60); margin-top: 4rpx; }
-/* 模板未配置时整块降透明度 + 「即将上线」标签，避免看起来可点即订阅 */
-.done-remind.is-soon { opacity: 0.62; }
-.done-remind-soon {
-  flex: 0 0 auto;
-  font-size: 20rpx; color: var(--ink-60);
-  background: var(--glass-1); border: 1rpx solid var(--hairline);
-  border-radius: 999rpx; padding: 6rpx 16rpx;
-}
-.done-remind-go { flex: 0 0 auto; font-size: 22rpx; font-weight: 700; color: var(--accent); }
-/* 已订阅：转成绿色确认态，与盘点主色一致 */
-.done-remind.is-on {
-  background: linear-gradient(180deg, rgba(var(--good-rgb), 0.10), rgba(var(--good-rgb), 0.04));
-  border-color: rgba(var(--good-rgb), 0.32);
-}
-.done-remind.is-on .done-remind-ico { background: rgba(var(--good-rgb), 0.16); }
-.done-remind-done { flex: 0 0 auto; font-size: 22rpx; font-weight: 700; color: var(--good); }
-
+/* 主按钮。紧跟主角时拉开一档（48rpx）；跟在小结行后面只需一档。 */
 .done-cta {
   width: 100%; box-sizing: border-box;
-  margin-top: 36rpx;
+  margin-top: 48rpx;
   height: 104rpx; border-radius: 32rpx;
   display: flex; align-items: center; justify-content: center;
   font-size: 30rpx; font-weight: 700;
   background: rgba(var(--good-rgb), 0.16);
   border: 1rpx solid rgba(var(--good-rgb), 0.45);
   color: var(--good);
+}
+.done-report + .done-cta { margin-top: 24rpx; }
+.done-cta.is-busy { opacity: 0.6; }
+
+/* 按钮下的一行小字：说清楚点下去会发生什么。它是主按钮标签的注脚，
+   不是一条独立信息 —— 所以贴着按钮、字小、灰。 */
+.done-cta-why {
+  margin-top: 16rpx;
+  font-size: 21rpx; color: var(--ink-40);
+  line-height: 1.5; text-align: center;
+}
+/* 「只完成」：永远在，永远安静。把默认那条路选对，不等于把另一条藏起来。 */
+.done-cta-plain {
+  margin-top: 26rpx;
+  font-size: 26rpx; color: var(--ink-60);
+  text-decoration: underline;
+  text-underline-offset: 6rpx;
 }
 
 /* ============ 退出确认（玻璃弹窗） ============ */

@@ -1,11 +1,7 @@
 // 净值报告 · 月报(单关键词) 的派生规则与数据编排
 // （年报功能现阶段暂不实现，相关代码已移除）
 //
-// ⚠️ 当前为「演示数据」阶段：USE_DEMO=true 时 buildMonthlyReport() 返回写死的示例数据，
-//    仅供开发预览页面效果。发版前务必：① 把 USE_DEMO 置 false ② 补完真实计算（见各 TODO）。
-//    演示数据不会展示给真实用户（页面 USE_DEMO 同步关闭即可）。
-//
-// 数据诚实（CLAUDE.md 不变量 10）：正式计算只能用真实存储/可算的数据
+// 数据诚实（CLAUDE.md 不变量 10）：计算只能用真实存储/可算的数据
 //   —— 月报涨幅来自 stats.js、归因按 期末−月初 现算、坚持度数 transactions；
 //      无可比数据时降级，不脑补。
 
@@ -53,34 +49,13 @@ function deriveMonthlyKeyword(r) {
   return { word: '波澜不惊', why: '本月净值平稳，没有大起大落。' }
 }
 
-// ===================== 演示数据（开发预览用，发版前删/关）=====================
-function getDemoMonthlyReport() {
-  const r = {
-    isDemo: true,
-    periodLabel: '2026 年 5 月',
-    coverage: 'full',
-    nwPct: 4.2,
-    nwDeltaFen: 5230000,
-    netWorthFen: 128450000,
-    spark: [42, 48, 40, 55, 60, 52, 68, 64, 75, 80, 78, 92],
-    movers: [
-      { name: '投资 · 基金',      cat: 'investment', dir: 'up', sharePct: 62, amountFen: 3240000, best: true },
-      { name: '流动 · 工资到账',  cat: 'liquid',     dir: 'up', sharePct: 28, amountFen: 1460000 },
-      { name: '负债 · 信用卡减少', cat: 'debt',       dir: 'up', sharePct: 10, amountFen: 530000 },
-    ],
-    records: 8,
-    accountsUpdated: 5,
-    totalDays: 287,
-    // 关键词派生输入
-    milestoneName: null,
-    allTimeHigh: false,
-    driver: { key: 'investment', sharePct: 62 },
-  }
-  r.keyword = deriveMonthlyKeyword(r)
-  return r
-}
+// 这里【曾经】有一份写死的示例月报（getDemoMonthlyReport）+ 一个 USE_DEMO 开关，
+// 用来在没数据时预览页面效果。V3.1 整份删除，别再加回来：
+// 一个把「数据诚实」写进宪法的产品（不变量 10），代码里躺着一份长得像真结论的假数据，
+// 只差一个开关就能上线 —— 那是柜子背面的胶合板。要预览空页面就造几条真账户，
+// 走完整链路；那样顺带还能验证计算本身对不对，假数据永远验证不了。
 
-// ===================== 真实月报编排 =====================
+// ===================== 月报编排 =====================
 // 口径与 stats.js 一致（CLAUDE.md 不变量 5）：历史余额 = 该账户在某时点前最近一条 balanceAfter。
 // 报告不存储，按需重算（区间参数化后，回看历史月份只需换 monthDate —— 见「历史月报」待办）。
 
@@ -224,7 +199,7 @@ function defaultReportMonth() {
   return new Date(d.getFullYear(), d.getMonth() - 1, 1)  // 负月份 JS 自动回退到上一年 12 月
 }
 
-// monthDate: 目标月内任一 Date（默认上一个完整月）。返回与 getDemoMonthlyReport 同结构。
+// monthDate: 目标月内任一 Date（默认上一个完整月）。
 // 口径（不变量 5）：期初 = 月初前各账户最近一条 balanceAfter；
 //   期末 —— 当前月用 live 余额（权威，与首页一致）；过去月把当月交易回放到月末快照。
 async function buildMonthlyReport(accounts, monthDate) {
@@ -273,7 +248,7 @@ async function buildMonthlyReport(accounts, monthDate) {
   // 无可比基线（月初前无任何记录）→ 降级，不脑补涨幅/归因
   if (!anySnapshot || included.length === 0) {
     const r = {
-      isDemo: false, periodLabel, coverage: 'insufficient',
+      periodLabel, coverage: 'insufficient',
       nwPct: 0, nwDeltaFen: 0, netWorthFen,
       spark: [], movers: [], driver: { key: 'balanced', sharePct: 0 },
       records, accountsUpdated, totalDays,
@@ -331,7 +306,7 @@ async function buildMonthlyReport(accounts, monthDate) {
   const spark = buildSparkReplay(included, baseBal, endBal, monthTx, monthStartMs, periodEndMs)
 
   const report = {
-    isDemo: false, periodLabel, coverage: 'full',
+    periodLabel, coverage: 'full',
     nwPct, nwDeltaFen, netWorthFen,
     spark, movers, driver,
     records, accountsUpdated, totalDays,
@@ -345,7 +320,6 @@ async function buildMonthlyReport(accounts, monthDate) {
 module.exports = {
   TH,
   deriveMonthlyKeyword,
-  getDemoMonthlyReport,
   buildMonthlyReport,
   defaultReportMonth,
 }

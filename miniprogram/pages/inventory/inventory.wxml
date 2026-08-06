@@ -151,23 +151,18 @@
           <view class="ic ic-xs ic-chevron-right dr-go"></view>
         </view>
 
-        <view class="done-remind entry-up d4 {{remindState === 'soon' ? 'is-soon' : ''}} {{remindState === 'on' ? 'is-on' : ''}}"
-              hover-class="{{remindState === 'off' ? 'btn-hover' : ''}}" bindtap="onSubscribeTap">
-          <view class="done-remind-ico"><view class="ic ic-sm ic-bell"></view></view>
-          <view class="done-remind-txt">
-            <view class="done-remind-t">下月初提醒我盘点</view>
-            <view class="done-remind-s">
-              <block wx:if="{{remindState === 'on'}}">下月 1 日发微信服务通知给你</block>
-              <block wx:elif="{{remindState === 'soon'}}">微信服务通知，正在开发中</block>
-              <block wx:else>微信服务通知 · 每次盘点后需重新订阅</block>
-            </view>
-          </view>
-          <text wx:if="{{remindState === 'soon'}}" class="done-remind-soon">即将上线</text>
-          <text wx:elif="{{remindState === 'on'}}" class="done-remind-done">已订阅</text>
-          <text wx:else class="done-remind-go">订阅 ›</text>
-        </view>
-
-        <view class="done-cta tap entry-up d4" hover-class="wiz-btn-hover" bindtap="onDone">完成</view>
+        <!-- 底部：订阅是主路径，不是一张可点的卡。
+             微信一次性订阅「同意一次、发一次」，每次盘点完不重新引导，下个月的循环就断了 ——
+             而这条循环是这个一月一见的产品唯一的回访来源。标签写清楚会发生什么，
+             点下去弹的是微信自己的授权框（仍可拒绝），旁边永远留着一条安静的「只完成」。
+             文案与是否显示次要按钮由 remindState 决定，见 inventory.js _applyCta。 -->
+        <block wx:if="{{ctaReady}}">
+          <view class="done-cta tap entry-up d4 {{remindBusy ? 'is-busy' : ''}}"
+                hover-class="wiz-btn-hover" bindtap="onPrimaryTap">{{ctaText}}</view>
+          <view wx:if="{{ctaWhy}}" class="done-cta-why entry-up d4">{{ctaWhy}}</view>
+          <view wx:if="{{ctaPlain}}" class="done-cta-plain tap entry-up d4"
+                hover-class="btn-hover" bindtap="onDone">只完成</view>
+        </block>
         <view class="tail-space"></view>
       </view>
     </scroll-view>

@@ -5,9 +5,6 @@ const { formatCNY } = require('../../utils/format.js')
 const { goBack } = require('../../utils/nav.js')
 const { DEFAULT_THEME } = require('../../utils/theme.js')
 
-// 演示开关：true = 写死示例数据；false = 用真实账户数据计算（当前为真实计算预览）。
-const USE_DEMO = false
-
 // 驱动大类 → 分享卡上的「主要推手」短语
 const DRIVER_CHIP = {
   investment: '投资是主要推手',
@@ -44,7 +41,6 @@ Page({
 
     loading: true,
     empty: false,
-    isDemo: false,
     coverage: 'full',
     periodLabel: '',
     canPrev: false,    // 可翻上一月（无下界，始终可点；服务无基线时显示降级文案）
@@ -100,13 +96,6 @@ Page({
   },
 
   async loadReport() {
-    if (USE_DEMO) {
-      const r = reportSvc.getDemoMonthlyReport()
-      this._report = r
-      this.setData({ loading: false, empty: false })
-      this.applyReport(r)
-      return
-    }
     const key = this._monthKey(this._month)
     // 缓存命中：秒开，无需 loading / 重新查询
     if (this._cache[key]) {
@@ -176,7 +165,6 @@ Page({
     }))
 
     this.setData({
-      isDemo: !!r.isDemo,
       coverage: r.coverage || 'full',
       periodLabel: r.periodLabel,
       pctText,

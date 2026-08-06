@@ -114,9 +114,14 @@ Page({
     reportRow: false,
     reportLabel: '',
 
-    // 提醒订阅：'off' 未订阅 | 'on' 已订阅 | 'soon' 模板未配置（显示「即将上线」）
+    // 提醒订阅：'off' 未订阅 | 'on' 已有未使用额度 | 'soon' 模板未配置
     remindState: 'soon',
     remindBusy: false,
+    // 底部按钮（由 _applyCta 按 remindState 一次性写入）
+    ctaReady: false,   // 文案定案前不渲染按钮：按钮的文案就是它的承诺，不能中途改口
+    ctaText: '',
+    ctaWhy: '',
+    ctaPlain: false,   // 是否显示次要的「只完成」
   },
 
   onLoad(query) {
@@ -487,45 +492,69 @@ Page({
     wx.navigateTo({ url: '/pages/report/report' })
   },
 
-  // 提醒入口状态：模板未配置时保持「即将上线」，否则查一次是否已有未使用的订阅额度
+  // 提醒状态：模板未配置就直接定案，否则查一次是否已有未使用的订阅额度。
+  // 结果决定底部主按钮长什么样（见 _applyCta），所以按钮要等这一步落定才出现 ——
+  // 和主角同一条规矩：不在用户眼皮底下改口。按钮的文案就是它的承诺，
+  // 先写「完成」再改成「完成，下月初提醒我」，等于当着人的面换了个承诺。
+  //
+  // 代价是按钮晚出现一小会儿。所以给查询设了 2s 上限：超时按「未订阅」处理 ——
+  // 这个兜底是安全的，重复订阅只会让 pending 保持 true，不会攒出两条提醒
+  // （见 services/reminder.js 顶部说明），而按钮永不缺席。
   async _refreshRemindState() {
     if (!reminderSvc.isConfigured()) {
-      this.setData({ remindState: 'soon' })
+      this._applyCta('soon')
       return
     }
+    let pending = false
     try {
-      const pending = await reminderSvc.isPending()
-      this.setData({ remindState: pending ? 'on' : 'off' })
+      pending = await Promise.race([
+        reminderSvc.isPending(),
+        new Promise((resolve) => setTimeout(() => resolve(false), 2000)),
+      ])
     } catch (err) {
-      console.warn('[inventory] 读取提醒订阅状态失败', err)
-      this.setData({ remindState: 'off' })
+      console.warn('[inventory] 读取提醒订阅状态失败，按未订阅处理', err)
     }
+    this._applyCta(pending ? 'on' : 'off')
   },
 
-  // 「下月初提醒我盘点」：微信一次性订阅，同意后记一次额度，云函数每月 1 日发
-  async onSubscribeTap() {
-    if (this.data.remindBusy) return
-    if (this.data.remindState === 'soon') {
-      wx.showToast({ icon: 'none', title: '提醒功能还在开发中' })
-      return
+  // 底部按钮：订阅升为主路径。
+  //
+  // 之前是「订阅」一张可点的卡 +「完成」一个大按钮 —— 等于把发动机做成了可选项，
+  // 而把出口做成了主路。微信一次性订阅是「同意一次、发一次」，每次盘点完不重新引导，
+  // 下个月的循环就断了；这条循环是这个一月一见的产品唯一的回访来源。
+  //
+  // 诚实在于标签本身写清楚了会发生什么，且点下去弹的是微信自己的授权框，用户仍可拒绝；
+  // 旁边永远留着一条安静的「只完成」。不是把选择藏起来，是把默认那条路选对。
+  //
+  // 三种状态：
+  //   off  → 主按钮「完成，下月初提醒我」+ 次要「只完成」
+  //   on   → 已有未使用额度，再订阅无意义 → 主按钮「完成」，副文告知已安排
+  //   soon → 模板未配置，提醒根本发不出去 → 主按钮「完成」，不承诺任何提醒
+  _applyCta(state) {
+    const map = {
+      off:  { ctaText: '完成，下月初提醒我', ctaWhy: '微信服务通知 · 每次盘点后需重新订阅', ctaPlain: true },
+      on:   { ctaText: '完成',              ctaWhy: '下月 1 日会发微信服务通知提醒你',    ctaPlain: false },
+      soon: { ctaText: '完成',              ctaWhy: '',                                 ctaPlain: false },
     }
-    if (this.data.remindState === 'on') {
-      wx.showToast({ icon: 'none', title: '已订阅，下月初会提醒你' })
+    this.setData(Object.assign({ remindState: state, ctaReady: true }, map[state] || map.soon))
+  },
+
+  // 主按钮。off 态先走一次订阅（微信弹自己的授权框），无论同意与否都接着离开 ——
+  // 用户按的是「完成」，提醒是附带的，不该因为拒绝订阅就把人扣在这一页。
+  async onPrimaryTap() {
+    if (this.data.remindBusy) return
+    if (this.data.remindState !== 'off') {
+      goBack()
       return
     }
     this.setData({ remindBusy: true })
-    const r = await reminderSvc.requestSubscribe()
-    this.setData({ remindBusy: false })
-    if (r === 'ok') {
-      this.setData({ remindState: 'on' })
-      wx.showToast({ icon: 'success', title: '下月初会提醒你' })
-    } else if (r === 'reject') {
-      wx.showToast({ icon: 'none', title: '已取消订阅' })
-    } else if (r === 'unconfigured') {
-      this.setData({ remindState: 'soon' })
-    } else {
-      wx.showToast({ icon: 'none', title: '订阅失败，稍后再试' })
+    try {
+      await reminderSvc.requestSubscribe()
+    } catch (err) {
+      console.warn('[inventory] 订阅提醒失败，不拦截离开', err)
     }
+    this.setData({ remindBusy: false })
+    goBack()
   },
 
   onDone() {
