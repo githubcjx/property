@@ -551,8 +551,12 @@
 .inv-entry-hover { transform: scale(0.99); opacity: 0.9; }
 /* 小树占图标位：故意不套玻璃方块 —— 加个框就成了「一张画」，
    裸放才像它本来就长在这条入口上。它自带土面投影，不需要底座。 */
+/* 画布 130 而树只画 96（drawStage 传 pad:0.13）：多出来的一圈是给树冠外发光的，
+   铺满画布会把那圈光裁成一条直边。四边负外边距各 −17rpx 把留白从版面里减回去，
+   所以行高与左右间距和「96rpx 画布」时完全一致。改尺寸时这两个数要一起重算。 */
 .ive-tree {
-  width: 96rpx; height: 96rpx; flex: 0 0 96rpx;
+  width: 130rpx; height: 130rpx; flex: 0 0 130rpx;
+  margin: -17rpx;
 }
 .ive-txt { flex: 1; min-width: 0; }
 .ive-title { font-size: 28rpx; font-weight: 700; color: var(--ink-100); }

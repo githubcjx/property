@@ -181,8 +181,15 @@ function muteRgb(rgbStr) {
  * @param W,H     CSS 像素尺寸
  * @param stageKey seed|sprout|sapling|young|tree
  * @param p       生长进度 0..1（1 = 静止终帧）
- * @param opt     { accent: '#rrggbb', light: bool, muted: bool }
+ * @param opt     { accent: '#rrggbb', light: bool, muted: bool, pad: 0..0.3 }
  *                muted=true → 睡着：褪色、去掉外发光与光点（催盘点时用）
+ *                pad → 四周留白比例（默认 0，铺满画布）
+ *
+ * 关于 pad：树形本身占满归一化的 100×100，但树冠的外发光(shadowBlur)画在树形【之外】，
+ * 铺满画布时那圈光正好落在边界上被裁掉 —— 画布越大越明显（一条肉眼可见的直边）。
+ * 需要发光完整显示的地方（如盘点完成页 400rpx 的主角树）传 pad，把画布开大、
+ * 树画小，留出的空白就是给光的。发光半径约 14·s，s = min(W,H)·(1−2·pad)/100，
+ * 所以 pad ≥ 0.13 时留白 (0.13·W) 稳稳大于光半径。
  */
 function drawStage(ctx, W, H, stageKey, p, opt) {
   const S = SHAPES[stageKey] || SHAPES.seed
@@ -194,7 +201,8 @@ function drawStage(ctx, W, H, stageKey, p, opt) {
   const bark = o.light ? '#6b543f' : '#8b7360'
   const soilInk = o.light ? 'rgba(60,44,30,0.16)' : 'rgba(255,255,255,0.07)'
 
-  const s = Math.min(W, H) / 100
+  const pad = Math.max(0, Math.min(0.3, o.pad || 0))
+  const s = Math.min(W, H) * (1 - 2 * pad) / 100
   const ox = (W - 100 * s) / 2
   const oy = (H - 100 * s) / 2
 

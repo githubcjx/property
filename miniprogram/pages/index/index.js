@@ -146,6 +146,9 @@ Page({
         accent: th.chartAccent || th.accent,
         light: isLight(this.data.theme),
         muted: !!(this.data.invEntry && this.data.invEntry.stale),
+        // pad：画布比树大一圈，树冠外发光才不会被画布边界裁成直边（见 utils/treeArt.js）。
+        // 这一圈透明留白由 .ive-tree 的负外边距在版面上抵掉。
+        pad: 0.13,
       }
       const key = this.data.tree && this.data.tree.key
       if (!key) return

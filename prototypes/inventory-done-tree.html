@@ -168,7 +168,7 @@
   .hero-b { text-align: center; padding: 22px 0 8px; }
   .hero-b .big { font-size: 60px; margin: 10px 0 0; }
   .hero-b .sub { margin-top: 10px; }
-  .hero-b canvas { width: 210px; height: 210px; display: block; margin: 2px auto -6px; }
+  .hero-b canvas { width: 280px; height: 280px; display: block; margin: -33px auto -41px; }
   .hero-b .netline { margin-top: 2px; }
   .hero-b .treeline { margin-top: 7px; }
 
@@ -392,7 +392,8 @@ function drawStage(ctx, W, H, stageKey, p, opt) {
   const fol = (a) => 'rgba(' + rgb + ',' + a + ')';
   const bark = o.light ? '#6b543f' : '#8b7360';
   const soilInk = o.light ? 'rgba(60,44,30,0.16)' : 'rgba(255,255,255,0.07)';
-  const s = Math.min(W, H) / 100;
+  const pad = Math.max(0, Math.min(0.3, o.pad || 0));
+  const s = Math.min(W, H) * (1 - 2 * pad) / 100;
   const ox = (W - 100 * s) / 2, oy = (H - 100 * s) / 2;
 
   ctx.clearRect(0, 0, W, H);
@@ -636,7 +637,7 @@ function render() {
     cv.width = W * dpr; cv.height = H * dpr;
     const ctx = cv.getContext('2d');
     ctx.scale(dpr, dpr);
-    drawStage(ctx, W, H, stage, 1, { accent: hex, light: state.theme === 'brutalist' });
+    drawStage(ctx, W, H, stage, 1, { accent: hex, light: state.theme === 'brutalist', pad: cv.closest('.hero-b') ? 0.13 : 0 });
   });
 }
 

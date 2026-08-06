@@ -430,16 +430,24 @@ Page({
 
   // 树的 canvas 现在长在 hero 里（V3.1 合一），节点只有 heroReady 之后才存在。
   // 而阶段判定与主角回算是两条并行的异步链，谁先到不一定 —— 所以两边都调这里，
-  // 条件齐了才画，且只画一次（否则跨线那次会把生长动画重播一遍）。
+  // 条件齐了才画，且只画一次（否则生长动画会被重播一遍）。
   _maybeDrawTree() {
     if (this._treeDrawn) return
     if (!this.data.heroReady || !this.data.treeShow || !this._treeInfo) return
     this._treeDrawn = true
-    this._drawDoneTree(this._treeInfo.key, this._treeInfo.grew)
+    this._drawDoneTree(this._treeInfo.key)
   },
 
-  // animate=true（跨线庆祝）才播一次生长动画；否则直接落静止终帧。
-  _drawDoneTree(key, animate) {
+  // 生长动画每次盘点都播一遍（简化动效时除外）。
+  //
+  // 早先只在跨阶段那次播，理由是「稀有，所以值钱」。那条理由适用于天天见的东西，
+  // 不适用于一个月见一次的：隔 30 天，用户根本记不得上次动画长什么样，
+  // 稀有性感知不到，换来的只是 11 个月里每次都看一张静止图。
+  // 真正让人知道「树长大了」的是那行徽标和树本身变大了（is-grew 的地光），
+  // 不是动画播没播 —— 所以庆祝的信号留给它们，动画回归它本来的职责：
+  // 回应「你刚做完一件事」。
+  _drawDoneTree(key) {
+    const animate = !this.data.reduceMotion
     wx.createSelectorQuery().in(this)
       .select('#doneTree').fields({ node: true, size: true }).exec((res) => {
         const item = res && res[0]
@@ -451,8 +459,10 @@ Page({
         canvas.height = item.height * dpr
         ctx.scale(dpr, dpr)
         const th = getTheme(this.data.theme)
-        const opt = { accent: th.chartAccent || th.accent, light: isLight(this.data.theme) }
-        if (!animate || this.data.reduceMotion) {
+        // pad：画布比树大一圈，把树冠外发光完整留在画布内（见 utils/treeArt.js 的 pad 说明）。
+        // 这一圈透明留白由 .hero-tree 的负外边距在版面上抵掉。
+        const opt = { accent: th.chartAccent || th.accent, light: isLight(this.data.theme), pad: 0.13 }
+        if (!animate) {
           treeArt.drawStage(ctx, item.width, item.height, key, 1, opt)
           return
         }
