@@ -102,6 +102,21 @@ function buildNodes(rangeKey, opts) {
   }
 
   const xLabels = nodes.map(d => formatLabel(d, granularity))
+
+  // 月粒度的标签只有「N月」，丢掉了年份和「这一点到底是月初还是月末」——
+  // 两处会因此在轴上出现两个同名月，各修各的：
+  if (rangeKey === 'ytd' && xLabels.length > 1) {
+    // 年初至今：首节点是 1/1 00:00 的【年初基线】，不是"一月"这个月。
+    // 它和"一月末"那个节点都会渲染成「1月」，于是轴上连着两个 1月（一月里打开更明显：
+    // 节点只有 [年初, 今天]，两个都叫 1月）。给它自己的名字，顺带说清它是什么。
+    xLabels[0] = '年初'
+  } else if (granularity === 'month' && nodes.length > 1
+             && nodes[0].getFullYear() !== nodes[nodes.length - 1].getFullYear()) {
+    // 跨年区间（1年、跨年的 6月）：首尾是同一个月名但差一年（如两个「8月」）。
+    // 只给首节点补年份 —— 其余月份在一年跨度内不会重名。
+    xLabels[0] = nodes[0].getFullYear() + '年' + xLabels[0]
+  }
+
   return { startDate, endDate, nodes, xLabels, granularity }
 }
 
