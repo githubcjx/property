@@ -239,6 +239,10 @@ async function getChartSeries(rangeKey, opts) {
     endDate,
     series,
     seriesReal,
+    // 区间内物价累计涨幅（%）：factors[0] 是把「区间最左端的钱」折成今天购买力的系数，
+    // 所以它减 1 就是这段时间物价涨了多少。页面用它决定「要不要提通胀这件事」——
+    // 30 天区间涨幅不到 0.1%，提了反而像噪音（见 chart 页 INFLATION_MIN_PCT）。
+    cpiRisePct: factors.length ? (factors[0] - 1) * 100 : 0,
     realCoverage,          // 全部节点是否都被 CPI 覆盖
     cpiLatest: cpi.META.latestYm,
     summary: buildSummary(nodes, series),

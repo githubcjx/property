@@ -121,25 +121,6 @@
 .tf-divider { width: 1rpx; height: 48rpx; background: var(--hairline); }
 
 /* ============ 关键比率 ============ */
-.ratio-row { margin-bottom: 28rpx; }
-.ratio-row:last-child { margin-bottom: 0; }
-.ratio-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12rpx; }
-.ratio-name { font-size: 26rpx; color: var(--ink-80); }
-.ratio-pct { font-size: 28rpx; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; }
-.ratio-pct.is-debt { color: var(--debt); }
-.ratio-track {
-  height: 12rpx;
-  border-radius: 999rpx;
-  background: var(--glass-1);
-  overflow: hidden;
-}
-.ratio-fill {
-  height: 100%;
-  border-radius: 999rpx;
-  background: var(--accent);
-}
-.ratio-fill.fill-debt { background: var(--debt); }
-.ratio-desc { font-size: 22rpx; color: var(--ink-40); margin-top: 10rpx; display: block; }
 
 /* ============ 集中度 ============ */
 .conc { display: flex; align-items: center; gap: 20rpx; }

@@ -64,10 +64,6 @@ Page({
       pctText: c.pct.toFixed(1),
       amountText: cny(c.amount),
     }))
-    const ratios = r.ratios.map(x => Object.assign({}, x, {
-      pctText: x.pct.toFixed(1),
-      barPct: Math.max(0, Math.min(100, x.pct)).toFixed(1),
-    }))
     const concentration = r.concentration ? Object.assign({}, r.concentration, {
       pctText: r.concentration.pct.toFixed(1),
       amountText: cny(r.concentration.amount),
@@ -82,7 +78,8 @@ Page({
         },
         assetCategories,
         conicGradient: r.conicGradient,
-        ratios,
+        // 负债率跟着「总负债」一起显示（同一件事的两种说法，不该分成两块卡）
+        debtRatioText: r.debtRatio == null ? '' : r.debtRatio.toFixed(1),
         concentration,
         accountCount: r.accountCount,
       },

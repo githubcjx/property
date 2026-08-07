@@ -115,13 +115,19 @@
         <view class="done-desc">当前 {{currentText}}，是一段了不起的旅程</view>
       </view>
 
-      <!-- ============ 成长轨迹（纯回顾；前瞻由上方的目标卡负责） ============ -->
-      <view class="sec-title entry-up d1">
-        <text class="sec-name">成长轨迹</text>
+      <!-- ============ 通用关口（纯回顾；前瞻由上方的目标卡负责） ============
+           已有自己的目标时默认收起 —— 它和目标卡做的是同一件事，两套并排摆着，
+           用户自己定的那个反而被稀释。没设目标时保持展开，那时它是引信。
+           见 milestones.js 的 msOpen 说明。 -->
+      <view class="sec-title entry-up d1 {{goal.hasGoal ? 'tap' : ''}}"
+            hover-class="{{goal.hasGoal ? 'btn-hover' : ''}}"
+            bindtap="{{goal.hasGoal ? 'onToggleMilestones' : ''}}">
+        <text class="sec-name">{{goal.hasGoal ? '通用关口' : '成长轨迹'}}</text>
         <text class="sec-sub">{{achievedCount}} / {{totalCount}} 已达成</text>
+        <view wx:if="{{goal.hasGoal}}" class="ic ic-xs ic-chevron-right sec-go {{msOpen ? 'is-open' : ''}}"></view>
       </view>
 
-      <view class="timeline" style="--achieved-stop: {{achievedCount / totalCount * 100}}%;">
+      <view wx:if="{{msOpen}}" class="timeline" style="--achieved-stop: {{achievedCount / totalCount * 100}}%;">
         <view
           wx:for="{{milestones}}"
           wx:key="amount"

@@ -33,6 +33,18 @@ Page({
     // 我的目标
     goal: { hasGoal: false },
     goalLoading: true,
+
+    // 7 关通用关口是否展开。
+    //
+    // 它和「我的目标」做的是同一件事：给曲线一个奔头。区别只在于关口的数字是我们定的、
+    // 目标的数字是用户定的 —— 两套并排摆着，用户自己那个反而被稀释。
+    // （这份重复深到什么程度：CLAUDE.md 记着两者必须共用 estimateMonthlyGrowth，
+    //   否则会在同一屏给出两个互相矛盾的预测。要靠接线才能不打架，本来就是一个功能。）
+    // 而且 7 关是硬编码人民币锚点，本位币非人民币的用户看到的是一套与自己无关的数字。
+    //
+    // 所以：没设目标时它默认展开 —— 那时它是引信，看见「一百万」才会想去定一个自己的数字；
+    // 一旦有了自己的目标，它收成一行，主角只剩那一个。想看随时能点开。
+    msOpen: true,
     goalSheetVisible: false,
     goalSheetEditing: false,
     goalNameInput: '',
@@ -84,7 +96,7 @@ Page({
       goal = await goalSvc.getActiveGoal()
     } catch (err) {
       console.warn('[goal] 读取目标失败，隐藏目标卡', err)
-      this.setData({ goal: { hasGoal: false }, goalLoading: false })
+      this.setData({ goal: { hasGoal: false }, goalLoading: false, msOpen: true })
       return
     }
     const view = goalSvc.buildGoalView(goal, this._current || 0, this._growth)
@@ -92,7 +104,12 @@ Page({
     if (view.hasGoal && view.state === 'achieved' && goal && !goal.achievedAt) {
       goalSvc.markAchieved(goal._id).catch(() => {})
     }
-    this.setData({ goal: this.decorateGoal(view), goalLoading: false })
+    // 7 关默认收起 —— 但只在用户已经有自己的目标时（见 data.msOpen 的说明）
+    this.setData({ goal: this.decorateGoal(view), goalLoading: false, msOpen: !view.hasGoal })
+  },
+
+  onToggleMilestones() {
+    this.setData({ msOpen: !this.data.msOpen })
   },
 
   // 补上展示用文案：金额随全局 hideAmount 打码，进度与预计时间不打码

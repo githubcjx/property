@@ -12,15 +12,20 @@
     <view class="nav-spacer"></view>
   </view>
 
-  <!-- 文字摘要 -->
+  <!-- 文字摘要。通胀那句话长在这里，不再是一个「名义/真实」开关：
+       开关在问「你想用哪种口径看」，可用户既不知道存在两种口径，也不知道该选哪个；
+       而且真实序列的右端就是今天（两线在右侧收敛），30天/6月/年初至今三个区间按下去
+       几乎什么都不会变 —— 一个按了没反应的开关比看不懂更糟。
+       现在它是一句在该出现时自己出现的话，见 chart.js _inflationLine()。 -->
   <view class="summary glass entry-up" wx:if="{{summary.rangeText}}">
     <text class="sum-label">{{summary.rangeText}}</text>
     <view class="sum-lines">
       <text class="sum-line" wx:for="{{summary.lines}}" wx:key="*this">{{item}}</text>
     </view>
+    <view wx:if="{{inflationLine}}" class="sum-infl">{{inflationLine}}</view>
   </view>
 
-  <!-- Tab 切换 + 名义/真实 口径切换 -->
+  <!-- Tab 切换 -->
   <view class="tabs-row entry-up d1">
     <view class="tabs">
       <view
@@ -31,10 +36,6 @@
         bindtap="onTabTap">
         {{item.label}}
       </view>
-    </view>
-    <view class="basis">
-      <view class="basis-item tap {{basis === 'nominal' ? 'basis-active' : ''}}" data-key="nominal" bindtap="onBasisTap">名义</view>
-      <view class="basis-item tap {{basis === 'real' ? 'basis-active' : ''}}" data-key="real" bindtap="onBasisTap">真实</view>
     </view>
   </view>
 
@@ -52,12 +53,6 @@
     </ec-canvas>
   </view>
 
-  <!-- 真实口径说明 -->
-  <view class="basis-note entry-up" wx:if="{{basis === 'real' && hasData}}">
-    <text>已按国家统计局 CPI 折算为今日购买力 · 截至 {{cpiLatest}}</text>
-    <text wx:if="{{!realCoverage}}" class="basis-note-warn">含更早无 CPI 数据的区间，该段按名义显示</text>
-  </view>
-
   <!-- 时间范围 Segmented Control -->
   <view class="ranges entry-up d3">
     <view
@@ -70,15 +65,9 @@
     </view>
   </view>
 
-  <!-- 自定义日期范围 -->
-  <view class="custom-row entry-up d4" wx:if="{{rangeKey === 'custom'}}">
-    <picker mode="date" value="{{customStart}}" end="{{customEnd}}" bindchange="onCustomStart">
-      <view class="date-pick glass tap">起 · {{customStart}}</view>
-    </picker>
-    <picker mode="date" value="{{customEnd}}" start="{{customStart}}" bindchange="onCustomEnd">
-      <view class="date-pick glass tap">止 · {{customEnd}}</view>
-    </picker>
-  </view>
+  <!-- 这里【曾经】有一个「自定义」区间 + 两个日期选择器。删除，别加回来：
+       这个 App 的数据一个月才产生一个点，一年 12 个点，
+       「2024-03-17 到 2024-08-02」这种精度没有任何东西可切 —— 那是电子表格的条件反射。 -->
 
   <!-- ============ 回顾中枢 ============
        V3.0：首页那个「四个镜头」的工具抽屉没了，四扇门合成一扇「回顾」，落在这里。

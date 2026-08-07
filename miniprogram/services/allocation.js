@@ -67,16 +67,14 @@ function evaluate(accounts) {
   }
   const conicGradient = segs.length ? 'conic-gradient(' + segs.join(', ') + ')' : ''
 
-  // 关键比率（占总资产）—— 中性陈述，不评判
-  const ratios = []
-  const pushRatio = (key, name, num, desc, isDebtRatio) => {
-    if (assets <= 0) return
-    ratios.push({ key, name, pct: (num / assets) * 100, desc, isDebt: !!isDebtRatio })
-  }
-  pushRatio('liquidity', '流动性占比', sumByCat.liquid || 0, '流动资金 / 总资产')
-  pushRatio('invest', '投资占比', sumByCat.investment || 0, '投资 / 总资产')
-  pushRatio('fixed', '固定资产占比', sumByCat.fixed || 0, '固定资产 / 总资产')
-  pushRatio('debt', '负债率', debt, '总负债 / 总资产', true)
+  // 负债率（总负债 / 总资产）。
+  //
+  // 这里【曾经】还有「流动性占比 / 投资占比 / 固定资产占比」三条，它们与上面
+  // assetCategories 的 pct 是【逐字相同的数字】—— 同一个分子 sumByCat[x]、
+  // 同一个分母 assets，只是换了个名字，在同一页上下隔一屏各出现一次。
+  // V3.1 删除，别再加回来。只留下这一条：负债不进环图（环图只画正向资产），
+  // 所以「负债占资产多少」恰恰是环图唯一回答不了的问题。
+  const debtRatio = assets > 0 ? (debt / assets) * 100 : null
 
   // 集中度：最大单一资产占总资产比
   let concentration = null
@@ -95,7 +93,7 @@ function evaluate(accounts) {
     totals: { assets, debt, netWorth },
     assetCategories,
     conicGradient,
-    ratios,
+    debtRatio,
     concentration,
     accountCount: included.length,
   }

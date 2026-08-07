@@ -23,8 +23,11 @@ const RANGES = [
   { key: '6m',  label: '6月' },
   { key: '1y',  label: '1年' },
   { key: 'ytd', label: '年初至今' },
-  { key: 'custom', label: '自定义' },
 ]
+
+// 物价累计涨幅低于这个数就不提通胀：区间太短时差异只有零点几个百分点，
+// 说出来是噪音，不是洞察。1% 大约对应一年以上的区间。
+const INFLATION_MIN_PCT = 1
 
 // Page 实例引用，供 ec-canvas 初始化回调使用
 let pageRef = null
@@ -52,13 +55,10 @@ Page({
     ranges: RANGES,
     tabKey: 'net',
     rangeKey: '1y',
-    basis: 'nominal',       // 'nominal' 名义 | 'real' 真实(通胀调整)
-    cpiLatest: '',
-    realCoverage: true,
-    customStart: '',
-    customEnd: '',
 
     summary: { rangeText: '', lines: [] },
+    // 通胀那一句（够长的区间才有；见 _inflationLine）
+    inflationLine: '',
     loading: true,
     hasData: false,
     hideAmount: false,
@@ -98,13 +98,6 @@ Page({
       theme: app.globalData.theme,
       statusBarHeight: sysInfo.statusBarHeight || 20,
     })
-    // 设置默认自定义日期：近 7 天
-    const now = new Date()
-    const start = new Date(now.getTime() - 6 * 86400000)
-    this.setData({
-      customStart: this._fmtDate(start),
-      customEnd: this._fmtDate(now),
-    })
   },
 
   onReady() {
@@ -132,30 +125,18 @@ Page({
     this._chart = null
   },
 
-  _fmtDate(d) {
-    const y = d.getFullYear()
-    const m = (d.getMonth() + 1).toString().padStart(2, '0')
-    const day = d.getDate().toString().padStart(2, '0')
-    return `${y}-${m}-${day}`
-  },
-
   // ============== 数据刷新 ==============
 
   async refresh() {
     this.setData({ loading: true })
     try {
-      const opts = this.data.rangeKey === 'custom'
-        ? { start: new Date(this.data.customStart), end: new Date(this.data.customEnd) }
-        : null
-      const data = await chartSvc.getChartSeries(this.data.rangeKey, opts)
+      const data = await chartSvc.getChartSeries(this.data.rangeKey)
       this._seriesData = data
-      this._summaryNominal = data.summary
-      this._summaryReal = data.summaryReal
       const hasData = data.series.netWorth.some(v => v !== 0)
         || data.series.debt.some(v => v !== 0)
         || data.series.liquid.some(v => v !== 0)
         || data.series.investment.some(v => v !== 0)
-      this.setData({ hasData, cpiLatest: data.cpiLatest || '', realCoverage: data.realCoverage !== false })
+      this.setData({ hasData })
       this.applySummaryByTab(this.data.tabKey)
       this.renderChart()
     } catch (err) {
@@ -244,7 +225,7 @@ Page({
 
   renderChart() {
     if (!this._seriesData) return
-    const option = this.buildOption(this._seriesData, this.data.tabKey, this.data.hideAmount, this.data.basis)
+    const option = this.buildOption(this._seriesData, this.data.tabKey, this.data.hideAmount)
     if (this._chart) {
       this._chart.setOption(option, true)
     } else {
@@ -252,10 +233,11 @@ Page({
     }
   },
 
-  buildOption(data, tabKey, hide, basis) {
-    // 真实口径：用通胀调整序列，并给系列名加「·真实」后缀（tooltip/图例可区分）
-    const S = (basis === 'real' && data.seriesReal) ? data.seriesReal : data.series
-    const sfx = basis === 'real' ? '·真实' : ''
+  // 曲线永远只有一条口径（名义）。通胀不再是一个模式，而是摘要里的一句话
+  // （见 _inflationLine）—— 一条曲线，不让用户先选镜头再看图。
+  buildOption(data, tabKey, hide) {
+    const S = data.series
+    const sfx = ''
     const t = getTheme(app.globalData.theme)
     // 浅色主题：主题可指定 chartAccent（如信号黄在纸底上偏浅，改用 accent-2 蓝）；
     // 轴文字/图例/负债线原为写死浅色，浅底下改墨色（canvas 取不到 CSS 变量）
@@ -423,23 +405,47 @@ Page({
   // ============== 交互 ==============
 
   applySummaryByTab(tabKey) {
-    const full = this.data.basis === 'real' ? this._summaryReal : this._summaryNominal
+    const d = this._seriesData
+    const full = d && d.summary
     if (!full || !full.metrics) {
-      this.setData({ summary: { rangeText: '', lines: [] } })
+      this.setData({ summary: { rangeText: '', lines: [] }, inflationLine: '' })
       return
     }
-    const lines = tabKey === 'net'
+    const lines = (tabKey === 'net'
       ? [full.metrics.netWorth.text, full.metrics.debt.text]
       : [full.metrics.liquid.text, full.metrics.investment.text]
-    this.setData({ summary: { rangeText: full.rangeText, lines } })
+    ).map(t => this._maskAmounts(t))
+    this.setData({
+      summary: { rangeText: full.rangeText, lines },
+      // 通胀只对净资产说一次，跟着「净资产/负债」这个 Tab 走
+      inflationLine: tabKey === 'net' ? this._inflationLine(d) : '',
+    })
   },
 
-  onBasisTap(e) {
-    const key = e.currentTarget.dataset.key
-    if (key === this.data.basis) return
-    this.setData({ basis: key })
-    this.applySummaryByTab(this.data.tabKey)
-    this.renderChart()
+  // 摘要文案里的绝对金额要跟着隐私开关打码 —— 图表 y 轴与 tooltip 早就打码了，
+  // 这段文字却一直是明文（「我的净资产增加了 214,000 元」），是个漏网。
+  // 百分比保留：它是相对量，与分享卡「只含相对量、绝不含绝对金额」的口径一致。
+  _maskAmounts(text) {
+    if (!this.data.hideAmount) return text
+    return String(text || '').replace(/[\d,]+ 元/g, '•••• 元')
+  },
+
+  // 通胀那一句。取代原来的「名义/真实」切换：
+  // 不问用户想用哪种口径，直接把差额说出来 —— 而且只在差额真的存在时才说。
+  // realDelta 来自 seriesReal（每个节点按 CPI 折成今日购买力，右端=今天），
+  // 所以「实际增长」= 期末 − 折算后的期初，恒 ≤ 名义增长。
+  _inflationLine(d) {
+    if (!d || d.realCoverage === false) return ''            // 区间早于 CPI 数据，不臆造
+    const rise = d.cpiRisePct || 0
+    if (rise < INFLATION_MIN_PCT) return ''                  // 太短，说了是噪音
+    const real = d.summaryReal && d.summaryReal.metrics && d.summaryReal.metrics.netWorth
+    if (!real || real.start === 0) return ''                 // 期初无值，谈不上"扣掉通胀"
+    const baseCcy = baseCurrency()
+    const amt = this.data.hideAmount
+      ? '••••'
+      : formatMoney(Math.abs(cnyToBaseFen(real.delta)), baseCcy, { symbol: true })
+    const verb = real.delta >= 0 ? '实际增长' : '实际减少'
+    return `扣掉通胀，${verb} ${amt} · 同期物价 +${rise.toFixed(1)}%`
   },
 
   onTabTap(e) {
@@ -454,16 +460,6 @@ Page({
     const key = e.currentTarget.dataset.key
     if (key === this.data.rangeKey) return
     this.setData({ rangeKey: key })
-    if (key !== 'custom') this.refresh()
-  },
-
-  onCustomStart(e) {
-    this.setData({ customStart: e.detail.value })
-    if (this.data.rangeKey === 'custom') this.refresh()
-  },
-
-  onCustomEnd(e) {
-    this.setData({ customEnd: e.detail.value })
-    if (this.data.rangeKey === 'custom') this.refresh()
+    this.refresh()
   },
 })

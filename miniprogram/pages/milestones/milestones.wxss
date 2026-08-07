@@ -97,9 +97,19 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+  gap: 12rpx;
   padding: 8rpx 8rpx 16rpx;
   margin-top: 12rpx;
 }
+/* 可折叠时的箭头：收起指右、展开转成指下 */
+.sec-title .sec-sub { margin-left: auto; }
+.sec-go {
+  align-self: center;
+  opacity: 0.45;
+  transition: transform 0.22s ease;
+}
+.sec-go.is-open { transform: rotate(90deg); }
+.no-motion .sec-go { transition: none; }
 .sec-name {
   font-size: 26rpx;
   font-weight: 600;

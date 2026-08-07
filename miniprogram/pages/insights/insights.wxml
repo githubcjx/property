@@ -48,28 +48,13 @@
           <view class="tf-divider"></view>
           <view class="tf-item">
             <text class="tf-v num cat-debt">{{alloc.totals.debt}}</text>
-            <text class="tf-k">总负债</text>
+            <text class="tf-k">总负债{{alloc.debtRatioText ? ' · 占资产 ' + alloc.debtRatioText + '%' : ''}}</text>
           </view>
           <view class="tf-divider"></view>
           <view class="tf-item">
             <text class="tf-v num">{{alloc.accountCount}}</text>
             <text class="tf-k">账户数</text>
           </view>
-        </view>
-      </view>
-
-      <!-- 关键比率 -->
-      <view class="sec-title"><text class="sec-name">关键比率</text><text class="sec-sub">占总资产</text></view>
-      <view class="card entry-up">
-        <view class="ratio-row" wx:for="{{alloc.ratios}}" wx:key="key">
-          <view class="ratio-head">
-            <text class="ratio-name">{{item.name}}</text>
-            <text class="ratio-pct {{item.isDebt ? 'is-debt' : ''}}">{{item.pctText}}%</text>
-          </view>
-          <view class="ratio-track">
-            <view class="ratio-fill {{item.isDebt ? 'fill-debt' : ''}}" style="width: {{item.barPct}}%;"></view>
-          </view>
-          <text class="ratio-desc">{{item.desc}}</text>
         </view>
       </view>
 
