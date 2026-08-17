@@ -249,45 +249,6 @@ button.btn-reset::after { display: none; }
 .tap:active { opacity: 0.85; transform: scale(0.97); }
 
 /* ============================================================
-   Reduce-motion 模式（设置页开关控制）
-   挂载方式：在页面根 view / 组件根上加 class="no-motion"
-   目标：降低 GPU 占用，缓解发热（移除 backdrop-filter 与无限动画）
-   ============================================================ */
-.no-motion .glass,
-.no-motion .glass-2,
-.no-motion.ai-mask,
-.no-motion .ai-mask,
-.no-motion .ai-sheet {
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-}
-.no-motion .glass,
-.no-motion .glass-2 { background: var(--bg-2); }
-.no-motion.ai-mask { background: rgba(5, 6, 10, 0.78); }
-.no-motion .canvas-bg::before {
-  animation: none !important;
-  filter: none !important;
-  opacity: 0.4;
-}
-.no-motion .canvas-bg::after { opacity: 0.3; }
-.no-motion .tap:active { transform: none; }
-/* 把所有动画压缩为 0.01s 单次：
-   - infinite 动画跑一次就停，不再占 GPU
-   - 「opacity: 0 + animation forwards」的揭示动画会瞬间跳到终态，
-     避免元素永久不可见 */
-.no-motion view,
-.no-motion image,
-.no-motion text,
-.no-motion button,
-.no-motion scroll-view,
-.no-motion switch,
-.no-motion canvas {
-  animation-duration: 0.01s !important;
-  animation-iteration-count: 1 !important;
-  animation-delay: 0s !important;
-}
-
-/* ============================================================
    Keyframes
    ============================================================ */
 @keyframes drift {

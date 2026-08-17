@@ -1,6 +1,6 @@
-<view class="canvas-bg theme-{{theme}}" wx:if="{{!reduceMotion}}"></view>
+<view class="canvas-bg theme-{{theme}}"></view>
 
-<view class="page {{reduceMotion ? 'no-motion' : ''}} theme-{{theme}}">
+<view class="page theme-{{theme}}">
   <view class="settings-halo"></view>
 
   <!-- 透明导航栏 -->
@@ -45,13 +45,6 @@
       </view>
       <text class="row-trailing">{{themeName}}</text>
       <view class="row-arrow"><view class="ic ic-xs ic-chevron-right"></view></view>
-    </view>
-    <view class="row row-switch">
-      <view class="row-icon"><view class="ic ic-sm ic-settings"></view></view>
-      <view class="row-main">
-        <text class="row-title">简化动效</text>
-      </view>
-      <switch checked="{{reduceMotion}}" bindchange="onReduceMotionChange" color="{{accentColor}}" />
     </view>
     <view class="row tap" hover-class="row-hover" bindtap="onExport">
       <view class="row-icon"><view class="ic ic-sm ic-export"></view></view>

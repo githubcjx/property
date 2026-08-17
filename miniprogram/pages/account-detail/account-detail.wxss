@@ -15,6 +15,13 @@
   pointer-events: none;
   z-index: 0;
 }
+/* 光晕的颜色来自类目。这五条原先是 app.wxss 里的全局 .halo-*,跟着首页卡片那团色雾
+   一起删了 —— 本页是唯一的消费者,搬到这里,定义和用处待在同一个文件。 */
+.halo-liquid     { background: radial-gradient(circle, rgba(var(--liquid-rgb), 0.30),     transparent 70%); }
+.halo-investment { background: radial-gradient(circle, rgba(var(--investment-rgb), 0.30), transparent 70%); }
+.halo-fixed      { background: radial-gradient(circle, rgba(var(--fixed-rgb), 0.30),      transparent 70%); }
+.halo-receivable { background: radial-gradient(circle, rgba(var(--receivable-rgb), 0.30), transparent 70%); }
+.halo-debt       { background: radial-gradient(circle, rgba(var(--debt-rgb), 0.30),       transparent 70%); }
 
 /* ============ Navbar ============ */
 .navbar {

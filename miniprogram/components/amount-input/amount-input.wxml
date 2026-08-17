@@ -1,6 +1,6 @@
 
 <view wx:if="{{visible}}"
-      class="ai-mask {{closing ? 'ai-mask-out' : 'ai-mask-in'}} {{reduceMotion ? 'no-motion' : ''}}"
+      class="ai-mask {{closing ? 'ai-mask-out' : 'ai-mask-in'}}"
       bindtap="onCancel"
       catchtouchmove="noop">
   <view class="ai-sheet glass-2 {{closing ? 'ai-sheet-out' : 'ai-sheet-in'}}" catchtap="noop">

@@ -1,6 +1,6 @@
-<view class="canvas-bg theme-{{theme}}" wx:if="{{!reduceMotion}}"></view>
+<view class="canvas-bg theme-{{theme}}"></view>
 
-<view class="page {{reduceMotion ? 'no-motion' : ''}} theme-{{theme}}">
+<view class="page theme-{{theme}}">
   <!-- 类目光晕 -->
   <view class="hero-halo halo-{{colorClass}}"></view>
 
@@ -141,7 +141,6 @@
   current-balance-text="{{currentBalanceText}}"
   currency="{{account.currency || 'CNY'}}"
   currency-symbol="{{balSymbol}}"
-  reduce-motion="{{reduceMotion}}"
   bindcancel="onInputCancel"
   bindconfirm="onInputConfirm"
 />

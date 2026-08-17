@@ -5,7 +5,6 @@ const { DEFAULT_THEME } = require('../../utils/theme.js')
 Page({
   data: {
     statusBarHeight: 20,
-    reduceMotion: false,
     theme: DEFAULT_THEME,
     currencies: CURRENCIES,
     current: 'CNY',
@@ -15,7 +14,6 @@ Page({
     const sysInfo = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
     this.setData({
       statusBarHeight: sysInfo.statusBarHeight || 20,
-      reduceMotion: app.globalData.reduceMotion,
       theme: app.globalData.theme,
       current: app.globalData.baseCurrency || 'CNY',
     })
@@ -23,7 +21,7 @@ Page({
 
   onShow() {
     app.applyThemeChrome()
-    this.setData({ theme: app.globalData.theme, reduceMotion: app.globalData.reduceMotion })
+    this.setData({ theme: app.globalData.theme })
   },
 
   // 切换本位币：二次确认。只换显示单位，不改已存数据、不重算历史。

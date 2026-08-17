@@ -117,5 +117,3 @@
 }
 
 .tail-space { height: 40rpx; }
-.no-motion .entry-up { animation: none; }
-.no-motion .wiz-fill { transition: none; }

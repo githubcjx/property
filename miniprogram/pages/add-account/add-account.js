@@ -45,7 +45,6 @@ Page({
 
     showSuccess: false,
     burstKey: 0,
-    reduceMotion: false,
     theme: DEFAULT_THEME,
   },
 
@@ -54,7 +53,6 @@ Page({
     const sysInfo = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
     this.setData({
       statusBarHeight: sysInfo.statusBarHeight || 20,
-      reduceMotion: app.globalData.reduceMotion,
       theme: app.globalData.theme,
     })
     if (query.editId) {

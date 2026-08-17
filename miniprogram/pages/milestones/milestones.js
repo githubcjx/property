@@ -10,7 +10,6 @@ const { DEFAULT_THEME } = require('../../utils/theme.js')
 Page({
   data: {
     statusBarHeight: 20,
-    reduceMotion: false,
     theme: DEFAULT_THEME,
     hideAmount: false,
     loading: true,
@@ -57,7 +56,6 @@ Page({
     const sysInfo = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
     this.setData({
       statusBarHeight: sysInfo.statusBarHeight || 20,
-      reduceMotion: app.globalData.reduceMotion,
       theme: app.globalData.theme,
       hideAmount: app.globalData.hideAmount,
     })
@@ -66,7 +64,6 @@ Page({
   onShow() {
     app.applyThemeChrome()
     this.setData({
-      reduceMotion: app.globalData.reduceMotion,
       theme: app.globalData.theme,
       hideAmount: app.globalData.hideAmount,
     })

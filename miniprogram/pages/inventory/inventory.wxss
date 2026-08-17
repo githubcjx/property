@@ -190,7 +190,6 @@
   background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.16), rgba(var(--accent-rgb), 0.06));
   animation: glow-soft 1.6s ease-in-out infinite;
 }
-.no-motion .hero-skel { animation: none; }
 
 /* 小树：不再是主角下面的第二张卡，而是主角的一部分（V3.1）。
    数字在上、树在下、小字收在树脚 —— 一竖列读下来是一幅画，不是两个格子。
@@ -306,7 +305,3 @@
   color: var(--good);
 }
 
-/* 简化动效 */
-.no-motion .entry-up { animation: none; }
-.no-motion .quit-mask, .no-motion .quit-card { animation: none; }
-.no-motion .wiz-fill { transition: none; }

@@ -69,7 +69,6 @@ Page({
     editDate: '',
     editTime: '',
     submitting: false,
-    reduceMotion: false,
     theme: DEFAULT_THEME,
   },
 
@@ -78,7 +77,6 @@ Page({
     this.setData({
       statusBarHeight: sysInfo.statusBarHeight || 20,
       txId: query.id || '',
-      reduceMotion: app.globalData.reduceMotion,
       theme: app.globalData.theme,
     })
     this.load(query.id)
@@ -86,7 +84,7 @@ Page({
 
   onShow() {
     app.applyThemeChrome()
-    this.setData({ reduceMotion: app.globalData.reduceMotion, theme: app.globalData.theme })
+    this.setData({ theme: app.globalData.theme })
   },
 
   async load(id) {

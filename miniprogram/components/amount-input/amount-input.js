@@ -21,7 +21,6 @@ Component({
     currentBalanceText: { type: String, value: '' },
     currency: { type: String, value: 'CNY' },
     currencySymbol: { type: String, value: '¥' },
-    reduceMotion: { type: Boolean, value: false },
   },
   data: {
     raw: '',

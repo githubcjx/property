@@ -1,6 +1,6 @@
-﻿<view class="canvas-bg theme-{{theme}}" wx:if="{{!reduceMotion}}"></view>
+﻿<view class="canvas-bg theme-{{theme}}"></view>
 
-<view class="page {{reduceMotion ? 'no-motion' : ''}} theme-{{theme}}">
+<view class="page theme-{{theme}}">
   <!-- 顶栏 -->
   <view class="topbar" style="padding-top: {{statusBarHeight}}px;">
     <view class="top-left">
@@ -14,8 +14,6 @@
 
   <!-- Hero · 净资产（无数据时整块隐藏 —— 不拿「¥0」当开场，等有账户再长出来） -->
   <view class="hero" wx:if="{{hasData}}">
-    <view class="hero-halo"></view>
-
     <view class="hero-eyebrow entry-up">
       <view>此刻净资产</view>
       <view class="eye-btn tap" hover-class="btn-hover" bindtap="onToggleHide">
@@ -69,7 +67,7 @@
            图标位就是那棵小树：它的成长条件是「更新次数」，而这里正是更新的入口
            —— 长在这儿，因果自己闭环，不需要一个字的解释（见 utils/growthTree.js）。 -->
       <view wx:if="{{invEntry}}" class="inv-entry {{invEntry.stale ? 'is-stale' : ''}} entry-up" hover-class="inv-entry-hover" bindtap="onOpenInventory">
-        <canvas type="2d" id="treeCanvas" class="ive-tree {{reduceMotion ? '' : 'tree-sway'}}"></canvas>
+        <canvas type="2d" id="treeCanvas" class="ive-tree tree-sway"></canvas>
         <view class="ive-txt">
           <view class="ive-title">{{invEntry.title}}</view>
           <view class="ive-sub">{{invEntry.sub}}</view>

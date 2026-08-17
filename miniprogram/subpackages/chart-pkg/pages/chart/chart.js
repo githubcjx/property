@@ -62,7 +62,6 @@ Page({
     loading: true,
     hasData: false,
     hideAmount: false,
-    reduceMotion: false,
     theme: DEFAULT_THEME,
 
     statusBarHeight: 20,
@@ -94,7 +93,6 @@ Page({
     const sysInfo = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
     this.setData({
       hideAmount: app.globalData.hideAmount,
-      reduceMotion: app.globalData.reduceMotion,
       theme: app.globalData.theme,
       statusBarHeight: sysInfo.statusBarHeight || 20,
     })
@@ -112,7 +110,6 @@ Page({
   onShow() {
     app.applyThemeChrome()
     this.setData({
-      reduceMotion: app.globalData.reduceMotion,
       theme: app.globalData.theme,
       hideAmount: app.globalData.hideAmount,
     })

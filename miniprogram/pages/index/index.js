@@ -60,7 +60,6 @@ Page({
     expandedMap: {},
 
     wobbleMap: {},
-    reduceMotion: false,
     theme: DEFAULT_THEME,
 
     // 盘点入口：常驻内容顶部，随新鲜度变脸。{ stale, title, sub }；无账户时 null
@@ -73,7 +72,6 @@ Page({
     this.setData({
       statusBarHeight: sysInfo.statusBarHeight || 20,
       hideAmount: app.globalData.hideAmount,
-      reduceMotion: app.globalData.reduceMotion,
       theme: app.globalData.theme,
       expandedMap: stored,
     })
@@ -83,7 +81,6 @@ Page({
     app.applyThemeChrome()
     this.setData({
       hideAmount: app.globalData.hideAmount,
-      reduceMotion: app.globalData.reduceMotion,
       theme: app.globalData.theme,
     })
     this.refresh()
@@ -124,7 +121,7 @@ Page({
     const info = growthTree.evaluate(accounts, stats)
     const grew = this._treeKey && this._treeKey !== info.key   // 本次会话内升级
     this.setData({ tree: info }, () => {
-      this._drawTree(!this.data.reduceMotion && (grew || !this._treeKey))
+      this._drawTree(grew || !this._treeKey)
       this._treeKey = info.key
     })
     // 若这次长大还没被别处（盘点完成页）庆祝过，在这儿补一句 —— 改余额、删记录等

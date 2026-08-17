@@ -35,7 +35,6 @@ const MOVER_ICON = {
 Page({
   data: {
     statusBarHeight: 20,
-    reduceMotion: false,
     theme: DEFAULT_THEME,
     hideAmount: false,
 
@@ -64,7 +63,6 @@ Page({
     const sysInfo = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
     this.setData({
       statusBarHeight: sysInfo.statusBarHeight || 20,
-      reduceMotion: app.globalData.reduceMotion,
       theme: app.globalData.theme,
       hideAmount: app.globalData.hideAmount,
     })
@@ -147,7 +145,6 @@ Page({
     app.applyThemeChrome()
     const hide = app.globalData.hideAmount
     this.setData({
-      reduceMotion: app.globalData.reduceMotion,
       theme: app.globalData.theme,
       hideAmount: hide,
     })

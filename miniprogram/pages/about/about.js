@@ -6,7 +6,6 @@ Page({
   data: {
     version: APP_VERSION,
     statusBarHeight: 20,
-    reduceMotion: false,
     theme: DEFAULT_THEME,
     sections: [
       {
@@ -92,14 +91,13 @@ Page({
     const sysInfo = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
     this.setData({
       statusBarHeight: sysInfo.statusBarHeight || 20,
-      reduceMotion: app.globalData.reduceMotion,
       theme: app.globalData.theme,
     })
   },
 
   onShow() {
     app.applyThemeChrome()
-    this.setData({ reduceMotion: app.globalData.reduceMotion, theme: app.globalData.theme })
+    this.setData({ theme: app.globalData.theme })
   },
 
   onBack() {

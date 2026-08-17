@@ -13,7 +13,6 @@ Page({
   data: {
     statusBarHeight: 20,
     theme: DEFAULT_THEME,
-    reduceMotion: false,
 
     step: 'pick',            // pick | fill | reveal
     sections: [],            // QUICK_ACCOUNTS + colorClass + selected
@@ -42,7 +41,6 @@ Page({
     this.setData({
       statusBarHeight: sys.statusBarHeight || 20,
       theme: app.globalData.theme,
-      reduceMotion: app.globalData.reduceMotion,
       sections,
     })
     this._netFen = 0

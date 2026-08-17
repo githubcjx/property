@@ -9,7 +9,6 @@ App({
   globalData: {
     hideAmount: wx.getStorageSync('pref_hide_amount') === true,
     cloudReady: false,
-    reduceMotion: wx.getStorageSync('pref_reduce_motion') === true,
     // V3.0 删掉了 12 套主题，老用户存的 key 可能已不存在 —— normalizeTheme 收归默认（见 utils/theme.js）
     theme: normalizeTheme(wx.getStorageSync('pref_theme')),
     // 多货币：本位币（显示镜头，默认人民币）+ 汇率表（由 fxRate.refresh 填充）
@@ -50,13 +49,6 @@ App({
     this.globalData.hideAmount = !this.globalData.hideAmount
     wx.setStorageSync('pref_hide_amount', this.globalData.hideAmount)
     return this.globalData.hideAmount
-  },
-
-  setReduceMotion(v) {
-    const next = !!v
-    this.globalData.reduceMotion = next
-    wx.setStorageSync('pref_reduce_motion', next)
-    return next
   },
 
   setTheme(key) {

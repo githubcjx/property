@@ -63,19 +63,9 @@
   padding: 32rpx 40rpx 28rpx;
   z-index: 1;
 }
-.hero-halo {
-  position: absolute;
-  left: 50%; top: 50%;
-  transform: translate(-50%, -50%);
-  width: 640rpx; height: 480rpx;
-  background: radial-gradient(ellipse at center, rgba(var(--accent-rgb), 0.28), transparent 65%);
-  filter: blur(56rpx);
-  /* 性能:仅呼吸 opacity(合成层廉价)。原 pulse-glow 会动 scale —— 缩放使 blur(56rpx)
-     层包围盒每帧变化、被迫重算模糊。glow-soft 只改透明度,视觉仍是脉动光晕。 */
-  animation: glow-soft 6s ease-in-out infinite;
-  pointer-events: none;
-  z-index: 0;
-}
+/* 净资产背后原本有一块会呼吸的强调色光晕(.hero-halo),已删除 —— 数字自己就是主角,
+   身后那团光只是替它使劲。.hero-eyebrow/.hero-amount 上的 z-index:1 保留:
+   它们压着的是 .canvas-bg 那层底纹,与光晕无关。 */
 .hero-eyebrow {
   position: relative; z-index: 1;
   font-size: 20rpx;
@@ -183,7 +173,6 @@
   0%, 100% { transform: rotate(-0.7deg); }
   50%      { transform: rotate(0.7deg); }
 }
-.no-motion .tree-sway { animation: none; }
 
 /* ============ Scroll ============ */
 .scroll {
@@ -206,7 +195,6 @@
   background: radial-gradient(circle at 30% 30%, rgba(var(--accent-rgb), 0.7), rgba(var(--accent-rgb), 0.1) 70%);
   border: 1rpx solid rgba(var(--accent-rgb), 0.4);
   box-shadow: inset 0 4rpx 0 rgba(255,255,255,0.25), 0 0 60rpx rgba(var(--accent-rgb), 0.4);
-  /* 性能:与 hero-halo 一致,改 opacity 呼吸(glow-soft),不再动 scale */
   animation: glow-soft 5s ease-in-out infinite;
 }
 .empty-title {
@@ -468,9 +456,8 @@
   width: 96rpx;
   height: 96rpx;
   border-radius: 50%;
-  /* 毛玻璃:这两个按钮在屏幕底部、远离会呼吸的 hero 光晕,背后是静态背景 ——
-     blur 一次性栅格化后即被缓存,待机时几乎零开销;仅滚动时短暂重算,且只有两个小元素,可控。
-     简化动效模式下会移除(见下方 .no-motion 覆盖)。 */
+  /* 毛玻璃:这两个按钮在屏幕底部,背后是静态背景 —— blur 一次性栅格化后即被缓存,
+     待机时几乎零开销;仅滚动时短暂重算,且只有两个小元素,可控。 */
   background: var(--glass-2);
   -webkit-backdrop-filter: blur(28rpx) saturate(160%);
   backdrop-filter: blur(28rpx) saturate(160%);
@@ -506,9 +493,8 @@
   height: 96rpx;
   padding: 0 30rpx 0 26rpx;
   border-radius: 48rpx;
-  /* 毛玻璃:这两个按钮在屏幕底部、远离会呼吸的 hero 光晕,背后是静态背景 ——
-     blur 一次性栅格化后即被缓存,待机时几乎零开销;仅滚动时短暂重算,且只有两个小元素,可控。
-     简化动效模式下会移除(见下方 .no-motion 覆盖)。 */
+  /* 毛玻璃:这两个按钮在屏幕底部,背后是静态背景 —— blur 一次性栅格化后即被缓存,
+     待机时几乎零开销;仅滚动时短暂重算,且只有两个小元素,可控。 */
   background: var(--glass-2);
   -webkit-backdrop-filter: blur(28rpx) saturate(160%);
   backdrop-filter: blur(28rpx) saturate(160%);
@@ -526,13 +512,6 @@
   transform: scale(0.96);
 }
 
-/* 简化动效:悬浮按钮也去掉 backdrop-filter,回退不透明深色,彻底降温 */
-.no-motion .fab,
-.no-motion .tools-entry {
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  background: rgba(22, 24, 30, 0.9);
-}
 
 /* ============ 盘点入口（常驻，随新鲜度变脸）============ */
 .inv-entry {

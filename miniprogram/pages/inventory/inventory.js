@@ -61,7 +61,6 @@ Page({
   data: {
     statusBarHeight: 20,
     theme: DEFAULT_THEME,
-    reduceMotion: false,
     hideAmount: false,
 
     loading: true,
@@ -130,7 +129,6 @@ Page({
     this.setData({
       statusBarHeight: sysInfo.statusBarHeight || 20,
       hideAmount: app.globalData.hideAmount,
-      reduceMotion: app.globalData.reduceMotion,
       theme: app.globalData.theme,
       scope,
       navTitle: scope === 'fixed' ? '重新估个价' : '盘点',
@@ -145,7 +143,6 @@ Page({
     app.applyThemeChrome()
     this.setData({
       hideAmount: app.globalData.hideAmount,
-      reduceMotion: app.globalData.reduceMotion,
       theme: app.globalData.theme,
     })
   },
@@ -443,7 +440,7 @@ Page({
     this._drawDoneTree(this._treeInfo.key)
   },
 
-  // 生长动画每次盘点都播一遍（简化动效时除外）。
+  // 生长动画每次盘点都播一遍。
   //
   // 早先只在跨阶段那次播，理由是「稀有，所以值钱」。那条理由适用于天天见的东西，
   // 不适用于一个月见一次的：隔 30 天，用户根本记不得上次动画长什么样，
@@ -452,7 +449,6 @@ Page({
   // 不是动画播没播 —— 所以庆祝的信号留给它们，动画回归它本来的职责：
   // 回应「你刚做完一件事」。
   _drawDoneTree(key) {
-    const animate = !this.data.reduceMotion
     wx.createSelectorQuery().in(this)
       .select('#doneTree').fields({ node: true, size: true }).exec((res) => {
         const item = res && res[0]
@@ -467,10 +463,6 @@ Page({
         // pad：画布比树大一圈，把树冠外发光完整留在画布内（见 utils/treeArt.js 的 pad 说明）。
         // 这一圈透明留白由 .hero-tree 的负外边距在版面上抵掉。
         const opt = { accent: th.chartAccent || th.accent, light: isLight(this.data.theme), pad: 0.13 }
-        if (!animate) {
-          treeArt.drawStage(ctx, item.width, item.height, key, 1, opt)
-          return
-        }
         const t0 = Date.now()
         const frame = () => {
           const p = Math.min(1, (Date.now() - t0) / 1100)

@@ -1,6 +1,6 @@
-<view class="canvas-bg theme-{{theme}}" wx:if="{{!reduceMotion}}"></view>
+<view class="canvas-bg theme-{{theme}}"></view>
 
-<view class="page {{reduceMotion ? 'no-motion' : ''}} theme-{{theme}}">
+<view class="page theme-{{theme}}">
   <view class="navbar" style="padding-top: {{statusBarHeight}}px;">
     <view wx:if="{{step !== 'reveal'}}" class="nav-btn tap" hover-class="nav-btn-hover" bindtap="onBack">
       <view class="ic ic-xs ic-back"></view>
@@ -79,7 +79,6 @@
   current-balance-text="未填写"
   currency="CNY"
   currency-symbol="¥"
-  reduce-motion="{{reduceMotion}}"
   bindcancel="onInputCancel"
   bindconfirm="onInputConfirm"
 />

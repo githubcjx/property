@@ -198,4 +198,3 @@
 .share-btn-hover { opacity: 0.75; transform: scale(0.98); }
 .share-cancel { margin-top: 18rpx; text-align: center; font-size: 24rpx; color: var(--ink-40); padding: 12rpx; }
 
-.no-motion .share-mask, .no-motion .share-sheet { animation: none; }
