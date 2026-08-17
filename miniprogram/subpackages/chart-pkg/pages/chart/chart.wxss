@@ -46,10 +46,11 @@
   z-index: 0;
 }
 
-/* 摘要 */
+/* 摘要（曲线整块搬到页面最下面后，它接在中枢三块之后，需要自己的起手间距） */
 .summary {
   position: relative;
   z-index: 1;
+  margin-top: 32rpx;
   border-radius: 28rpx;
   padding: 28rpx 32rpx;
   display: flex;

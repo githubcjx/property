@@ -12,67 +12,12 @@
     <view class="nav-spacer"></view>
   </view>
 
-  <!-- 文字摘要。通胀那句话长在这里，不再是一个「名义/真实」开关：
-       开关在问「你想用哪种口径看」，可用户既不知道存在两种口径，也不知道该选哪个；
-       而且真实序列的右端就是今天（两线在右侧收敛），30天/6月/年初至今三个区间按下去
-       几乎什么都不会变 —— 一个按了没反应的开关比看不懂更糟。
-       现在它是一句在该出现时自己出现的话，见 chart.js _inflationLine()。 -->
-  <view class="summary glass entry-up" wx:if="{{summary.rangeText}}">
-    <text class="sum-label">{{summary.rangeText}}</text>
-    <view class="sum-lines">
-      <text class="sum-line" wx:for="{{summary.lines}}" wx:key="*this">{{item}}</text>
-    </view>
-    <view wx:if="{{inflationLine}}" class="sum-infl">{{inflationLine}}</view>
-  </view>
-
-  <!-- Tab 切换 -->
-  <view class="tabs-row entry-up d1">
-    <view class="tabs">
-      <view
-        wx:for="{{tabs}}"
-        wx:key="key"
-        class="tab tap {{tabKey === item.key ? 'tab-active' : ''}}"
-        data-key="{{item.key}}"
-        bindtap="onTabTap">
-        {{item.label}}
-      </view>
-    </view>
-  </view>
-
-  <!-- 图表容器 -->
-  <view class="chart-wrap glass entry-up d2">
-    <view class="empty" wx:if="{{!loading && !hasData}}">
-      <view class="empty-orb"></view>
-      <text class="empty-desc">暂无数据 · 先在首页添加账户并记录余额</text>
-    </view>
-    <ec-canvas
-      id="chart"
-      canvas-id="property-chart"
-      ec="{{ ec }}"
-      style="width: 100%; height: 100%; {{!hasData ? 'opacity: 0;' : ''}}">
-    </ec-canvas>
-  </view>
-
-  <!-- 时间范围 Segmented Control -->
-  <view class="ranges entry-up d3">
-    <view
-      wx:for="{{ranges}}"
-      wx:key="key"
-      class="range tap {{rangeKey === item.key ? 'range-active' : ''}}"
-      data-key="{{item.key}}"
-      bindtap="onRangeTap">
-      {{item.label}}
-    </view>
-  </view>
-
-  <!-- 这里【曾经】有一个「自定义」区间 + 两个日期选择器。删除，别加回来：
-       这个 App 的数据一个月才产生一个点，一年 12 个点，
-       「2024-03-17 到 2024-08-02」这种精度没有任何东西可切 —— 那是电子表格的条件反射。 -->
-
   <!-- ============ 回顾中枢 ============
        V3.0：首页那个「四个镜头」的工具抽屉没了，四扇门合成一扇「回顾」，落在这里。
-       曲线是主角，下面三块是它的三个切面 —— 构成（横切）、目标（前方）、上月（回望）。
-       每块只给摘要与一个去处，详情仍在各自的页面里，这里不重复实现任何计算。 -->
+       三块摘要 —— 构成（横切）、目标（前方）、上月（回望），曲线（下方）是它们的底稿。
+       每块只给摘要与一个去处，详情仍在各自的页面里，这里不重复实现任何计算。
+       顺序：三块摘要在前，趋势曲线在最下面（曲线连同它的摘要/口径 Tab/时间区间是一整块，
+       Tab 和区间在改的就是那条曲线和那段摘要，跟着它一起搬，不能拆开）。 -->
   <view class="hub" wx:if="{{hasData}}">
 
     <!-- 构成：环图摘要 → 资产配置页 -->
@@ -128,4 +73,63 @@
     </view>
 
   </view>
+
+  <!-- ============ 趋势曲线（页面最下面）============ -->
+
+  <!-- 文字摘要。通胀那句话长在这里，不再是一个「名义/真实」开关：
+       开关在问「你想用哪种口径看」，可用户既不知道存在两种口径，也不知道该选哪个；
+       而且真实序列的右端就是今天（两线在右侧收敛），30天/6月/年初至今三个区间按下去
+       几乎什么都不会变 —— 一个按了没反应的开关比看不懂更糟。
+       现在它是一句在该出现时自己出现的话，见 chart.js _inflationLine()。 -->
+  <view class="summary glass entry-up d3" wx:if="{{summary.rangeText}}">
+    <text class="sum-label">{{summary.rangeText}}</text>
+    <view class="sum-lines">
+      <text class="sum-line" wx:for="{{summary.lines}}" wx:key="*this">{{item}}</text>
+    </view>
+    <view wx:if="{{inflationLine}}" class="sum-infl">{{inflationLine}}</view>
+  </view>
+
+  <!-- Tab 切换 -->
+  <view class="tabs-row entry-up d4">
+    <view class="tabs">
+      <view
+        wx:for="{{tabs}}"
+        wx:key="key"
+        class="tab tap {{tabKey === item.key ? 'tab-active' : ''}}"
+        data-key="{{item.key}}"
+        bindtap="onTabTap">
+        {{item.label}}
+      </view>
+    </view>
+  </view>
+
+  <!-- 图表容器 -->
+  <view class="chart-wrap glass entry-up d5">
+    <view class="empty" wx:if="{{!loading && !hasData}}">
+      <view class="empty-orb"></view>
+      <text class="empty-desc">暂无数据 · 先在首页添加账户并记录余额</text>
+    </view>
+    <ec-canvas
+      id="chart"
+      canvas-id="property-chart"
+      ec="{{ ec }}"
+      style="width: 100%; height: 100%; {{!hasData ? 'opacity: 0;' : ''}}">
+    </ec-canvas>
+  </view>
+
+  <!-- 时间范围 Segmented Control -->
+  <view class="ranges entry-up d6">
+    <view
+      wx:for="{{ranges}}"
+      wx:key="key"
+      class="range tap {{rangeKey === item.key ? 'range-active' : ''}}"
+      data-key="{{item.key}}"
+      bindtap="onRangeTap">
+      {{item.label}}
+    </view>
+  </view>
+
+  <!-- 这里【曾经】有一个「自定义」区间 + 两个日期选择器。删除，别加回来：
+       这个 App 的数据一个月才产生一个点，一年 12 个点，
+       「2024-03-17 到 2024-08-02」这种精度没有任何东西可切 —— 那是电子表格的条件反射。 -->
 </view>
