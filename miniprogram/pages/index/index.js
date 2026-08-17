@@ -255,7 +255,7 @@ Page({
       this.buildGroups(accounts)
       this.updateInvEntry(accounts)
       this.updateTree(accounts)
-      statsSvc.getMonthToDateDelta(accounts).then((r) => {
+      statsSvc.getRecentDelta(accounts).then((r) => {
         this.applyDelta(r)
       }).catch(() => {})
     } catch (err) {
@@ -377,11 +377,12 @@ Page({
     tick()
   },
 
-  // 本月至今的变化。三种状态，缺一不可：
-  //   · 没有基线（月初时这个账本还不存在）→ 整块隐藏。此刻的 delta 等于全部净资产，
-  //     显示出来就是在宣布「你这个月赚了一整个身家」（不变量 10）。
-  //   · 变化为 0 → 「还没有变化」，不带箭头、不带百分比。月初几天这是常态，
-  //     它说的是「这个月刚开始」，一个 +0.0% 的上升箭头才是假话。
+  // 近一个月的变化（窗口口径见 services/stats.js 顶部）。三种状态，缺一不可：
+  //   · 没有基线（一个月前这个账本还不存在）→ 整块隐藏。此刻的 delta 等于全部净资产，
+  //     显示出来就是在宣布「你这一个月赚了一整个身家」（不变量 10）。
+  //   · 变化为 0 → 「还没有变化」，不带箭头、不带百分比。长期没记录时这是实话，
+  //     而此时首页的盘点入口正好转琥珀色在催 —— 两件事说的是同一件事。
+  //     一个 +0.0% 配向上的箭头才是假话。
   //   · 有变化 → 金额 + 百分比。基线为 0 时百分比无意义，只报金额。
   applyDelta({ delta, deltaPct, hasBaseline }) {
     if (!hasBaseline) {
