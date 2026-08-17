@@ -64,12 +64,20 @@
   box-shadow: 0 0 16rpx var(--accent);
 }
 
+/* 左右留白必须挂在里面这层 .scroll-inner 上，不能挂在 scroll-view 自己身上：
+   scroll-view 的滚动/裁剪盒是它的内容盒，padding 一挂在它身上，裁剪边就正好落在
+   卡片的边缘上 —— 卡片投影一像素都铺不出去，被切成直边。挂到内层后裁剪边退到屏幕
+   两侧，那 28rpx 才真正成了投影的活动空间（最宽的晴空软光也只铺 18rpx，够）。
+   首页 .groups 一直是这么做的，所以首页左右从来没被切过。 */
 .scroll {
   flex: 1;
-  padding: 0 28rpx 240rpx;
   box-sizing: border-box;
   position: relative;
   z-index: 1;
+}
+.scroll-inner {
+  padding: 0 28rpx 240rpx;
+  box-sizing: border-box;
 }
 
 .hint {
@@ -84,7 +92,9 @@
 .cat-list {
   display: flex;
   flex-direction: column;
-  gap: 18rpx;
+  /* 与首页 .groups 同一笔账：卡面不透明，间距小于「上一张下投影 + 下一张上高光」
+     就会把上一张的投影切掉。晴空软光需要 18+16=34rpx，取 36rpx。 */
+  gap: 36rpx;
 }
 .cat-item {
   border-radius: 28rpx;

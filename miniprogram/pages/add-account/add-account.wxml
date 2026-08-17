@@ -23,15 +23,18 @@
   </view>
 
   <scroll-view scroll-y class="scroll" enable-flex>
+   <view class="scroll-inner">
     <!-- Step 1+2: 选择大类与子类 -->
     <block wx:if="{{step === 1}}">
       <view class="hint entry-up">STEP 1 · 选择账户类型</view>
+      <!-- 展开态光晕 48rpx（不是 60rpx）：模糊半径的一半就是它往外铺的距离，
+           60rpx 会铺到 30rpx，超过 .scroll 左右 28rpx 的 padding，被滚动容器切成直边。 -->
       <view class="cat-list">
         <view
           wx:for="{{categories}}"
           wx:key="id"
           class="cat-item glass entry-up d{{index + 1}}"
-          style="{{expandedCategoryId === item.id ? 'box-shadow: 0 0 60rpx rgba(var(--' + item.colorClass + '-rgb), 0.2); border-color: rgba(var(--' + item.colorClass + '-rgb), 0.4);' : ''}}"
+          style="{{expandedCategoryId === item.id ? 'box-shadow: 0 0 48rpx rgba(var(--' + item.colorClass + '-rgb), 0.2); border-color: rgba(var(--' + item.colorClass + '-rgb), 0.4);' : ''}}"
         >
           <view class="cat-row tap" data-id="{{item.id}}" bindtap="onToggleCategory">
             <view class="cat-icon {{item.tintClass}}">
@@ -167,6 +170,7 @@
 
       <view class="tail-space"></view>
     </block>
+   </view>
   </scroll-view>
 
   <!-- 成功遮罩 + 碎裂粒子 -->

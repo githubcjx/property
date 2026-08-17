@@ -243,7 +243,12 @@
 .groups {
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
+  /* 36rpx 不是随手挑的间距，是卡片投影需要的最小净空：卡面在各主题下都是不透明的，
+     间距小于「上一张的下投影 + 下一张的上高光」时，下一张会直接把上一张的投影切掉一半，
+     一列卡片看上去像被裁过。晴空软光（默认）最费空间：下投影 8+20/2=18rpx，
+     上高光 7+18/2=16rpx，合计 34rpx。左右靠 28rpx 的 padding 兜住（最宽 18rpx，够）。
+     改投影或换主题时，这两个数要一起重算。 */
+  gap: 36rpx;
   padding: 24rpx 28rpx 0;
 }
 .cat-card {
@@ -251,18 +256,12 @@
   overflow: hidden;
   position: relative;
   /* 性能:原先靠 .glass 的 backdrop-filter;5 张卡 × 滚动时每帧重算毛玻璃,极耗 GPU。
-     改为半透明渐变 + 描边,视觉接近玻璃质感、零 backdrop-filter;彩色光晕仍由 .cat-glow 提供。 */
+     改为半透明渐变 + 描边,视觉接近玻璃质感、零 backdrop-filter。
+     卡片右上角原本还有一块类目色光晕(.cat-glow / .halo-*),已删除:分类色在左侧色块珠
+     和右侧金额上已经说了两遍,右上角再糊一团颜色只是噪点。 */
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.04));
   border: 1rpx solid var(--hairline);
   box-shadow: inset 0 2rpx 0 rgba(255, 255, 255, 0.08), 0 24rpx 72rpx rgba(0, 0, 0, 0.45);
-}
-.cat-glow {
-  position: absolute;
-  right: -40rpx; top: -40rpx;
-  width: 240rpx; height: 240rpx;
-  filter: blur(24rpx);
-  pointer-events: none;
-  opacity: 0.7;
 }
 
 .cat-row {

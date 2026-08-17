@@ -205,12 +205,8 @@ view, text { box-sizing: border-box; }
 .cat-tint-receivable { background: radial-gradient(circle at 30% 30%, rgba(var(--receivable-rgb), 0.6), rgba(var(--receivable-rgb), 0.12) 70%); border: 1rpx solid rgba(var(--receivable-rgb), 0.4); box-shadow: inset 0 2rpx 0 rgba(255,255,255,0.18), 0 0 32rpx rgba(var(--receivable-rgb), 0.25); }
 .cat-tint-debt       { background: radial-gradient(circle at 30% 30%, rgba(var(--debt-rgb), 0.6), rgba(var(--debt-rgb), 0.12) 70%); border: 1rpx solid rgba(var(--debt-rgb), 0.4); box-shadow: inset 0 2rpx 0 rgba(255,255,255,0.18), 0 0 32rpx rgba(var(--debt-rgb), 0.25); }
 
-/* Soft halo for each category (used in detail) */
-.halo-liquid     { background: radial-gradient(circle, rgba(var(--liquid-rgb), 0.30),     transparent 70%); }
-.halo-investment { background: radial-gradient(circle, rgba(var(--investment-rgb), 0.30), transparent 70%); }
-.halo-fixed      { background: radial-gradient(circle, rgba(var(--fixed-rgb), 0.30),      transparent 70%); }
-.halo-receivable { background: radial-gradient(circle, rgba(var(--receivable-rgb), 0.30), transparent 70%); }
-.halo-debt       { background: radial-gradient(circle, rgba(var(--debt-rgb), 0.30),       transparent 70%); }
+/* .halo-* 类目柔光晕已删除：唯一的用处是首页卡片右上角那团色雾(.cat-glow)，
+   而分类色在色块珠和金额上已经出现两遍，第三遍只是噪点。 */
 
 /* Buttons */
 .btn {
@@ -613,8 +609,7 @@ button.btn-reset::after { display: none; }
   box-shadow: var(--bru-shadow);
 }
 .theme-brutalist .card-sub { background: var(--bru-paper); box-shadow: var(--bru-shadow-sm); }
-/* 卡片彩色柔光晕：粗野风格不要模糊光，直接隐藏 */
-.theme-brutalist .cat-glow,
+/* 大块柔光晕：粗野风格不要模糊光，直接隐藏 */
 .theme-brutalist .hero-halo,
 .theme-brutalist .fab::before { display: none; }
 

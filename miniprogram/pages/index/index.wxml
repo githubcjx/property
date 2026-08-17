@@ -83,8 +83,6 @@
           wx:key="categoryId"
           class="cat-card entry-up d{{index + 1}}"
         >
-          <view class="cat-glow halo-{{item.colorClass}}"></view>
-
           <view class="cat-row tap" data-id="{{item.categoryId}}" bindtap="onToggleGroup">
             <view class="cat-orb {{item.tintClass}}">
               <view class="ic-glyph {{item.glyphClass}}"></view>
