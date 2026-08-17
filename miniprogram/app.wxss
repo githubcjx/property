@@ -614,6 +614,7 @@ button.btn-reset::after { display: none; }
 }
 .theme-brutalist .delta-pill.pos { background: var(--pos); color: #fff; }
 .theme-brutalist .delta-pill.neg { background: var(--neg); color: #fff; }
+.theme-brutalist .delta-pill.flat { background: var(--glass-3); color: var(--ink-60); }
 
 /* 金额文字：去发光 + 统一转黑（琥珀等浅识别色在白底上对比不足，颜色只留在色块珠上）。
    顺序在后的 .cat-debt 覆盖 → 负债金额仍红（负向语义不变）。 */

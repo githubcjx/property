@@ -5,6 +5,16 @@
 
 const RELEASES = [
   {
+    version: 'V3.0.1',
+    date: '2026-08',
+    title: '同一个节奏',
+    highlight: true,
+    items: [
+      '首页的涨跌改成「本月至今」，和盘点同一个节奏',
+      '本月新建的账户，不再算进这个月的涨幅',
+    ],
+  },
+  {
     version: 'V3.0',
     date: '2026-08',
     title: '做减法',

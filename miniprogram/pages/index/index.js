@@ -48,8 +48,9 @@ Page({
     netFrac: '00',
 
     deltaText: '+¥0',
-    deltaPctText: '+0.0%',
+    deltaPctText: '',
     deltaPositive: true,
+    deltaFlat: false,
     hasDelta: false,
 
     hideAmount: false,
@@ -254,8 +255,8 @@ Page({
       this.buildGroups(accounts)
       this.updateInvEntry(accounts)
       this.updateTree(accounts)
-      statsSvc.getNetWorthDelta(30, accounts).then(({ delta, deltaPct }) => {
-        this.applyDelta(delta, deltaPct)
+      statsSvc.getMonthToDateDelta(accounts).then((r) => {
+        this.applyDelta(r)
       }).catch(() => {})
     } catch (err) {
       console.error('加载账户失败', err)
@@ -376,17 +377,29 @@ Page({
     tick()
   },
 
-  applyDelta(deltaFen, deltaPct) {
+  // 本月至今的变化。三种状态，缺一不可：
+  //   · 没有基线（月初时这个账本还不存在）→ 整块隐藏。此刻的 delta 等于全部净资产，
+  //     显示出来就是在宣布「你这个月赚了一整个身家」（不变量 10）。
+  //   · 变化为 0 → 「还没有变化」，不带箭头、不带百分比。月初几天这是常态，
+  //     它说的是「这个月刚开始」，一个 +0.0% 的上升箭头才是假话。
+  //   · 有变化 → 金额 + 百分比。基线为 0 时百分比无意义，只报金额。
+  applyDelta({ delta, deltaPct, hasBaseline }) {
+    if (!hasBaseline) {
+      this.setData({ hasDelta: false })
+      return
+    }
     const baseCcy = baseCurrency()
-    const dispDelta = cnyToBaseFen(deltaFen)
-    const positive = deltaFen >= 0
+    const dispDelta = cnyToBaseFen(delta)
+    const flat = dispDelta === 0
+    const positive = delta >= 0
     const sign = positive ? '+' : '-'
-    const deltaText = sign + formatMoney(Math.abs(dispDelta), baseCcy, { symbol: true })
-    const pctStr = (positive ? '+' : '') + (Math.round(deltaPct * 10) / 10).toFixed(1) + '%'
     this.setData({
-      deltaText,
-      deltaPctText: pctStr,
+      deltaText: flat ? '还没有变化' : sign + formatMoney(Math.abs(dispDelta), baseCcy, { symbol: true }),
+      deltaPctText: (flat || deltaPct == null)
+        ? ''
+        : (positive ? '+' : '') + (Math.round(deltaPct * 10) / 10).toFixed(1) + '%',
       deltaPositive: positive,
+      deltaFlat: flat,
       hasDelta: true,
     })
   },

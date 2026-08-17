@@ -86,8 +86,17 @@ function formatRelative(d) {
   return Math.floor(days / 365) + ' 年前 更新'
 }
 
+// 本月 1 日 00:00（本地时区）。首页「本月至今」的基线，
+// 也是这个 App 唯一的时间节拍——盘点/月报/1 号提醒都踩在同一个月界上。
+function startOfMonth(d) {
+  const date = d ? toDate(d) : new Date()
+  if (!date || isNaN(date.getTime())) return null
+  return new Date(date.getFullYear(), date.getMonth(), 1, 0, 0, 0, 0)
+}
+
 module.exports = {
   toDate,
+  startOfMonth,
   formatDateTime,
   formatYMD,
   formatShort,

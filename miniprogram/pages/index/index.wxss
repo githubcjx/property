@@ -152,6 +152,12 @@
   background: rgba(255, 179, 179, 0.18);
   border-color: rgba(255, 179, 179, 0.35);
 }
+/* 这个月还没动：中性、安静，不占用涨跌两种颜色 —— 没变化不是一种成绩 */
+.delta-pill.flat {
+  color: var(--ink-60);
+  background: var(--glass-1);
+  border-color: var(--hairline);
+}
 .delta-pct {
   opacity: 0.75;
   margin-left: 2rpx;

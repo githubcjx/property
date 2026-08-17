@@ -38,13 +38,16 @@
       
     </view>
 
+    <!-- 本月至今。基线是本月 1 日，和盘点/月报/1 号提醒同一个节拍（services/stats.js）。
+         deltaFlat（这个月还没动）不画箭头、不打码 ——「还没有变化」不是金额，
+         把它盖成 •••• 等于藏了一句本来就没泄露任何东西的话。 -->
     <view class="hero-delta entry-up d2" wx:if="{{hasDelta}}">
-      <view class="delta-pill {{deltaPositive ? 'pos' : 'neg'}}">
-        <view class="ic ic-xs {{deltaPositive ? 'ic-trend-up' : 'ic-trend-down'}}"></view>
-        <text class="num">{{hideAmount ? '••••' : deltaText}}</text>
-        <text class="delta-pct">· {{hideAmount ? '••' : deltaPctText}}</text>
+      <view class="delta-pill {{deltaFlat ? 'flat' : (deltaPositive ? 'pos' : 'neg')}}">
+        <view wx:if="{{!deltaFlat}}" class="ic ic-xs {{deltaPositive ? 'ic-trend-up' : 'ic-trend-down'}}"></view>
+        <text class="{{deltaFlat ? '' : 'num'}}">{{hideAmount && !deltaFlat ? '••••' : deltaText}}</text>
+        <text wx:if="{{deltaPctText}}" class="delta-pct">· {{hideAmount ? '••' : deltaPctText}}</text>
       </view>
-      <text class="delta-label">过去 30 天</text>
+      <text class="delta-label">本月至今</text>
     </view>
   </view>
 
